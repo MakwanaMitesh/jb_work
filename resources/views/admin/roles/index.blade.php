@@ -210,7 +210,7 @@
                 });
 
                 $('#filterStatusSelect').on('change', function() {
-                    const val = this.value ? '^' + this.value + '$' : '';
+                    const val = this.value ? '\\b' + this.value + '\\b' : '';
                     table.column(4).search(val, true, false).draw();
                     updateActiveFiltersCount();
                 });
