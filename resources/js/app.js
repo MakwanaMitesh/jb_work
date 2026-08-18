@@ -11,6 +11,7 @@ window.jbToast = function (icon, message) {
         icon,
         title: message,
         showConfirmButton: false,
+        showCloseButton: true,
         timer: 3500,
         timerProgressBar: true,
         didOpen: (toast) => {
