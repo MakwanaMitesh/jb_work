@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "system-ui", "-apple-system", sans-serif;
+  --color-primary-50: #fffbeb;
+  --color-primary-100: #fef3c7;
+  --color-primary-200: #fde68a;
+  --color-primary-300: #fcd34d;
+  --color-primary-400: #fbbf24;
+  --color-primary-500: #f59e0b;
+  --color-primary-600: #d97706;
+  --color-primary-700: #b45309;
+  --color-primary-800: #92400e;
+  --color-primary-900: #78350f;
+  --color-primary-950: #451a03;
+}
+
+
+/* ---------- Custom Select2 Sleek Theme ---------- */
+.select2-container--bootstrap-5 .select2-selection {
+    min-height: 38px !important;
+    height: 38px !important;
+    border-radius: 8px !important;
+    border-color: #d1d5db !important;
+    font-size: 0.875rem !important;
+    color: #111827 !important;
+}
+.select2-container--bootstrap-5 .select2-selection--single {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 2.25rem 0 0.75rem !important;
+    height: 38px !important;
+}
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    color: #111827 !important;
+    height: 100% !important;
+}
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection {
+    border-color: #d97706 !important; /* amber-600 */
+    box-shadow: 0 0 0 0.2rem rgba(217, 119, 6, 0.15) !important;
+}
+.select2-container--bootstrap-5 .select2-dropdown {
+    border-radius: 8px !important;
+    border-color: #e5e7eb !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+    z-index: 1060 !important;
+}
+.select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected] {
+    background-color: #d97706 !important;
+    color: #ffffff !important;
+}
+
+/* ---------- Custom DataTables 2 Footer Layout ---------- */
+.dt-container .dt-search {
+    display: none !important;
+}
+.dt-container .dt-layout-row:last-child {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.85rem 1.25rem !important;
+    border-top: 1px solid #e5e7eb !important;
+    background: #ffffff !important;
+    gap: 0.75rem !important;
+}
+.dt-container .dt-layout-row:last-child > .dt-layout-cell {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+}
+.dt-container .dt-layout-row:last-child > .dt-layout-cell.dt-layout-start {
+    justify-content: flex-start !important;
+    flex: 1 1 0% !important;
+}
+.dt-container .dt-layout-row:last-child > .dt-layout-cell.dt-layout-full {
+    justify-content: center !important;
+    flex: 1 1 0% !important;
+}
+.dt-container .dt-layout-row:last-child > .dt-layout-cell.dt-layout-end {
+    justify-content: flex-end !important;
+    flex: 1 1 0% !important;
+    margin-bottom: 0.5rem !important;
+}
+.dt-container .dt-length {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+.dt-container .dt-length select {
+    border-radius: 8px !important;
+    padding: 0.3rem 1.75rem 0.3rem 0.75rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    border: 1px solid #d1d5db !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+.dt-container .dt-info {
+    font-size: 0.85rem;
+    color: #6b7280;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.dt-container .dt-paging {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.dt-container .dt-paging .pagination {
+    margin-bottom: 0;
+    gap: 3px;
+    display: flex;
+    list-style: none;
+    padding-left: 0;
+}
+.dt-container .dt-paging .page-link {
+    border-radius: 6px !important;
+    border: none !important;
+    background-color: transparent !important;
+    color: #6b7280 !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    padding: 0.35rem 0.75rem !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    text-decoration: none;
+}
+.dt-container .dt-paging .page-item.active .page-link {
+    background-color: #fef3c7 !important; /* amber 100 */
+    color: #d97706 !important; /* amber 600 */
+    font-weight: 600 !important;
+}

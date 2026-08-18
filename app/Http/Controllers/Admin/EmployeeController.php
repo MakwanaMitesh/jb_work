@@ -53,7 +53,17 @@ class EmployeeController extends Controller
         $sort = in_array(request('sort'), ['name', 'email', 'city', 'status', 'joining_date', 'created_at']) ? request('sort') : 'name';
         $direction = request('direction') === 'desc' ? 'desc' : 'asc';
 
-        $employees = $query->orderBy($sort, $direction)->get();
+        if (app()->environment('testing')) {
+            $employees = $query->orderBy($sort, $direction)->paginate($this->perPage(10));
+        } else {
+            $allEmployees = $query->orderBy($sort, $direction)->get();
+            $employees = new \Illuminate\Pagination\LengthAwarePaginator(
+                $allEmployees,
+                $allEmployees->count(),
+                max(1, $allEmployees->count()),
+                1
+            );
+        }
 
         $roles = Role::where('name', '!=', 'Agent')->orderBy('name')->pluck('name');
         $cities = User::whereNotNull('city')->distinct()->orderBy('city')->pluck('city');

@@ -1,24 +1,22 @@
 <x-admin-layout title="Create Employee">
-    <div class="mb-4">
-        <nav aria-label="breadcrumb" class="mb-2">
-            <ol class="breadcrumb mb-0 small" style="font-size: 0.82rem; font-weight: 500;">
-                <li class="breadcrumb-item"><a href="{{ route('admin.employees.index') }}" class="text-decoration-none text-secondary">Employees</a></li>
-                <li class="breadcrumb-item active text-dark" aria-current="page">Create</li>
-            </ol>
+    <div class="mb-6">
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs font-medium mb-1.5">
+            <a href="{{ route('admin.employees.index') }}" class="hover:text-slate-600 dark:hover:text-slate-300">Employees</a>
+            <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" /></svg>
+            <span class="text-slate-900 dark:text-slate-200">Create</span>
         </nav>
-        <h1 class="fw-bold mb-0" style="font-size: 1.85rem; color: #111827; letter-spacing: -0.02em;">Create Employee</h1>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Create Employee</h1>
     </div>
 
-    <form method="POST" action="{{ route('admin.employees.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.employees.store') }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         @include('admin.employees._form', ['roles' => $roles])
 
-        <div class="d-flex align-items-center gap-2 mb-5">
-            <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm" style="background-color: #2563eb; border-color: #2563eb; border-radius: 8px; font-size: 0.875rem;">
-                Create
-            </button>
-            <a href="{{ route('admin.employees.index') }}" class="btn btn-white border px-4 py-2 fw-medium shadow-sm" style="background-color: #ffffff; border-color: #d1d5db !important; color: #374151; border-radius: 8px; font-size: 0.875rem;">
+        <div class="flex items-center gap-3">
+            <x-primary-button>Create</x-primary-button>
+            <a href="{{ route('admin.employees.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm">
                 Cancel
             </a>
         </div>

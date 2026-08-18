@@ -1,132 +1,128 @@
 <x-admin-layout title="Roles" :white-bg="true">
-    {{-- Top Header Section --}}
-    <div class="mb-4">
-        <nav aria-label="breadcrumb" class="mb-2">
-            <ol class="breadcrumb mb-0 small" style="font-size: 0.82rem; font-weight: 500;">
-                <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-secondary">Roles</a></li>
-                <li class="breadcrumb-item active text-dark" aria-current="page">List</li>
-            </ol>
+    <div class="mb-6">
+        <!-- Breadcrumbs -->
+        <nav class="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs font-medium mb-1.5">
+            <a href="#" class="hover:text-slate-600 dark:hover:text-slate-300">Roles</a>
+            <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" /></svg>
+            <span class="text-slate-900 dark:text-slate-200">List</span>
         </nav>
-        <div class="d-flex align-items-center justify-content-between">
-            <div>
-                <h1 class="fw-bold mb-0" style="font-size: 1.75rem; color: #111827; letter-spacing: -0.02em;">Roles</h1>
-            </div>
+
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Roles</h1>
             @can('create', App\Models\Role::class)
-                <a href="{{ route('admin.roles.create') }}" class="btn btn-primary d-inline-flex align-items-center gap-2 px-3.5 py-2 fw-semibold shadow-sm" style="background-color: #2563eb; border-color: #2563eb; border-radius: 0.5rem; font-size: 0.875rem;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
+                <a href="{{ route('admin.roles.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                    <svg class="w-4 h-4 mr-1.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                     <span>New role</span>
                 </a>
             @endcan
         </div>
     </div>
 
-    {{-- Main Table Card Container --}}
-    <div class="jb-card p-0 mb-5 shadow-sm" style="border-radius: 12px; overflow: hidden; background: #ffffff; border: 1px solid #e5e7eb; margin-bottom: 2.5rem;">
-        {{-- Search and Circular Filter Bar (Right-Aligned) --}}
-        <div class="jb-toolbar p-3 d-flex align-items-center justify-content-end gap-2" style="background: #ffffff; border-bottom: 1px solid #f3f4f6;">
-            <!-- Search Input Pill with Heroicon Magnifying Glass -->
-            <div class="jb-search-box rounded-3" style="background: #fff; width: 240px; height: 38px; padding: 0.4rem 0.75rem; border: 1px solid #d1d5db; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px;">
-                <svg class="text-muted" width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" /></svg>
-                <input type="text" id="roleSearchInput" placeholder="Search" value="{{ request('search') }}" autocomplete="off" style="border: 0; outline: none; background: transparent; width: 100%; font-size: 0.875rem; color: #111827;">
+    <!-- Table Card Container -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden mb-8">
+        <!-- Toolbar -->
+        <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-slate-900/50">
+            <!-- Search -->
+            <div class="w-60 h-10 px-3 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg flex items-center gap-2">
+                <svg class="text-slate-400 w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" /></svg>
+                <input type="text" id="roleSearchInput" placeholder="Search" value="{{ request('search') }}" autocomplete="off" class="bg-transparent border-0 outline-none text-sm w-full text-slate-900 dark:text-slate-100 placeholder-slate-400">
             </div>
 
-            <!-- Circular Filter Button with Heroicon Funnel -->
-            <div class="dropdown">
-                <button class="jb-icon-btn position-relative" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-auto-close="outside" aria-expanded="false" title="Filter roles" style="width: 38px; height: 38px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d1d5db; background: #fff; color: #6b7280;">
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 0 1 .628.74v2.288a2.25 2.25 0 0 1-.659 1.59l-4.682 4.683a2.25 2.25 0 0 0-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 0 1 8 18.25v-5.757a2.25 2.25 0 0 0-.659-1.59L2.659 6.22A2.25 2.25 0 0 1 2 4.629V2.34a.75.75 0 0 1 .628-.74Z" clip-rule="evenodd" /></svg>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark border border-light" id="activeFilterBadge" style="padding: 0.18rem 0.35rem; font-size: 0.58rem; transform: translate(-30%, -20%) !important; display: none;">0</span>
+            <!-- Filter Dropdown -->
+            <div class="relative inline-block text-left" id="filterDropdownContainer">
+                <button type="button" id="filterDropdownBtn" class="relative w-10 h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center transition">
+                    <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 0 1 .628.74v2.288a2.25 2.25 0 0 1-.659 1.59l-4.682 4.683a2.25 2.25 0 0 0-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 0 1 8 18.25v-5.757a2.25 2.25 0 0 0-.659-1.59L2.659 6.22A2.25 2.25 0 0 1 2 4.629V2.34a.75.75 0 0 1 .628-.74Z" clip-rule="evenodd" /></svg>
+                    <span id="activeFilterBadge" class="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-950 px-1 text-[10px] font-bold border border-white dark:border-slate-900 hidden">0</span>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end p-3 shadow-sm" style="min-width: 260px; border-radius: 8px;">
-                    <div class="mb-2">
-                        <label class="form-label small text-muted mb-1">Status</label>
-                        <select id="filterStatusSelect" class="form-select form-select-sm">
-                            <option value="">All</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="button" id="resetFiltersBtn" class="btn btn-outline-secondary btn-sm flex-fill">Clear Filters</button>
+
+                <div id="filterDropdownMenu" class="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg p-4 hidden z-40">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Status</label>
+                            <select id="filterStatusSelect" class="form-select w-full border border-slate-300 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-900">
+                                <option value="">All</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="pt-2">
+                            <button type="button" id="resetFiltersBtn" class="w-full inline-flex items-center justify-center px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg">
+                                Clear Filters
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="table datatable align-middle mb-0" id="roles-table">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="roles-table">
                 <thead>
-                    <tr style="background: #ffffff; border-bottom: 1px solid #e5e7eb;">
-                        <th class="ps-4" style="border-bottom: 1px solid #e5e7eb; color: #4b5563; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">Name</th>
-                        <th style="border-bottom: 1px solid #e5e7eb; color: #4b5563; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">Description</th>
-                        <th style="border-bottom: 1px solid #e5e7eb; color: #4b5563; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">Permissions</th>
-                        <th style="border-bottom: 1px solid #e5e7eb; color: #4b5563; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">Users</th>
-                        <th data-col="status" style="border-bottom: 1px solid #e5e7eb; color: #4b5563; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">Active</th>
-                        <th class="text-end pe-4" style="width: 60px; border-bottom: 1px solid #e5e7eb;"></th>
+                    <tr class="bg-slate-50/75 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                        <th class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</th>
+                        <th class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Permissions</th>
+                        <th class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Users</th>
+                        <th data-col="status" class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active</th>
+                        <th class="px-6 py-3.5 text-right w-16"></th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                     @foreach ($roles as $role)
-                        <tr style="border-bottom: 1px solid #f3f4f6; background-color: #ffffff;">
-                            <td class="ps-4">
-                                <span class="fw-semibold text-dark">{{ $role->name }}</span>
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition duration-150">
+                            <td class="px-6 py-4.5 whitespace-nowrap">
+                                <span class="font-semibold text-slate-900 dark:text-white">{{ $role->name }}</span>
                             </td>
-                            <td class="text-secondary small">{{ $role->description ?? '—' }}</td>
-                            <td>
-                                <span class="badge rounded-pill bg-light text-dark border px-2.5 py-1" style="font-weight: 500;">
+                            <td class="px-6 py-4.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{{ $role->description ?? '—' }}</td>
+                            <td class="px-6 py-4.5 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50">
                                     {{ $role->permissions_count }} permissions
                                 </span>
                             </td>
-                            <td>
-                                <span class="badge rounded-pill bg-light text-dark border px-2.5 py-1" style="font-weight: 500;">
+                            <td class="px-6 py-4.5 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50">
                                     {{ $role->users_count }} users
                                 </span>
                             </td>
-                            <td>
+                            <td class="px-6 py-4.5 whitespace-nowrap" data-col="status">
                                 @if ($role->is_active)
-                                    <span class="badge rounded-pill bg-success-subtle text-success d-inline-flex align-items-center gap-1.5 px-2.5 py-1" style="font-weight: 500; font-size: 0.78rem;">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                        <span>Active</span>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-500 border border-emerald-200/30 dark:border-emerald-900/30">
+                                        <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>
+                                        Active
                                     </span>
                                 @else
-                                    <span class="badge rounded-pill bg-secondary-subtle text-secondary d-inline-flex align-items-center gap-1.5 px-2.5 py-1" style="font-weight: 500; font-size: 0.78rem;">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                                        <span>Inactive</span>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">
+                                        <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clip-rule="evenodd" /></svg>
+                                        Inactive
                                     </span>
                                 @endif
                             </td>
-                            <td class="text-end pe-4">
-                                <div class="dropdown">
-                                    <button class="btn btn-link text-secondary p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+                            <td class="px-6 py-4.5 whitespace-nowrap text-right">
+                                <div class="relative inline-block text-left" data-kebab-container>
+                                    <button class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 flex items-center justify-center transition" type="button" data-kebab-btn>
+                                        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM10 8.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM10 14a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" /></svg>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 8px;">
-                                        <li>
-                                            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('admin.roles.edit', $role) }}">
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                                <span>Edit</span>
-                                            </a>
-                                        </li>
+                                    <div class="absolute right-0 mt-1 w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg p-1 hidden z-40" data-kebab-menu>
+                                        <a href="{{ route('admin.roles.edit', $role) }}" class="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-md no-underline">
+                                            <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                            <span>Edit</span>
+                                        </a>
                                         @if (! $role->isProtected())
-                                            <li>
-                                                <form method="POST" action="{{ route('admin.roles.toggle-status', $role) }}">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 {{ $role->is_active ? 'text-danger' : 'text-success' }}">
-                                                        @if ($role->is_active)
-                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                                                            <span>Deactivate</span>
-                                                        @else
-                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                                            <span>Activate</span>
-                                                        @endif
-                                                    </button>
-                                                </form>
-                                            </li>
+                                            <form method="POST" action="{{ route('admin.roles.toggle-status', $role) }}" class="block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-sm {{ $role->is_active ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20' }} rounded-md text-left">
+                                                    @if ($role->is_active)
+                                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                                        <span>Deactivate</span>
+                                                    @else
+                                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                        <span>Activate</span>
+                                                    @endif
+                                                </button>
+                                            </form>
                                         @endif
-                                    </ul>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -138,6 +134,41 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Dropdown Menu Toggles (Circular Filters)
+            const filterDropdownBtn = document.getElementById('filterDropdownBtn');
+            const filterDropdownMenu = document.getElementById('filterDropdownMenu');
+
+            if (filterDropdownBtn && filterDropdownMenu) {
+                filterDropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    filterDropdownMenu.classList.toggle('hidden');
+                });
+                document.addEventListener('click', (e) => {
+                    if (!filterDropdownMenu.contains(e.target) && e.target !== filterDropdownBtn) {
+                        filterDropdownMenu.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Dropdown Menu Toggles (Kebab Actions)
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-kebab-btn]');
+                if (btn) {
+                    e.stopPropagation();
+                    const container = btn.closest('[data-kebab-container]');
+                    const menu = container.querySelector('[data-kebab-menu]');
+                    
+                    // Hide all other menus
+                    document.querySelectorAll('[data-kebab-menu]').forEach(m => {
+                        if (m !== menu) m.classList.add('hidden');
+                    });
+                    
+                    menu.classList.toggle('hidden');
+                } else {
+                    document.querySelectorAll('[data-kebab-menu]').forEach(m => m.classList.add('hidden'));
+                }
+            });
+
             if (window.jQuery && $.fn.DataTable) {
                 const table = $('#roles-table').DataTable({
                     pageLength: 10,
@@ -193,10 +224,11 @@
                 function updateActiveFiltersCount() {
                     let count = 0;
                     if ($('#filterStatusSelect').val()) count++;
+                    const badge = $('#activeFilterBadge');
                     if (count > 0) {
-                        $('#activeFilterBadge').text(count).show();
+                        badge.text(count).removeClass('hidden');
                     } else {
-                        $('#activeFilterBadge').hide();
+                        badge.addClass('hidden');
                     }
                 }
             }
