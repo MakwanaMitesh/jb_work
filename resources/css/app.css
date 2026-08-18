@@ -58,8 +58,8 @@
 }
 .select2-container--bootstrap-5.select2-container--focus .select2-selection,
 .select2-container--bootstrap-5.select2-container--open .select2-selection {
-    border-color: #d97706 !important; /* amber-600 */
-    box-shadow: 0 0 0 0.2rem rgba(217, 119, 6, 0.15) !important;
+    border-color: var(--primary-600) !important;
+    box-shadow: 0 0 0 0.2rem rgba(80, 70, 229, 0.15) !important;
 }
 .select2-container--bootstrap-5 .select2-dropdown {
     border-radius: 8px !important;
@@ -68,7 +68,7 @@
     z-index: 1060 !important;
 }
 .select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected] {
-    background-color: #d97706 !important;
+    background-color: var(--primary-600) !important;
     color: #ffffff !important;
 }
 
@@ -97,7 +97,6 @@
 }
 .dt-container .dt-layout-row:last-child > .dt-layout-cell.dt-layout-start {
     justify-content: flex-start !important;
-    flex: 1 1 0% !important;
 }
 .dt-container .dt-layout-row:last-child > .dt-layout-cell.dt-layout-full {
     justify-content: center !important;
@@ -105,13 +104,11 @@
 }
 .dt-container .dt-layout-row:last-child > .dt-layout-cell.dt-layout-end {
     justify-content: flex-end !important;
-    flex: 1 1 0% !important;
-    margin-bottom: 0.5rem !important;
 }
 .dt-container .dt-length {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
     font-size: 0.85rem;
     color: #6b7280;
     font-weight: 500;
@@ -174,9 +171,9 @@
 }
 .dt-container .dt-paging .dt-paging-button.current,
 .dt-container .dt-paging .page-item.active .page-link {
-    background-color: #fef3c7 !important; /* amber 100 */
-    border-color: #fcd34d !important; /* amber 300 */
-    color: #b45309 !important; /* amber 700 */
+    background-color: var(--primary-100) !important;
+    border-color: var(--primary-300) !important;
+    color: var(--primary-700) !important;
 }
 .dt-container .dt-paging .dt-paging-button.disabled,
 .dt-container .dt-paging .page-item.disabled .page-link {
