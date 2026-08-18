@@ -19,7 +19,7 @@
             <div class="w-full max-w-md">
                 <div class="text-center mb-6">
                     <a href="/" class="inline-flex items-center gap-2.5 font-bold text-xl text-slate-900 dark:text-white no-underline">
-                        <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-amber-500/20">
+                        <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-500 to-orange-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-primary-500/20">
                             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 2L2 7l10 5 10-5-10-5z" fill="currentColor" opacity="0.9"/>
                                 <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>

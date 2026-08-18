@@ -4,7 +4,7 @@
             @if ($employee->profilePhotoUrl())
                 <img src="{{ $employee->profilePhotoUrl() }}" alt="" class="w-14 h-14 rounded-full object-cover shrink-0">
             @else
-                <span class="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white text-lg font-bold uppercase shrink-0">
+                <span class="w-14 h-14 rounded-full bg-gradient-to-tr from-primary-500 to-orange-600 flex items-center justify-center text-white text-lg font-bold uppercase shrink-0">
                     {{ strtoupper(substr($employee->name, 0, 1)) }}
                 </span>
             @endif
@@ -15,7 +15,7 @@
         </div>
         <div class="flex items-center gap-3">
             @can('employees.edit')
-                <a href="{{ route('admin.employees.edit', $employee) }}" class="inline-flex items-center justify-center px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg shadow-sm transition no-underline">
+                <a href="{{ route('admin.employees.edit', $employee) }}" class="inline-flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold rounded-lg shadow-sm transition no-underline">
                     Edit
                 </a>
             @endcan
@@ -62,7 +62,7 @@
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Role</dt>
                 <dd class="col-span-2">
                     @forelse ($employee->roles as $role)
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-500 border border-amber-200/50 dark:border-amber-900/30">{{ $role->name }}</span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 dark:bg-primary-950/20 text-primary-700 dark:text-primary-500 border border-primary-200/50 dark:border-primary-900/30">{{ $role->name }}</span>
                         @if (! $role->is_active)
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-500 border border-red-200/50 dark:border-red-900/30 mt-1">role deactivated</span>
                         @endif

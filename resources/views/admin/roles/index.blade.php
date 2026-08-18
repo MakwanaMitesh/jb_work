@@ -10,7 +10,7 @@
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Roles</h1>
             @can('create', App\Models\Role::class)
-                <a href="{{ route('admin.roles.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                <a href="{{ route('admin.roles.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold rounded-lg shadow-sm transition">
                     <svg class="w-4 h-4 mr-1.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                     <span>New role</span>
                 </a>

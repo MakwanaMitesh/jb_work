@@ -49,7 +49,7 @@
                                 </select>
                             </div>
                             <div class="flex gap-2 pt-2">
-                                <button type="submit" class="inline-flex justify-center px-4 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-lg shadow-sm flex-1">Apply</button>
+                                <button type="submit" class="inline-flex justify-center px-4 py-2 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-500 rounded-lg shadow-sm flex-1">Apply</button>
                                 <a href="{{ route('admin.users.index') }}" class="inline-flex justify-center px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 shadow-sm flex-1 no-underline">Clear</a>
                             </div>
                         </div>
@@ -77,7 +77,7 @@
                             <td class="px-6 py-4.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{{ $user->email }}</td>
                             <td class="px-6 py-4.5 whitespace-nowrap">
                                 @forelse ($user->roles as $role)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-500 border border-amber-200/50 dark:border-amber-900/30">{{ $role->name }}</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-50 dark:bg-primary-950/20 text-primary-700 dark:text-primary-500 border border-primary-200/50 dark:border-primary-900/30">{{ $role->name }}</span>
                                 @empty
                                     <span class="text-xs text-slate-400">No role assigned</span>
                                 @endforelse

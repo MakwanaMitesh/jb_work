@@ -18,7 +18,7 @@
                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                 @endforeach
                 <span class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Per page</span>
-                <select name="per_page" class="rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-amber-500 focus:ring-amber-500/20 text-xs font-semibold h-8 py-1 pl-2.5 pr-8" onchange="this.form.submit()">
+                <select name="per_page" class="rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 text-xs font-semibold h-8 py-1 pl-2.5 pr-8" onchange="this.form.submit()">
                     @foreach ([10, 25, 50, 100] as $size)
                         <option value="{{ $size }}" @selected((int) request('per_page', 10) === $size)>{{ $size }}</option>
                     @endforeach

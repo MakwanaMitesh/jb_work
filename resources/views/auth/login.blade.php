@@ -31,12 +31,12 @@
         <!-- Remember Me & Forgot Password -->
         <div class="flex items-center justify-between text-sm">
             <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-slate-300 dark:border-slate-700 text-amber-600 focus:ring-amber-500/20" name="remember">
+                <input id="remember_me" type="checkbox" class="rounded border-slate-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500/20" name="remember">
                 <span class="ml-2 text-slate-600 dark:text-slate-400">{{ __('Remember me') }}</span>
             </label>
 
             @if (Route::has('password.request'))
-                <a class="font-semibold text-amber-600 hover:text-amber-500 no-underline" href="{{ route('password.request') }}">
+                <a class="font-semibold text-primary-600 hover:text-primary-500 no-underline" href="{{ route('password.request') }}">
                     {{ __('Forgot password?') }}
                 </a>
             @endif

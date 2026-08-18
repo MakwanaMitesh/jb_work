@@ -41,7 +41,7 @@
 
         <!-- Card 4 -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-5 flex items-center gap-4">
-            <span class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <span class="w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
             </span>
             <div>
@@ -68,7 +68,7 @@
                                 <span class="text-xs text-slate-400 font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 px-2 py-0.5 rounded-full">{{ $role->users_count }}</span>
                             </div>
                             <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
-                                <div class="bg-amber-500 h-2 rounded-full" style="width: {{ $percent }}%"></div>
+                                <div class="bg-primary-500 h-2 rounded-full" style="width: {{ $percent }}%"></div>
                             </div>
                         </div>
                     @endforeach
@@ -81,7 +81,7 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-bold text-slate-900 dark:text-white">Recently Added</h3>
                 @can('employees.view')
-                    <a href="{{ route('admin.employees.index') }}" class="text-xs font-semibold text-amber-600 hover:text-amber-500 no-underline">View All</a>
+                    <a href="{{ route('admin.employees.index') }}" class="text-xs font-semibold text-primary-600 hover:text-primary-500 no-underline">View All</a>
                 @endcan
             </div>
 

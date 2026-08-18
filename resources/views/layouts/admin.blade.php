@@ -40,7 +40,7 @@
                 </button>
 
                 <!-- Search Pill -->
-                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-transparent focus-within:border-amber-500 w-full max-width-[320px] transition duration-150">
+                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-transparent focus-within:border-primary-500 w-full max-width-[320px] transition duration-150">
                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
                     <input type="search" placeholder="Search here..." class="bg-transparent border-0 outline-none text-sm w-full text-slate-900 dark:text-slate-100 placeholder-slate-400">
                 </div>
@@ -57,7 +57,7 @@
                             @if (auth()->user()->profilePhotoUrl())
                                 <img src="{{ auth()->user()->profilePhotoUrl() }}" alt="" class="w-8 h-8 rounded-full object-cover">
                             @else
-                                <span class="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white text-sm font-semibold uppercase">
+                                <span class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary-500 to-orange-600 flex items-center justify-center text-white text-sm font-semibold uppercase">
                                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                 </span>
                             @endif

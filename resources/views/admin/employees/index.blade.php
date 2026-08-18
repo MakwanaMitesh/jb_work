@@ -14,7 +14,7 @@
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Employees</h1>
             @can('employees.create')
-                <a href="{{ route('admin.employees.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                <a href="{{ route('admin.employees.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold rounded-lg shadow-sm transition">
                     <span>New employee</span>
                 </a>
             @endcan
@@ -123,7 +123,7 @@
                                 @php
                                     $roleName = $employee->roles->first()->name ?? 'Staff';
                                 @endphp
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-500 border border-amber-200/50 dark:border-amber-900/30">{{ $roleName }}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-50 dark:bg-primary-950/20 text-primary-700 dark:text-primary-500 border border-primary-200/50 dark:border-primary-900/30">{{ $roleName }}</span>
                             </td>
                             <td class="px-6 py-4.5 whitespace-nowrap" data-col="status">
                                 @if ($employee->isActive())
@@ -193,7 +193,7 @@
                                 No employees found.
                                 @can('employees.create')
                                     <div class="mt-2">
-                                        <a href="{{ route('admin.employees.create') }}" class="inline-flex items-center px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded-lg shadow-sm">Add the first employee</a>
+                                        <a href="{{ route('admin.employees.create') }}" class="inline-flex items-center px-3 py-1.5 bg-primary-600 hover:bg-primary-500 text-white text-xs font-semibold rounded-lg shadow-sm">Add the first employee</a>
                                     </div>
                                 @endcan
                             </td>
