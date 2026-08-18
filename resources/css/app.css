@@ -34,18 +34,19 @@
 
 /* ---------- Custom Select2 Sleek Theme ---------- */
 .select2-container--bootstrap-5 .select2-selection {
-    min-height: 38px !important;
-    height: 38px !important;
-    border-radius: 8px !important;
-    border-color: #d1d5db !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important; /* rounded-xl */
+    border: 1px solid #e2e8f0 !important; /* border-slate-200 */
     font-size: 0.875rem !important;
-    color: #111827 !important;
+    color: #1f2937 !important;
+    transition: border-color 0.15s ease-in-out !important;
 }
 .select2-container--bootstrap-5 .select2-selection--single {
     display: flex !important;
     align-items: center !important;
     padding: 0 2.25rem 0 0.75rem !important;
-    height: 38px !important;
+    height: 40px !important;
 }
 .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
     display: flex !important;
@@ -53,23 +54,53 @@
     padding: 0 !important;
     margin: 0 !important;
     line-height: 1 !important;
-    color: #111827 !important;
+    color: #1f2937 !important;
     height: 100% !important;
 }
 .select2-container--bootstrap-5.select2-container--focus .select2-selection,
 .select2-container--bootstrap-5.select2-container--open .select2-selection {
-    border-color: var(--primary-600) !important;
-    box-shadow: 0 0 0 0.2rem rgba(80, 70, 229, 0.15) !important;
+    border: 2px solid var(--primary-600) !important;
+    box-shadow: none !important;
 }
 .select2-container--bootstrap-5 .select2-dropdown {
-    border-radius: 8px !important;
-    border-color: #e5e7eb !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+    border-radius: 12px !important; /* rounded-xl */
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
     z-index: 1060 !important;
+    padding: 4px !important;
+}
+.select2-container--bootstrap-5 .select2-search--dropdown {
+    padding: 6px 6px 4px 6px !important;
+}
+.select2-container--bootstrap-5 .select2-search__field {
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    outline: none !important;
+}
+.select2-container--bootstrap-5 .select2-search__field:focus {
+    border-color: var(--primary-600) !important;
+}
+.select2-container--bootstrap-5 .select2-results__options {
+    padding: 2px !important;
+}
+.select2-container--bootstrap-5 .select2-results__option {
+    padding: 10px 14px !important;
+    font-size: 0.875rem !important;
+    color: #1f2937 !important;
+    border-radius: 8px !important;
+    margin: 2px 0 !important;
+    transition: all 0.1s ease-in-out !important;
 }
 .select2-container--bootstrap-5 .select2-results__option--highlighted[aria-selected] {
-    background-color: var(--primary-600) !important;
-    color: #ffffff !important;
+    background-color: var(--primary-50) !important;
+    color: var(--primary-700) !important;
+}
+.select2-container--bootstrap-5 .select2-results__option[aria-selected=true] {
+    background-color: var(--primary-100) !important;
+    color: var(--primary-900) !important;
+    font-weight: 600 !important;
 }
 
 /* ---------- Custom DataTables 2 Footer Layout ---------- */
