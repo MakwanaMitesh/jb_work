@@ -207,8 +207,8 @@
     <!-- Reusable Delete Confirmation Modal -->
     <x-confirmation-modal 
         id="deleteEmployeeModal"
-        title="Delete Employee"
-        message="Are you sure you want to delete <strong id='deleteEmployeeName' class='text-slate-950 dark:text-white font-semibold'></strong>? This action cannot be undone from the system UI."
+        title="Delete"
+        message="Are you sure you want to delete? This action cannot be undone from the system UI."
         icon="trash"
         confirmText="Delete"
         confirmButtonClass="bg-red-600 hover:bg-red-500 focus:ring-red-500/20 text-white"
@@ -256,15 +256,12 @@
             // Delete Modal JavaScript
             const deleteModal = document.getElementById('deleteEmployeeModal');
             const deleteEmployeeForm = document.getElementById('deleteEmployeeForm');
-            const deleteEmployeeNameEl = document.getElementById('deleteEmployeeName');
 
             document.addEventListener('click', (e) => {
                 const btn = e.target.closest('[data-delete-btn]');
                 if (btn) {
                     const deleteUrl = btn.getAttribute('data-delete-url');
-                    const employeeName = btn.getAttribute('data-employee-name');
                     deleteEmployeeForm.action = deleteUrl;
-                    deleteEmployeeNameEl.textContent = employeeName;
                     deleteModal.classList.remove('hidden');
                 }
             });
