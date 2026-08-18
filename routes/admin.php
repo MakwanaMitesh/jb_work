@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AgentController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserPermissionController;
@@ -29,4 +30,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('employees/{employee}', [EmployeeController::class, 'show'])->name('employees.show');
     Route::patch('employees/{employee}/toggle-status', [EmployeeController::class, 'toggleStatus'])
         ->name('employees.toggle-status');
+
+    // Agent Management. Every action is additionally gated inside
+    // AgentController via $this->authorize('agent.*')
+    Route::resource('agents', AgentController::class)
+        ->except(['show'])
+        ->parameters(['agents' => 'agent']);
+    Route::get('agents/{agent}', [AgentController::class, 'show'])->name('agents.show');
+    Route::patch('agents/{agent}/toggle-status', [AgentController::class, 'toggleStatus'])
+        ->name('agents.toggle-status');
 });

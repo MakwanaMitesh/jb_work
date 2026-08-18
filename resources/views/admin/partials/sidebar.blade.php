@@ -34,10 +34,12 @@
             </a>
         @endcan
 
-        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-300 dark:text-slate-600 cursor-not-allowed select-none" title="Coming soon">
-            {!! $navIcon('<path d="M17 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 20v-2a4 4 0 0 0-3-3.9" /><path d="M16 3.1a4 4 0 0 1 0 7.8" />') !!}
-            <span>Agents</span>
-        </a>
+        @can('agent.view')
+            <a href="{{ route('admin.agents.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 {{ request()->routeIs('admin.agents.*') ? 'bg-primary-50 text-primary-700 dark:bg-primary-950/20 dark:text-primary-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">
+                {!! $navIcon('<path d="M17 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 20v-2a4 4 0 0 0-3-3.9" /><path d="M16 3.1a4 4 0 0 1 0 7.8" />') !!}
+                <span>Agents</span>
+            </a>
+        @endcan
     </div>
 
     @can('viewAny', App\Models\Role::class)
