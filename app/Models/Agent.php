@@ -21,7 +21,7 @@ class Agent extends Model
         'last_name',
         'email',
         'mobile_number',
-        'city',
+        'city_id',
         'address',
         'status',
         'profile_photo_path',
@@ -49,5 +49,13 @@ class Agent extends Model
     public function profilePhotoUrl(): ?string
     {
         return $this->profile_photo_path ? Storage::disk('public')->url($this->profile_photo_path) : null;
+    }
+
+    /**
+     * Get the city this agent belongs to.
+     */
+    public function city(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(City::class);
     }
 }

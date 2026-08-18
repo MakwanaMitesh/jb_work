@@ -37,8 +37,8 @@ class AgentController extends Controller
             $query->where('status', $status);
         }
 
-        if ($city = request('city')) {
-            $query->where('city', $city);
+        if ($cityId = request('city_id')) {
+            $query->where('city_id', $cityId);
         }
 
         $sort = in_array(request('sort'), ['first_name', 'last_name', 'email', 'city', 'status', 'created_at']) ? request('sort') : 'first_name';
@@ -56,7 +56,7 @@ class AgentController extends Controller
             );
         }
 
-        $cities = Agent::whereNotNull('city')->distinct()->orderBy('city')->pluck('city');
+        $cities = \App\Models\City::orderBy('name')->get();
 
         return view('admin.agents.index', compact('agents', 'cities', 'sort', 'direction'));
     }
@@ -65,7 +65,9 @@ class AgentController extends Controller
     {
         $this->authorize('agent.create');
 
-        return view('admin.agents.create');
+        $cities = \App\Models\City::where('status', 'active')->orderBy('name')->get();
+
+        return view('admin.agents.create', compact('cities'));
     }
 
     public function store(StoreAgentRequest $request): RedirectResponse
@@ -96,7 +98,9 @@ class AgentController extends Controller
     {
         $this->authorize('agent.edit');
 
-        return view('admin.agents.edit', compact('agent'));
+        $cities = \App\Models\City::where('status', 'active')->orderBy('name')->get();
+
+        return view('admin.agents.edit', compact('agent', 'cities'));
     }
 
     public function update(UpdateAgentRequest $request, Agent $agent): RedirectResponse

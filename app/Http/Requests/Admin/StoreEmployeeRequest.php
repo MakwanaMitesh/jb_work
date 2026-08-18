@@ -23,7 +23,7 @@ class StoreEmployeeRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'mobile_number' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s]*$/'],
-            'city' => ['nullable', 'string', 'max:100'],
+            'city_id' => ['nullable', 'exists:cities,id'],
             'address' => ['nullable', 'string', 'max:500'],
             'joining_date' => ['nullable', 'date'],
             'role' => ['required', Rule::exists('roles', 'name')->where('guard_name', 'web')],

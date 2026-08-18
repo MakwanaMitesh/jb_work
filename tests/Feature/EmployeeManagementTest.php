@@ -25,6 +25,8 @@ class EmployeeManagementTest extends TestCase
 
         $this->admin = User::factory()->create();
         $this->admin->assignRole('Admin');
+
+        $this->city = \App\Models\City::create(['name' => 'Mumbai', 'status' => 'active']);
     }
 
     private function validPayload(array $overrides = []): array
@@ -35,7 +37,7 @@ class EmployeeManagementTest extends TestCase
             'last_name' => 'Doe',
             'email' => 'jane.doe@example.com',
             'mobile_number' => '9876543210',
-            'city' => 'Mumbai',
+            'city_id' => $this->city->id,
             'address' => '123 Street',
             'joining_date' => '2026-01-01',
             'role' => 'Employee',
@@ -300,12 +302,15 @@ class EmployeeManagementTest extends TestCase
 
     public function test_filter_by_city(): void
     {
-        $mumbai = User::factory()->create(['name' => 'Mumbai Person', 'city' => 'Mumbai']);
+        $cityMumbai = $this->city;
+        $cityDelhi = \App\Models\City::create(['name' => 'Delhi', 'status' => 'active']);
+
+        $mumbai = User::factory()->create(['name' => 'Mumbai Person', 'city_id' => $cityMumbai->id]);
         $mumbai->assignRole('Employee');
-        $delhi = User::factory()->create(['name' => 'Delhi Person', 'city' => 'Delhi']);
+        $delhi = User::factory()->create(['name' => 'Delhi Person', 'city_id' => $cityDelhi->id]);
         $delhi->assignRole('Employee');
 
-        $response = $this->actingAs($this->admin)->get(route('admin.employees.index', ['city' => 'Mumbai']));
+        $response = $this->actingAs($this->admin)->get(route('admin.employees.index', ['city_id' => $cityMumbai->id]));
 
         $response->assertSee('Mumbai Person');
         $response->assertDontSee('Delhi Person');

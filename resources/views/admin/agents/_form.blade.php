@@ -30,9 +30,14 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <div>
-            <x-input-label for="city" value="City" />
-            <x-text-input id="city" type="text" name="city" :value="old('city', $agent?->city)" />
-            <x-input-error :messages="$errors->get('city')" />
+            <x-input-label for="city_id" value="City" />
+            <select id="city_id" name="city_id" class="form-select w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 text-sm h-10 px-3 select2">
+                <option value="">Select City</option>
+                @foreach ($cities as $city)
+                    <option value="{{ $city->id }}" @selected(old('city_id', $agent?->city_id) == $city->id)>{{ $city->name }}</option>
+                @endforeach
+            </select>
+            <x-input-error :messages="$errors->get('city_id')" />
         </div>
         <div>
             <x-input-label for="status" value="Status" :required="true" />

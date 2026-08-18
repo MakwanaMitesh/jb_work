@@ -39,7 +39,7 @@
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Mobile</dt>
                 <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->mobile_number ?: '—' }}</dd>
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">City</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->city ?: '—' }}</dd>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->city?->name ?: '—' }}</dd>
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Address</dt>
                 <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->address ?: '—' }}</dd>
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Joining Date</dt>

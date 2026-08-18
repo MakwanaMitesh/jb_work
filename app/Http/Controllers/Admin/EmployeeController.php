@@ -46,8 +46,8 @@ class EmployeeController extends Controller
             $query->whereHas('roles', fn ($q) => $q->where('name', $role));
         }
 
-        if ($city = request('city')) {
-            $query->where('city', $city);
+        if ($cityId = request('city_id')) {
+            $query->where('city_id', $cityId);
         }
 
         $sort = in_array(request('sort'), ['name', 'email', 'city', 'status', 'joining_date', 'created_at']) ? request('sort') : 'name';
@@ -66,7 +66,7 @@ class EmployeeController extends Controller
         }
 
         $roles = Role::where('name', '!=', 'Agent')->orderBy('name')->pluck('name');
-        $cities = User::whereNotNull('city')->distinct()->orderBy('city')->pluck('city');
+        $cities = \App\Models\City::orderBy('name')->get();
 
         return view('admin.employees.index', compact('employees', 'roles', 'cities', 'sort', 'direction'));
     }
@@ -76,8 +76,9 @@ class EmployeeController extends Controller
         $this->authorize('employees.create');
 
         $roles = Role::where('name', '!=', 'Agent')->where('is_active', true)->orderBy('name')->get();
+        $cities = \App\Models\City::where('status', 'active')->orderBy('name')->get();
 
-        return view('admin.employees.create', compact('roles'));
+        return view('admin.employees.create', compact('roles', 'cities'));
     }
 
     public function store(StoreEmployeeRequest $request): RedirectResponse
@@ -119,8 +120,9 @@ class EmployeeController extends Controller
         $this->authorize('employees.edit');
 
         $roles = Role::where('name', '!=', 'Agent')->where('is_active', true)->orderBy('name')->get();
+        $cities = \App\Models\City::where('status', 'active')->orderBy('name')->get();
 
-        return view('admin.employees.edit', compact('employee', 'roles'));
+        return view('admin.employees.edit', compact('employee', 'roles', 'cities'));
     }
 
     public function update(UpdateEmployeeRequest $request, User $employee): RedirectResponse

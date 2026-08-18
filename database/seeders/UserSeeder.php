@@ -15,6 +15,18 @@ class UserSeeder extends Seeder
     {
         $password = Hash::make('12345678');
 
+        // Dummy name & city data pools
+        $firstNames = ['Liam', 'Olivia', 'Noah', 'Emma', 'Oliver', 'Charlotte', 'James', 'Amelia', 'Elijah', 'Sophia', 'William', 'Ava', 'Henry', 'Isabella', 'Lucas', 'Mia', 'Benjamin', 'Evelyn', 'Theodore', 'Harper', 'Mateo', 'Camila', 'Levi', 'Gianna', 'Sebastian', 'Abigail', 'Daniel', 'Luna', 'Jack', 'Ella', 'Alexander', 'Elizabeth', 'Owen', 'Sofia', 'Asher', 'Emily', 'Michael', 'Avery', 'Ethan', 'Mila', 'Leo', 'Scarlett', 'Jackson', 'Eleanor', 'Mason', 'Madison', 'Ezra', 'Layla', 'John', 'Penelope'];
+        $lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores', 'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts'];
+        $cityNames = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'Columbus', 'Charlotte', 'Indianapolis', 'San Francisco', 'Seattle', 'Denver', 'Washington', 'Boston'];
+
+        // Pre-seed cities and cache their IDs
+        $cityIds = [];
+        foreach ($cityNames as $name) {
+            $city = \App\Models\City::firstOrCreate(['name' => $name], ['status' => 'active']);
+            $cityIds[$name] = $city->id;
+        }
+
         // Admin account
         $admin = User::updateOrCreate(
             ['email' => 'admin@gmail.com'],
@@ -24,18 +36,11 @@ class UserSeeder extends Seeder
                 'last_name' => 'User',
                 'password' => $password,
                 'status' => 'active',
-                'city' => 'New York',
+                'city_id' => $cityIds['New York'],
                 'joining_date' => now()->subYear(),
             ],
         );
         $admin->syncRoles('Admin');
-
-        // Dummy name & city data pools
-        $firstNames = ['Liam', 'Olivia', 'Noah', 'Emma', 'Oliver', 'Charlotte', 'James', 'Amelia', 'Elijah', 'Sophia', 'William', 'Ava', 'Henry', 'Isabella', 'Lucas', 'Mia', 'Benjamin', 'Evelyn', 'Theodore', 'Harper', 'Mateo', 'Camila', 'Levi', 'Gianna', 'Sebastian', 'Abigail', 'Daniel', 'Luna', 'Jack', 'Ella', 'Alexander', 'Elizabeth', 'Owen', 'Sofia', 'Asher', 'Emily', 'Michael', 'Avery', 'Ethan', 'Mila', 'Leo', 'Scarlett', 'Jackson', 'Eleanor', 'Mason', 'Madison', 'Ezra', 'Layla', 'John', 'Penelope'];
-
-        $lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores', 'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts'];
-
-        $cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'Columbus', 'Charlotte', 'Indianapolis', 'San Francisco', 'Seattle', 'Denver', 'Washington', 'Boston'];
 
         // Create 125 dummy employees
         for ($i = 1; $i <= 125; $i++) {
@@ -45,7 +50,7 @@ class UserSeeder extends Seeder
             
             // Custom status: ~25% inactive, ~75% active
             $status = ($i % 4 === 0) ? 'inactive' : 'active';
-            $city = $cities[$i % count($cities)];
+            $cityName = $cityNames[$i % count($cityNames)];
             $joiningDate = now()->subDays(($i * 7) % 1000)->format('Y-m-d');
 
             $employee = User::updateOrCreate(
@@ -56,7 +61,7 @@ class UserSeeder extends Seeder
                     'last_name' => $last,
                     'password' => $password,
                     'status' => $status,
-                    'city' => $city,
+                    'city_id' => $cityIds[$cityName],
                     'joining_date' => $joiningDate,
                 ],
             );

@@ -42,15 +42,21 @@
         @endcan
     </div>
 
-    @can('viewAny', App\Models\Role::class)
-        <div class="space-y-1.5">
-            <div class="px-3 text-[0.7rem] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">Settings</div>
+    <div class="space-y-1.5">
+        <div class="px-3 text-[0.7rem] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">Settings</div>
+        @can('viewAny', App\Models\Role::class)
             <a href="{{ route('admin.roles.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 {{ request()->routeIs('admin.roles.*') ? 'bg-primary-50 text-primary-700 dark:bg-primary-950/20 dark:text-primary-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">
                 {!! $navIcon('<path d="M12 3 4 6v6c0 4.8 3.4 7.9 8 9 4.6-1.1 8-4.2 8-9V6l-8-3Z" /><path d="m9.5 12 1.8 1.8L15 10" />') !!}
                 <span>Employee Roles</span>
             </a>
-        </div>
-    @endcan
+        @endcan
+        @can('city.view')
+            <a href="{{ route('admin.cities.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 {{ request()->routeIs('admin.cities.*') ? 'bg-primary-50 text-primary-700 dark:bg-primary-950/20 dark:text-primary-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">
+                {!! $navIcon('<path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5M2 12l10 5 10-5" />') !!}
+                <span>Cities</span>
+            </a>
+        @endcan
+    </div>
 </div>
 
 <div class="p-4 border-t border-slate-100 dark:border-slate-800 shrink-0">

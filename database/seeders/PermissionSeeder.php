@@ -41,6 +41,12 @@ class PermissionSeeder extends Seeder
             'delete' => 'Delete agents',
             'activate' => 'Activate or deactivate agents',
         ],
+        'city' => [
+            'view' => 'View cities',
+            'create' => 'Create cities',
+            'edit' => 'Edit cities',
+            'delete' => 'Delete cities',
+        ],
         'tasks' => [
             'view' => 'View tasks',
             'create' => 'Create tasks',

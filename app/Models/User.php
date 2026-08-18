@@ -31,7 +31,7 @@ class User extends Authenticatable
         'email',
         'password',
         'mobile_number',
-        'city',
+        'city_id',
         'address',
         'joining_date',
         'profile_photo_path',
@@ -122,5 +122,13 @@ class User extends Authenticatable
     public function effectivePermissionNames(): Collection
     {
         return $this->getAllPermissions()->pluck('name')->unique()->values();
+    }
+
+    /**
+     * Get the city this user belongs to.
+     */
+    public function city(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(City::class);
     }
 }

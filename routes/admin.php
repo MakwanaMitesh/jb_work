@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\AgentController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\RoleController;
@@ -39,4 +40,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('agents/{agent}', [AgentController::class, 'show'])->name('agents.show');
     Route::patch('agents/{agent}/toggle-status', [AgentController::class, 'toggleStatus'])
         ->name('agents.toggle-status');
+
+    // City Management. Gated by city.* permissions inside CityController.
+    Route::resource('cities', CityController::class)
+        ->except(['show'])
+        ->parameters(['cities' => 'city']);
 });

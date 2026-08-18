@@ -24,6 +24,8 @@ class AgentManagementTest extends TestCase
 
         $this->admin = User::factory()->create();
         $this->admin->assignRole('Admin');
+
+        $this->city = \App\Models\City::create(['name' => 'Austin', 'status' => 'active']);
     }
 
     private function validPayload(array $overrides = []): array
@@ -33,7 +35,7 @@ class AgentManagementTest extends TestCase
             'last_name' => 'Smith',
             'email' => 'john.smith@example.com',
             'mobile_number' => '1234567890',
-            'city' => 'Austin',
+            'city_id' => $this->city->id,
             'address' => '500 Congress Ave',
             'status' => 'active',
         ], $overrides);
@@ -152,11 +154,14 @@ class AgentManagementTest extends TestCase
 
     public function test_filter_by_city(): void
     {
-        Agent::create($this->validPayload(['first_name' => 'Alice', 'email' => 'alice@example.com', 'city' => 'Austin']));
-        Agent::create($this->validPayload(['first_name' => 'Bob', 'email' => 'bob@example.com', 'city' => 'Dallas']));
+        $cityAustin = $this->city;
+        $cityDallas = \App\Models\City::create(['name' => 'Dallas', 'status' => 'active']);
+
+        Agent::create($this->validPayload(['first_name' => 'Alice', 'email' => 'alice@example.com', 'city_id' => $cityAustin->id]));
+        Agent::create($this->validPayload(['first_name' => 'Bob', 'email' => 'bob@example.com', 'city_id' => $cityDallas->id]));
 
         $response = $this->actingAs($this->admin)
-            ->get(route('admin.agents.index', ['city' => 'Dallas']));
+            ->get(route('admin.agents.index', ['city_id' => $cityDallas->id]));
 
         $agents = $response->viewData('agents');
         $this->assertCount(1, $agents);

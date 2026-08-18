@@ -32,8 +32,8 @@
                 <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">City</label>
                 <select data-filter-column="2" class="form-select w-full border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 text-sm h-10 px-3">
                     <option value="">All</option>
-                    @foreach ($cities as $cityName)
-                        <option value="{{ $cityName }}" @selected(request('city') === $cityName)>{{ $cityName }}</option>
+                    @foreach ($cities as $city)
+                        <option value="{{ $city->name }}" @selected(request('city') === $city->name)>{{ $city->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -70,7 +70,7 @@
                     </div>
                 </td>
                 <td class="px-6 py-4.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{{ $agent->email }}</td>
-                <td class="px-6 py-4.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400" data-col="city">{{ $agent->city ?? '—' }}</td>
+                <td class="px-6 py-4.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400" data-col="city">{{ $agent->city?->name ?? '—' }}</td>
                 <td class="px-6 py-4.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{{ $agent->mobile_number ?? '—' }}</td>
                 <td class="px-6 py-4.5 whitespace-nowrap" data-col="status">
                     @if ($agent->isActive())
