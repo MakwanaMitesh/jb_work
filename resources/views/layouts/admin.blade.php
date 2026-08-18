@@ -135,6 +135,16 @@
                     });
                 }
 
+                // Global modal close handler
+                document.addEventListener('click', (e) => {
+                    const closeTrigger = e.target.closest('[data-modal-close]');
+                    if (closeTrigger) {
+                        const modalId = closeTrigger.getAttribute('data-modal-close');
+                        const modal = document.getElementById(modalId);
+                        if (modal) modal.classList.add('hidden');
+                    }
+                });
+
                 // Global Select2 initializer
                 if (window.jQuery && $.fn.select2) {
                     window.initSelect2 = function(selector) {
