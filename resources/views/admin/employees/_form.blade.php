@@ -1,7 +1,7 @@
 {{-- Expects: $employee (nullable, for edit), $roles --}}
 @php $employee = $employee ?? null; @endphp
 
-<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6 sm:p-8">
+<div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-sm p-6 sm:p-8">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
             <x-input-label for="first_name" value="First Name" :required="true" />
@@ -48,7 +48,7 @@
 
     <div class="mt-6">
         <x-input-label for="address" value="Address" />
-        <textarea id="address" name="address" rows="3" class="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-primary-500 focus:ring-primary-500/20 shadow-sm text-sm px-3 py-2">{{ old('address', $employee?->address) }}</textarea>
+        <textarea id="address" name="address" rows="3" class="w-full rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-primary-500 focus:ring-primary-500/20 shadow-sm text-sm px-3 py-2">{{ old('address', $employee?->address) }}</textarea>
         <x-input-error :messages="$errors->get('address')" />
     </div>
 
@@ -57,7 +57,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <div>
             <x-input-label for="role" value="Role" :required="true" />
-            <select id="role" name="role" class="form-select w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 shadow-sm text-sm h-10 px-3" @disabled(! auth()->user()->can('employees.assign_role'))>
+            <select id="role" name="role" class="form-select w-full rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 shadow-sm text-sm h-10 px-3" @disabled(! auth()->user()->can('employees.assign_role'))>
                 @foreach ($roles as $role)
                     <option value="{{ $role->name }}" @selected($currentRole === $role->name)>
                         {{ $role->name }}
@@ -72,7 +72,7 @@
         </div>
         <div>
             <x-input-label for="status" value="Status" :required="true" />
-            <select id="status" name="status" class="form-select w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 shadow-sm text-sm h-10 px-3">
+            <select id="status" name="status" class="form-select w-full rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 shadow-sm text-sm h-10 px-3">
                 <option value="active" @selected(old('status', $employee?->status ?? 'active') === 'active')>Active</option>
                 <option value="inactive" @selected(old('status', $employee?->status ?? 'active') === 'inactive')>Inactive</option>
             </select>
@@ -82,7 +82,7 @@
 
     <div class="mt-6">
         <x-input-label for="profile_photo" value="Profile Photo" />
-        <input id="profile_photo" type="file" name="profile_photo" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 dark:file:bg-slate-800 dark:file:text-slate-200 hover:file:bg-slate-100 dark:hover:file:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 shadow-sm" accept="image/*">
+        <input id="profile_photo" type="file" name="profile_photo" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 dark:file:bg-slate-800 dark:file:text-slate-200 hover:file:bg-slate-100 dark:hover:file:bg-slate-700 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-sm" accept="image/*">
         <x-input-error :messages="$errors->get('profile_photo')" />
         @if ($employee?->profilePhotoUrl())
             <img src="{{ $employee->profilePhotoUrl() }}" alt="" class="rounded-full mt-3 w-14 h-14 object-cover">
