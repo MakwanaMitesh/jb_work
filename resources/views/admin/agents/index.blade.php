@@ -135,7 +135,13 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" class="text-center text-slate-400 py-12">No agents found.</td>
+                <td class="text-center text-slate-400 py-12">No agents found.</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>
         @endforelse
     </x-datatable-card>

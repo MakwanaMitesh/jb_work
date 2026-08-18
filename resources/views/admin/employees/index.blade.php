@@ -154,7 +154,13 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" class="text-center text-slate-400 py-12">No employees found.</td>
+                <td class="text-center text-slate-400 py-12">No employees found.</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>
         @endforelse
     </x-datatable-card>
