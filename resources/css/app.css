@@ -115,32 +115,63 @@
     color: #6b7280;
     padding: 0 !important;
     margin: 0 !important;
-}
-.dt-container .dt-paging {
-    padding: 0 !important;
-    margin: 0 !important;
+}.dt-container .dt-paging {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
 }
 .dt-container .dt-paging .pagination {
-    margin-bottom: 0;
-    gap: 3px;
-    display: flex;
-    list-style: none;
-    padding-left: 0;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
+.dt-container .dt-paging .page-item {
+    display: inline-block !important;
+}
+.dt-container .dt-paging .dt-paging-button,
 .dt-container .dt-paging .page-link {
-    border-radius: 6px !important;
-    border: none !important;
-    background-color: transparent !important;
-    color: #6b7280 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    padding: 0 0.75rem !important;
     font-size: 0.85rem !important;
-    font-weight: 500 !important;
-    padding: 0.35rem 0.75rem !important;
-    box-shadow: none !important;
-    cursor: pointer;
-    text-decoration: none;
+    font-weight: 600 !important;
+    color: #475569 !important; /* slate-600 */
+    border-radius: 8px !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important; /* slate-200 */
+    transition: all 0.15s ease-in-out !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    margin: 0 1px !important;
 }
+.dt-container .dt-paging .dt-paging-button:hover,
+.dt-container .dt-paging .page-link:hover {
+    background-color: #f1f5f9 !important; /* slate-100 */
+    border-color: #cbd5e1 !important; /* slate-300 */
+    color: #0f172a !important; /* slate-900 */
+}
+.dt-container .dt-paging .dt-paging-button.current,
 .dt-container .dt-paging .page-item.active .page-link {
     background-color: #fef3c7 !important; /* amber 100 */
-    color: #d97706 !important; /* amber 600 */
-    font-weight: 600 !important;
+    border-color: #fcd34d !important; /* amber 300 */
+    color: #b45309 !important; /* amber 700 */
+}
+.dt-container .dt-paging .dt-paging-button.disabled,
+.dt-container .dt-paging .page-item.disabled .page-link {
+    color: #cbd5e1 !important; /* slate-300 */
+    border-color: #f1f5f9 !important;
+    background-color: #f8fafc !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+.dt-container .dt-paging span {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
 }
