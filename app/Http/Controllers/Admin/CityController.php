@@ -89,4 +89,18 @@ class CityController extends Controller
         return redirect()->route('admin.cities.index')
             ->with('success', "City \"{$city->name}\" deleted successfully.");
     }
+
+    /**
+     * Activate/deactivate toggle.
+     */
+    public function toggleStatus(City $city): RedirectResponse
+    {
+        $this->authorize('city.activate');
+
+        $city->update(['status' => $city->isActive() ? 'inactive' : 'active']);
+
+        $label = $city->isActive() ? 'activated' : 'deactivated';
+
+        return back()->with('success', "City \"{$city->name}\" {$label}.");
+    }
 }

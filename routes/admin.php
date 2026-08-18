@@ -45,4 +45,6 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('cities', CityController::class)
         ->except(['show'])
         ->parameters(['cities' => 'city']);
+    Route::patch('cities/{city}/toggle-status', [CityController::class, 'toggleStatus'])
+        ->name('cities.toggle-status');
 });

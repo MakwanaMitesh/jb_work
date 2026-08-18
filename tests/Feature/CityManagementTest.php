@@ -95,4 +95,20 @@ class CityManagementTest extends TestCase
         $response->assertSessionHas('error');
         $this->assertDatabaseHas('cities', ['id' => $city->id]);
     }
+
+    public function test_admin_can_toggle_city_status(): void
+    {
+        $city = City::create($this->validPayload(['status' => 'active']));
+
+        $response = $this->actingAs($this->admin)
+            ->patch(route('admin.cities.toggle-status', $city));
+
+        $response->assertRedirect();
+        $this->assertSame('inactive', $city->fresh()->status);
+
+        $this->actingAs($this->admin)
+            ->patch(route('admin.cities.toggle-status', $city));
+
+        $this->assertSame('active', $city->fresh()->status);
+    }
 }

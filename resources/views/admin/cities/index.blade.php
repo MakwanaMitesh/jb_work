@@ -67,6 +67,22 @@
                                 </a>
                             @endcan
 
+                            @can('city.activate')
+                                <form method="POST" action="{{ route('admin.cities.toggle-status', $city) }}" class="inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-md text-left">
+                                        @if ($city->isActive())
+                                            <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                            <span>Deactivate</span>
+                                        @else
+                                            <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <span>Activate</span>
+                                        @endif
+                                    </button>
+                                </form>
+                            @endcan
+
                             @can('city.delete')
                                 <div class="border-t border-slate-100 dark:border-slate-700 my-1"></div>
                                 <button type="button" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md text-left"
