@@ -4,7 +4,7 @@
             <div class="flex items-center justify-between mb-3 border-b border-slate-100 dark:border-slate-800 pb-2">
                 <h6 class="text-sm font-bold text-slate-800 dark:text-slate-200 text-capitalize mb-0">{{ str_replace('_', ' ', $module) }}</h6>
                 <div class="flex items-center gap-1.5">
-                    <input class="rounded border-slate-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500/20 jb-module-toggle w-4 h-4" type="checkbox" data-module="{{ $module }}" id="module-toggle-{{ $module }}">
+                    <input class="rounded-lg border border-slate-200 dark:border-slate-700 text-primary-600 focus:ring-primary-500/20 jb-module-toggle w-4 h-4 cursor-pointer" type="checkbox" data-module="{{ $module }}" id="module-toggle-{{ $module }}">
                     <label class="text-xs text-slate-500 dark:text-slate-400 font-medium cursor-pointer" for="module-toggle-{{ $module }}">All</label>
                 </div>
             </div>
@@ -12,7 +12,7 @@
                 @foreach ($permissions as $permission)
                     <div class="flex items-center gap-2">
                         <input
-                            class="rounded border-slate-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500/20 jb-permission-checkbox w-4.5 h-4.5 cursor-pointer"
+                            class="rounded-lg border border-slate-200 dark:border-slate-700 text-primary-600 focus:ring-primary-500/20 jb-permission-checkbox w-4.5 h-4.5 cursor-pointer"
                             data-module="{{ $module }}"
                             type="checkbox"
                             name="permissions[]"

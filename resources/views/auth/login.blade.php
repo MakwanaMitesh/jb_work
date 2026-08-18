@@ -31,7 +31,7 @@
         <!-- Remember Me & Forgot Password -->
         <div class="flex items-center justify-between text-sm">
             <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-slate-300 dark:border-slate-700 text-primary-600 focus:ring-primary-500/20" name="remember">
+                <input id="remember_me" type="checkbox" class="rounded-lg border border-slate-200 dark:border-slate-700 text-primary-600 focus:ring-primary-500/20 w-4.5 h-4.5 cursor-pointer" name="remember">
                 <span class="ml-2 text-slate-600 dark:text-slate-400">{{ __('Remember me') }}</span>
             </label>
 
