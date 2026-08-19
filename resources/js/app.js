@@ -58,4 +58,25 @@ function initColumnToggles() {
     });
 }
 
+window.previewImage = function(input) {
+    const parentContainer = input.closest('.flex-col, .flex-row');
+    if (!parentContainer) return;
+    const preview = parentContainer.querySelector('.profile-preview-img');
+    const placeholder = parentContainer.querySelector('.profile-placeholder-icon');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (preview) {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+            }
+            if (placeholder) {
+                placeholder.classList.add('hidden');
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+};
+
 document.addEventListener('DOMContentLoaded', initColumnToggles);

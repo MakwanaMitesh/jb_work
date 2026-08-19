@@ -34,7 +34,7 @@ class AgentManagementTest extends TestCase
             'first_name' => 'John',
             'last_name' => 'Smith',
             'email' => 'john.smith@example.com',
-            'mobile_number' => '1234567890',
+            'mobile_number' => '9876543210',
             'city_id' => $this->city->id,
             'address' => '500 Congress Ave',
             'status' => 'active',

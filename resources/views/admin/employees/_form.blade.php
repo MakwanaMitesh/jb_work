@@ -27,8 +27,8 @@
             <x-input-error :messages="$errors->get('email')" />
         </div>
         <div>
-            <x-input-label for="mobile_number" value="Mobile Number" />
-            <x-text-input id="mobile_number" type="text" name="mobile_number" :value="old('mobile_number', $employee?->mobile_number)" />
+            <x-input-label for="mobile_number" value="Mobile Number" :required="true" />
+            <x-text-input id="mobile_number" type="text" name="mobile_number" :value="old('mobile_number', $employee?->mobile_number)" required />
             <x-input-error :messages="$errors->get('mobile_number')" />
         </div>
     </div>
@@ -85,12 +85,22 @@
         </div>
     </div>
 
-    <div class="mt-6">
-        <x-input-label for="profile_photo" value="Profile Photo" />
-        <input id="profile_photo" type="file" name="profile_photo" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 dark:file:bg-slate-800 dark:file:text-slate-200 hover:file:bg-slate-100 dark:hover:file:bg-slate-700 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept="image/*">
-        <x-input-error :messages="$errors->get('profile_photo')" />
-        @if ($employee?->profilePhotoUrl())
-            <img src="{{ $employee->profilePhotoUrl() }}" alt="" class="rounded-full mt-3 w-14 h-14 object-cover">
-        @endif
+    <div class="mt-6 flex flex-col sm:flex-row items-center gap-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60">
+        <div class="relative group w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+            @if ($employee?->profilePhotoUrl())
+                <img src="{{ $employee->profilePhotoUrl() }}" alt="Profile preview" class="w-full h-full object-cover profile-preview-img">
+            @else
+                <div class="text-slate-400 dark:text-slate-500 profile-placeholder-icon">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                </div>
+                <img class="w-full h-full object-cover profile-preview-img hidden">
+            @endif
+        </div>
+        <div class="flex-1 space-y-2">
+            <x-input-label for="profile_photo" value="Profile Photo" class="font-semibold text-slate-900 dark:text-white" />
+            <input id="profile_photo" type="file" name="profile_photo" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept="image/*" onchange="window.previewImage(this)">
+            <p class="text-xs text-slate-400">PNG, JPG or WEBP. Max 2MB.</p>
+            <x-input-error :messages="$errors->get('profile_photo')" />
+        </div>
     </div>
 </div>
