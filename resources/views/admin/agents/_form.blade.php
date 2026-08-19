@@ -23,7 +23,7 @@
         </div>
         <div>
             <x-input-label for="mobile_number" value="Mobile Number" :required="true" />
-            <x-text-input id="mobile_number" type="text" name="mobile_number" :value="old('mobile_number', $agent?->mobile_number)" required />
+            <x-text-input id="mobile_number" type="tel" name="mobile_number" :value="old('mobile_number', $agent?->mobile_number)" required />
             <x-input-error :messages="$errors->get('mobile_number')" />
         </div>
     </div>

@@ -1,6 +1,7 @@
 import './bootstrap';
 
 import Swal from 'sweetalert2';
+import intlTelInput from 'intl-tel-input';
 
 window.Swal = Swal;
 
@@ -20,6 +21,28 @@ window.jbToast = function (icon, message) {
         }
     });
 };
+
+function initPhoneInputs() {
+    document.querySelectorAll('input[type="tel"]').forEach((input) => {
+        if (input.dataset.intlTelInit) return;
+        input.dataset.intlTelInit = "true";
+
+        const iti = intlTelInput(input, {
+            initialCountry: "in",
+            separateDialCode: true,
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@24.3.4/build/js/utils.js"
+        });
+
+        const form = input.closest('form');
+        if (form) {
+            form.addEventListener('submit', () => {
+                if (iti.isValidNumber()) {
+                    input.value = iti.getNumber();
+                }
+            });
+        }
+    });
+}
 
 /**
  * Per-table column visibility toggle. Any element with
@@ -115,4 +138,7 @@ window.clearImage = function(btn) {
     btn.classList.add('hidden');
 };
 
-document.addEventListener('DOMContentLoaded', initColumnToggles);
+document.addEventListener('DOMContentLoaded', () => {
+    initColumnToggles();
+    initPhoneInputs();
+});
