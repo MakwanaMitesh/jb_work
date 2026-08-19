@@ -63,6 +63,8 @@ window.previewImage = function(input) {
     if (!parentContainer) return;
     const preview = parentContainer.querySelector('.profile-preview-img');
     const placeholder = parentContainer.querySelector('.profile-placeholder-icon');
+    const removeInput = parentContainer.querySelector('input[name="remove_profile_photo"]');
+    const removeBtn = parentContainer.querySelector('#remove_photo_btn');
 
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -74,9 +76,43 @@ window.previewImage = function(input) {
             if (placeholder) {
                 placeholder.classList.add('hidden');
             }
+            if (removeInput) {
+                removeInput.value = '0';
+            }
+            if (removeBtn) {
+                removeBtn.classList.remove('hidden');
+            }
         };
         reader.readAsDataURL(input.files[0]);
     }
+};
+
+window.clearImage = function(btn) {
+    const parentContainer = btn.closest('.flex-col, .flex-row');
+    if (!parentContainer) return;
+    const input = parentContainer.querySelector('input[type="file"]');
+    const removeInput = parentContainer.querySelector('input[name="remove_profile_photo"]');
+    const preview = parentContainer.querySelector('.profile-preview-img');
+    const placeholder = parentContainer.querySelector('.profile-placeholder-icon');
+
+    // Clear file input
+    if (input) {
+        input.value = '';
+    }
+    // Set hidden field to tell backend to delete file
+    if (removeInput) {
+        removeInput.value = '1';
+    }
+    // Reset preview
+    if (preview) {
+        preview.src = '';
+        preview.classList.add('hidden');
+    }
+    if (placeholder) {
+        placeholder.classList.remove('hidden');
+    }
+    // Hide remove button
+    btn.classList.add('hidden');
 };
 
 document.addEventListener('DOMContentLoaded', initColumnToggles);

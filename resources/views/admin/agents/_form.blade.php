@@ -56,6 +56,7 @@
     </div>
 
     <div class="mt-6 flex flex-col sm:flex-row items-center gap-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60">
+        <input type="hidden" name="remove_profile_photo" value="0">
         <div class="relative group w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
             @if ($agent?->profilePhotoUrl())
                 <img src="{{ $agent->profilePhotoUrl() }}" alt="Profile preview" class="w-full h-full object-cover profile-preview-img">
@@ -68,7 +69,13 @@
         </div>
         <div class="flex-1 space-y-2">
             <x-input-label for="profile_photo" value="Profile Photo" class="font-semibold text-slate-900 dark:text-white" />
-            <input id="profile_photo" type="file" name="profile_photo" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept="image/*" onchange="window.previewImage(this)">
+            <div class="flex items-center gap-3">
+                <input id="profile_photo" type="file" name="profile_photo" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept="image/*" onchange="window.previewImage(this)">
+                
+                <button type="button" id="remove_photo_btn" onclick="window.clearImage(this)" class="px-4 py-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/10 text-red-600 hover:bg-red-100 dark:hover:bg-red-950/20 rounded-xl text-sm font-semibold transition shrink-0 {{ ($agent?->profilePhotoUrl()) ? '' : 'hidden' }}">
+                    Remove
+                </button>
+            </div>
             <p class="text-xs text-slate-400">PNG, JPG or WEBP. Max 2MB.</p>
             <x-input-error :messages="$errors->get('profile_photo')" />
         </div>

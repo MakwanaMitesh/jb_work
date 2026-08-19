@@ -133,7 +133,12 @@ class EmployeeController extends Controller
         $employee->fill($data);
         $employee->syncDisplayName();
 
-        if ($request->hasFile('profile_photo')) {
+        if ($request->input('remove_profile_photo') === '1') {
+            if ($employee->profile_photo_path) {
+                Storage::disk('public')->delete($employee->profile_photo_path);
+            }
+            $employee->profile_photo_path = null;
+        } elseif ($request->hasFile('profile_photo')) {
             if ($employee->profile_photo_path) {
                 Storage::disk('public')->delete($employee->profile_photo_path);
             }
