@@ -101,7 +101,7 @@
             <x-input-label for="profile_photo" value="Profile Photo" class="font-semibold text-slate-900 dark:text-white" />
             <div class="flex items-center gap-3">
                 <input id="profile_photo" type="file" name="profile_photo" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept="image/*" onchange="window.previewImage(this)">
-                
+
                 <button type="button" id="remove_photo_btn" onclick="window.clearImage(this)" class="px-4 py-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/10 text-red-600 hover:bg-red-100 dark:hover:bg-red-950/20 rounded-xl text-sm font-semibold transition shrink-0 {{ ($employee?->profilePhotoUrl()) ? '' : 'hidden' }}">
                     Remove
                 </button>
@@ -120,22 +120,33 @@
                 <x-text-input id="qualification" type="text" name="qualification" :value="old('qualification', $employee?->qualification)" placeholder="e.g. Bachelor of Science" />
                 <x-input-error :messages="$errors->get('qualification')" />
             </div>
+            
             <div>
-                <x-input-label for="alternate_mobile_number" value="Alternate Mobile Number" />
-                <x-text-input id="alternate_mobile_number" type="tel" name="alternate_mobile_number" :value="old('alternate_mobile_number', $employee?->alternate_mobile_number)" />
-                <x-input-error :messages="$errors->get('alternate_mobile_number')" />
-            </div>
-            <div>
-                <x-input-label for="resume" value="Resume Upload (PDF/Word)" />
+                <x-input-label for="resume" value="Resume Upload (PDF/Word/Image)" />
                 <input type="hidden" name="remove_resume" value="0">
                 <div class="flex items-center gap-3">
-                    <input id="resume" type="file" name="resume" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept=".pdf,.doc,.docx" onchange="window.previewImage(this, '#remove_resume_btn')">
+                    <div class="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
+                        @if ($employee?->resume_path)
+                            @if (preg_match('/\.(pdf|doc|docx)$/i', $employee->resume_path))
+                                <a href="{{ $employee->resumeUrl() }}" target="_blank" class="download-link flex items-center justify-center w-full h-full text-slate-500 bg-slate-50 text-xs font-semibold">DOC</a>
+                                <img class="w-full h-full object-cover resume-preview-img hidden">
+                            @else
+                                <img src="{{ $employee->resumeUrl() }}" alt="Resume preview" class="w-full h-full object-cover resume-preview-img">
+                            @endif
+                        @else
+                            <div class="text-slate-400 resume-placeholder-icon">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                            </div>
+                            <img class="w-full h-full object-cover resume-preview-img hidden">
+                        @endif
+                    </div>
+                    <input id="resume" type="file" name="resume" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept="image/*,.pdf,.doc,.docx" onchange="window.previewImage(this, '#remove_resume_btn', '.resume-preview-img', '.resume-placeholder-icon')">
                     @if ($employee?->resume_path)
                         <a href="{{ $employee->resumeUrl() }}" target="_blank" class="download-link inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 shrink-0" title="Download Resume">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
                         </a>
                     @endif
-                    <button type="button" id="remove_resume_btn" onclick="window.clearFormFile(this, 'remove_resume')" class="px-4 py-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/10 text-red-600 hover:bg-red-100 dark:hover:bg-red-950/20 rounded-xl text-sm font-semibold transition shrink-0 {{ ($employee?->resume_path) ? '' : 'hidden' }}">
+                    <button type="button" id="remove_resume_btn" onclick="window.clearFormFile(this, 'remove_resume', '.resume-preview-img', '.resume-placeholder-icon')" class="px-4 py-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/10 text-red-600 hover:bg-red-100 dark:hover:bg-red-950/20 rounded-xl text-sm font-semibold transition shrink-0 {{ ($employee?->resume_path) ? '' : 'hidden' }}">
                         Remove
                     </button>
                 </div>
@@ -154,16 +165,31 @@
                 <x-input-error :messages="$errors->get('insurance_policy_number')" />
             </div>
             <div>
-                <x-input-label for="insurance_policy_pdf" value="Insurance Policy PDF" />
+                <x-input-label for="insurance_policy_pdf" value="Insurance Policy Document (PDF/Image)" />
                 <input type="hidden" name="remove_insurance_policy_pdf" value="0">
                 <div class="flex items-center gap-3">
-                    <input id="insurance_policy_pdf" type="file" name="insurance_policy_pdf" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept=".pdf" onchange="window.previewImage(this, '#remove_insurance_pdf_btn')">
+                    <div class="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
+                        @if ($employee?->insurance_policy_pdf_path)
+                            @if (str_ends_with(strtolower($employee->insurance_policy_pdf_path), '.pdf'))
+                                <a href="{{ $employee->insurancePolicyPdfUrl() }}" target="_blank" class="download-link flex items-center justify-center w-full h-full text-slate-500 bg-slate-50 text-xs font-semibold">PDF</a>
+                                <img class="w-full h-full object-cover insurance-preview-img hidden">
+                            @else
+                                <img src="{{ $employee->insurancePolicyPdfUrl() }}" alt="Insurance preview" class="w-full h-full object-cover insurance-preview-img">
+                            @endif
+                        @else
+                            <div class="text-slate-400 insurance-placeholder-icon">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                            </div>
+                            <img class="w-full h-full object-cover insurance-preview-img hidden">
+                        @endif
+                    </div>
+                    <input id="insurance_policy_pdf" type="file" name="insurance_policy_pdf" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept="image/*,.pdf" onchange="window.previewImage(this, '#remove_insurance_pdf_btn', '.insurance-preview-img', '.insurance-placeholder-icon')">
                     @if ($employee?->insurance_policy_pdf_path)
-                        <a href="{{ $employee->insurancePolicyPdfUrl() }}" target="_blank" class="download-link inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 shrink-0" title="Download Policy PDF">
+                        <a href="{{ $employee->insurancePolicyPdfUrl() }}" target="_blank" class="download-link inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 shrink-0" title="Download Document">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
                         </a>
                     @endif
-                    <button type="button" id="remove_insurance_pdf_btn" onclick="window.clearFormFile(this, 'remove_insurance_policy_pdf')" class="px-4 py-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/10 text-red-600 hover:bg-red-100 dark:hover:bg-red-950/20 rounded-xl text-sm font-semibold transition shrink-0 {{ ($employee?->insurance_policy_pdf_path) ? '' : 'hidden' }}">
+                    <button type="button" id="remove_insurance_pdf_btn" onclick="window.clearFormFile(this, 'remove_insurance_policy_pdf', '.insurance-preview-img', '.insurance-placeholder-icon')" class="px-4 py-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/10 text-red-600 hover:bg-red-100 dark:hover:bg-red-950/20 rounded-xl text-sm font-semibold transition shrink-0 {{ ($employee?->insurance_policy_pdf_path) ? '' : 'hidden' }}">
                         Remove
                     </button>
                 </div>
@@ -198,7 +224,12 @@
                     <input type="hidden" name="remove_aadhaar_photo" value="0">
                     <div class="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
                         @if ($employee?->aadhaar_photo_path)
-                            <img src="{{ $employee->aadhaarPhotoUrl() }}" alt="Aadhaar preview" class="w-full h-full object-cover aadhaar-preview-img">
+                            @if (str_ends_with(strtolower($employee->aadhaar_photo_path), '.pdf'))
+                                <a href="{{ $employee->aadhaarPhotoUrl() }}" target="_blank" class="download-link flex items-center justify-center w-full h-full text-slate-500 bg-slate-50 text-xs font-semibold">PDF</a>
+                                <img class="w-full h-full object-cover aadhaar-preview-img hidden">
+                            @else
+                                <img src="{{ $employee->aadhaarPhotoUrl() }}" alt="Aadhaar preview" class="w-full h-full object-cover aadhaar-preview-img">
+                            @endif
                         @else
                             <div class="text-slate-400 aadhaar-placeholder-icon">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
@@ -207,8 +238,11 @@
                         @endif
                     </div>
                     <div class="flex-1 space-y-1">
-                        <input id="aadhaar_photo" type="file" name="aadhaar_photo" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" accept="image/*" onchange="window.previewImage(this, '#remove_aadhaar_btn', '.aadhaar-preview-img', '.aadhaar-placeholder-icon')">
-                        <button type="button" id="remove_aadhaar_btn" onclick="window.clearFormFile(this, 'remove_aadhaar_photo', '.aadhaar-preview-img', '.aadhaar-placeholder-icon')" class="text-xs text-red-600 font-semibold hover:underline mt-1 {{ ($employee?->aadhaar_photo_path) ? '' : 'hidden' }}">Remove Photo</button>
+                        <input id="aadhaar_photo" type="file" name="aadhaar_photo" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" accept="image/*,.pdf" onchange="window.previewImage(this, '#remove_aadhaar_btn', '.aadhaar-preview-img', '.aadhaar-placeholder-icon')">
+                        @if ($employee?->aadhaar_photo_path)
+                            <a href="{{ $employee->aadhaarPhotoUrl() }}" target="_blank" class="download-link text-xs text-primary-600 font-semibold hover:underline block">Download Document</a>
+                        @endif
+                        <button type="button" id="remove_aadhaar_btn" onclick="window.clearFormFile(this, 'remove_aadhaar_photo', '.aadhaar-preview-img', '.aadhaar-placeholder-icon')" class="text-xs text-red-600 font-semibold hover:underline mt-1 {{ ($employee?->aadhaar_photo_path) ? '' : 'hidden' }}">Remove Photo/PDF</button>
                     </div>
                 </div>
                 <x-input-error :messages="$errors->get('aadhaar_photo')" />
@@ -226,7 +260,12 @@
                     <input type="hidden" name="remove_pan_photo" value="0">
                     <div class="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
                         @if ($employee?->pan_photo_path)
-                            <img src="{{ $employee->panPhotoUrl() }}" alt="PAN preview" class="w-full h-full object-cover pan-preview-img">
+                            @if (str_ends_with(strtolower($employee->pan_photo_path), '.pdf'))
+                                <a href="{{ $employee->panPhotoUrl() }}" target="_blank" class="download-link flex items-center justify-center w-full h-full text-slate-500 bg-slate-50 text-xs font-semibold">PDF</a>
+                                <img class="w-full h-full object-cover pan-preview-img hidden">
+                            @else
+                                <img src="{{ $employee->panPhotoUrl() }}" alt="PAN preview" class="w-full h-full object-cover pan-preview-img">
+                            @endif
                         @else
                             <div class="text-slate-400 pan-placeholder-icon">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
@@ -235,8 +274,11 @@
                         @endif
                     </div>
                     <div class="flex-1 space-y-1">
-                        <input id="pan_photo" type="file" name="pan_photo" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" accept="image/*" onchange="window.previewImage(this, '#remove_pan_btn', '.pan-preview-img', '.pan-placeholder-icon')">
-                        <button type="button" id="remove_pan_btn" onclick="window.clearFormFile(this, 'remove_pan_photo', '.pan-preview-img', '.pan-placeholder-icon')" class="text-xs text-red-600 font-semibold hover:underline mt-1 {{ ($employee?->pan_photo_path) ? '' : 'hidden' }}">Remove Photo</button>
+                        <input id="pan_photo" type="file" name="pan_photo" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" accept="image/*,.pdf" onchange="window.previewImage(this, '#remove_pan_btn', '.pan-preview-img', '.pan-placeholder-icon')">
+                        @if ($employee?->pan_photo_path)
+                            <a href="{{ $employee->panPhotoUrl() }}" target="_blank" class="download-link text-xs text-primary-600 font-semibold hover:underline block">Download Document</a>
+                        @endif
+                        <button type="button" id="remove_pan_btn" onclick="window.clearFormFile(this, 'remove_pan_photo', '.pan-preview-img', '.pan-placeholder-icon')" class="text-xs text-red-600 font-semibold hover:underline mt-1 {{ ($employee?->pan_photo_path) ? '' : 'hidden' }}">Remove Photo/PDF</button>
                     </div>
                 </div>
                 <x-input-error :messages="$errors->get('pan_photo')" />
@@ -274,7 +316,7 @@
                 <div class="flex items-center gap-4 mt-2">
                     <div class="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
                         @if ($employee?->bank_cheque_photo_path)
-                            @if (str_ends_with($employee->bank_cheque_photo_path, '.pdf'))
+                            @if (str_ends_with(strtolower($employee->bank_cheque_photo_path), '.pdf'))
                                 <div class="text-slate-400 bank-cheque-placeholder-icon hidden">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
                                 </div>
@@ -295,6 +337,9 @@
                     </div>
                     <div class="flex-1 space-y-1">
                         <input id="bank_cheque_photo" type="file" name="bank_cheque_photo" class="block w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" accept="image/*,.pdf" onchange="window.previewImage(this, '#remove_cheque_btn', '.bank-cheque-preview-img', '.bank-cheque-placeholder-icon')">
+                        @if ($employee?->bank_cheque_photo_path)
+                            <a href="{{ $employee->bankChequePhotoUrl() }}" target="_blank" class="download-link text-xs text-primary-600 font-semibold hover:underline block">Download Document</a>
+                        @endif
                         <button type="button" id="remove_cheque_btn" onclick="window.clearFormFile(this, 'remove_bank_cheque_photo', '.bank-cheque-preview-img', '.bank-cheque-placeholder-icon')" class="text-xs text-red-600 font-semibold hover:underline mt-1 {{ ($employee?->bank_cheque_photo_path) ? '' : 'hidden' }}">Remove Attachment</button>
                     </div>
                 </div>
