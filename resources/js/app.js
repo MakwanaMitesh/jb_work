@@ -81,13 +81,13 @@ function initColumnToggles() {
     });
 }
 
-window.previewImage = function(input) {
-    const parentContainer = input.closest('.flex-col, .flex-row');
+window.previewImage = function(input, removeBtnId, previewClass, placeholderClass) {
+    const parentContainer = input.closest('.flex-col, .flex-row, .grid, .grid-cols-1');
     if (!parentContainer) return;
-    const preview = parentContainer.querySelector('.profile-preview-img');
-    const placeholder = parentContainer.querySelector('.profile-placeholder-icon');
-    const removeInput = parentContainer.querySelector('input[name="remove_profile_photo"]');
-    const removeBtn = parentContainer.querySelector('#remove_photo_btn');
+    const preview = previewClass ? parentContainer.querySelector(previewClass) : parentContainer.querySelector('.profile-preview-img');
+    const placeholder = placeholderClass ? parentContainer.querySelector(placeholderClass) : parentContainer.querySelector('.profile-placeholder-icon');
+    const removeInput = parentContainer.querySelector('input[name^="remove_"]');
+    const removeBtn = removeBtnId ? parentContainer.querySelector(removeBtnId) : parentContainer.querySelector('#remove_photo_btn');
 
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -135,6 +135,34 @@ window.clearImage = function(btn) {
         placeholder.classList.remove('hidden');
     }
     // Hide remove button
+    btn.classList.add('hidden');
+};
+
+window.clearFormFile = function(btn, hiddenInputName, previewImgClass, placeholderIconClass) {
+    const rootContainer = btn.closest('.flex-col, .flex-row, .grid-cols-1, .grid');
+    if (!rootContainer) return;
+    const input = rootContainer.querySelector('input[type="file"]');
+    const removeInput = rootContainer.querySelector(`input[name="${hiddenInputName}"]`);
+    const preview = previewImgClass ? rootContainer.querySelector(previewImgClass) : null;
+    const placeholder = placeholderIconClass ? rootContainer.querySelector(placeholderIconClass) : null;
+    const downloadLink = rootContainer.querySelector('.download-link');
+
+    if (input) {
+        input.value = '';
+    }
+    if (removeInput) {
+        removeInput.value = '1';
+    }
+    if (preview) {
+        preview.src = '';
+        preview.classList.add('hidden');
+    }
+    if (placeholder) {
+        placeholder.classList.remove('hidden');
+    }
+    if (downloadLink) {
+        downloadLink.classList.add('hidden');
+    }
     btn.classList.add('hidden');
 };
 

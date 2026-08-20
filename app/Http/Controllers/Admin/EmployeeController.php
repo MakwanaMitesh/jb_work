@@ -84,6 +84,7 @@ class EmployeeController extends Controller
     public function store(StoreEmployeeRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        unset($data['profile_photo'], $data['insurance_policy_pdf'], $data['resume'], $data['aadhaar_photo'], $data['pan_photo'], $data['bank_cheque_photo']);
 
         $employee = new User($data);
         $employee->syncDisplayName();
@@ -94,6 +95,21 @@ class EmployeeController extends Controller
 
         if ($request->hasFile('profile_photo')) {
             $employee->profile_photo_path = $request->file('profile_photo')->store('employees', 'public');
+        }
+        if ($request->hasFile('insurance_policy_pdf')) {
+            $employee->insurance_policy_pdf_path = $request->file('insurance_policy_pdf')->store('employees/insurance', 'public');
+        }
+        if ($request->hasFile('resume')) {
+            $employee->resume_path = $request->file('resume')->store('employees/resumes', 'public');
+        }
+        if ($request->hasFile('aadhaar_photo')) {
+            $employee->aadhaar_photo_path = $request->file('aadhaar_photo')->store('employees/kyc', 'public');
+        }
+        if ($request->hasFile('pan_photo')) {
+            $employee->pan_photo_path = $request->file('pan_photo')->store('employees/kyc', 'public');
+        }
+        if ($request->hasFile('bank_cheque_photo')) {
+            $employee->bank_cheque_photo_path = $request->file('bank_cheque_photo')->store('employees/bank', 'public');
         }
 
         $employee->save();
@@ -128,11 +144,12 @@ class EmployeeController extends Controller
     public function update(UpdateEmployeeRequest $request, User $employee): RedirectResponse
     {
         $data = $request->validated();
-        unset($data['profile_photo']);
+        unset($data['profile_photo'], $data['insurance_policy_pdf'], $data['resume'], $data['aadhaar_photo'], $data['pan_photo'], $data['bank_cheque_photo']);
 
         $employee->fill($data);
         $employee->syncDisplayName();
 
+        // Profile Photo
         if ($request->input('remove_profile_photo') === '1') {
             if ($employee->profile_photo_path) {
                 Storage::disk('public')->delete($employee->profile_photo_path);
@@ -143,6 +160,71 @@ class EmployeeController extends Controller
                 Storage::disk('public')->delete($employee->profile_photo_path);
             }
             $employee->profile_photo_path = $request->file('profile_photo')->store('employees', 'public');
+        }
+
+        // Insurance Policy PDF
+        if ($request->input('remove_insurance_policy_pdf') === '1') {
+            if ($employee->insurance_policy_pdf_path) {
+                Storage::disk('public')->delete($employee->insurance_policy_pdf_path);
+            }
+            $employee->insurance_policy_pdf_path = null;
+        } elseif ($request->hasFile('insurance_policy_pdf')) {
+            if ($employee->insurance_policy_pdf_path) {
+                Storage::disk('public')->delete($employee->insurance_policy_pdf_path);
+            }
+            $employee->insurance_policy_pdf_path = $request->file('insurance_policy_pdf')->store('employees/insurance', 'public');
+        }
+
+        // Resume
+        if ($request->input('remove_resume') === '1') {
+            if ($employee->resume_path) {
+                Storage::disk('public')->delete($employee->resume_path);
+            }
+            $employee->resume_path = null;
+        } elseif ($request->hasFile('resume')) {
+            if ($employee->resume_path) {
+                Storage::disk('public')->delete($employee->resume_path);
+            }
+            $employee->resume_path = $request->file('resume')->store('employees/resumes', 'public');
+        }
+
+        // Aadhaar Photo
+        if ($request->input('remove_aadhaar_photo') === '1') {
+            if ($employee->aadhaar_photo_path) {
+                Storage::disk('public')->delete($employee->aadhaar_photo_path);
+            }
+            $employee->aadhaar_photo_path = null;
+        } elseif ($request->hasFile('aadhaar_photo')) {
+            if ($employee->aadhaar_photo_path) {
+                Storage::disk('public')->delete($employee->aadhaar_photo_path);
+            }
+            $employee->aadhaar_photo_path = $request->file('aadhaar_photo')->store('employees/kyc', 'public');
+        }
+
+        // PAN Photo
+        if ($request->input('remove_pan_photo') === '1') {
+            if ($employee->pan_photo_path) {
+                Storage::disk('public')->delete($employee->pan_photo_path);
+            }
+            $employee->pan_photo_path = null;
+        } elseif ($request->hasFile('pan_photo')) {
+            if ($employee->pan_photo_path) {
+                Storage::disk('public')->delete($employee->pan_photo_path);
+            }
+            $employee->pan_photo_path = $request->file('pan_photo')->store('employees/kyc', 'public');
+        }
+
+        // Bank Cheque Photo
+        if ($request->input('remove_bank_cheque_photo') === '1') {
+            if ($employee->bank_cheque_photo_path) {
+                Storage::disk('public')->delete($employee->bank_cheque_photo_path);
+            }
+            $employee->bank_cheque_photo_path = null;
+        } elseif ($request->hasFile('bank_cheque_photo')) {
+            if ($employee->bank_cheque_photo_path) {
+                Storage::disk('public')->delete($employee->bank_cheque_photo_path);
+            }
+            $employee->bank_cheque_photo_path = $request->file('bank_cheque_photo')->store('employees/bank', 'public');
         }
 
         $employee->save();

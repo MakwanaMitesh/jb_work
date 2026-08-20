@@ -42,6 +42,17 @@ class EmployeeManagementTest extends TestCase
             'joining_date' => '2026-01-01',
             'role' => 'Employee',
             'status' => 'active',
+            'insurance_policy_number' => 'POL-99999',
+            'insurance_start_date' => '2026-01-01',
+            'insurance_end_date' => '2027-01-01',
+            'qualification' => 'B.Tech',
+            'alternate_mobile_number' => '9876543211',
+            'aadhaar_card_number' => '123456789012',
+            'pan_card_number' => 'ABCDE1234F',
+            'bank_account_number' => '999912345678',
+            'bank_ifsc_code' => 'HDFC0000123',
+            'bank_name' => 'HDFC',
+            'bank_account_holder_name' => 'Jane Doe',
         ], $overrides);
     }
 
@@ -62,6 +73,17 @@ class EmployeeManagementTest extends TestCase
 
         // A password reset link is sent instead of ever exposing a plaintext password.
         Notification::assertSentTo($employee, ResetPassword::class);
+
+        // Assert additional fields are stored correctly
+        $this->assertSame('POL-99999', $employee->insurance_policy_number);
+        $this->assertSame('B.Tech', $employee->qualification);
+        $this->assertSame('9876543211', $employee->alternate_mobile_number);
+        $this->assertSame('123456789012', $employee->aadhaar_card_number);
+        $this->assertSame('ABCDE1234F', $employee->pan_card_number);
+        $this->assertSame('999912345678', $employee->bank_account_number);
+        $this->assertSame('HDFC0000123', $employee->bank_ifsc_code);
+        $this->assertSame('HDFC', $employee->bank_name);
+        $this->assertSame('Jane Doe', $employee->bank_account_holder_name);
     }
 
     public function test_employee_creation_never_stores_a_guessable_or_visible_password(): void
@@ -126,6 +148,15 @@ class EmployeeManagementTest extends TestCase
         $response->assertRedirect(route('admin.employees.index'));
         $this->assertSame('New', $employee->fresh()->first_name);
         $this->assertSame('New Doe', $employee->fresh()->name);
+        $this->assertSame('POL-99999', $employee->fresh()->insurance_policy_number);
+        $this->assertSame('B.Tech', $employee->fresh()->qualification);
+        $this->assertSame('9876543211', $employee->fresh()->alternate_mobile_number);
+        $this->assertSame('123456789012', $employee->fresh()->aadhaar_card_number);
+        $this->assertSame('ABCDE1234F', $employee->fresh()->pan_card_number);
+        $this->assertSame('999912345678', $employee->fresh()->bank_account_number);
+        $this->assertSame('HDFC0000123', $employee->fresh()->bank_ifsc_code);
+        $this->assertSame('HDFC', $employee->fresh()->bank_name);
+        $this->assertSame('Jane Doe', $employee->fresh()->bank_account_holder_name);
     }
 
     public function test_user_without_assign_role_permission_cannot_change_an_employees_role(): void

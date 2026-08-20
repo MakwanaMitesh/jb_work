@@ -76,6 +76,33 @@
 
             <!-- Page Main Content -->
             <main class="flex-1 px-6 py-6 max-w-7xl w-full mx-auto">
+                @php
+                    $expiredInsurances = \App\Models\User::whereHas('roles', function($q) {
+                            $q->where('name', 'Employee');
+                        })
+                        ->where('status', 'active')
+                        ->whereNotNull('insurance_end_date')
+                        ->where('insurance_end_date', '<', now()->toDateString())
+                        ->get();
+                @endphp
+
+                @if ($expiredInsurances->isNotEmpty())
+                    <div class="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <span class="p-2 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            </span>
+                            <div>
+                                <h4 class="text-sm font-bold text-amber-900 dark:text-amber-300">Insurance Policies Expired</h4>
+                                <p class="text-xs text-amber-700 dark:text-amber-400 mt-0.5">{{ $expiredInsurances->count() }} active employee(s) have expired insurance policies.</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="document.getElementById('insuranceExpiryModal').classList.remove('hidden')" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded-lg shadow-sm transition">
+                            View Employees
+                        </button>
+                    </div>
+                @endif
+
                 @if (session('success'))
                     <div class="hidden" data-toast="success" data-message="{{ session('success') }}"></div>
                 @endif
@@ -85,6 +112,36 @@
 
                 {{ $slot }}
             </main>
+        </div>
+
+        <!-- Insurance Expiry Modal -->
+        <div id="insuranceExpiryModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity bg-slate-900/40" onclick="document.getElementById('insuranceExpiryModal').classList.add('hidden')"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                
+                <div class="inline-block align-middle bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200 dark:border-slate-800">
+                    <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Expired Insurance Policies</h3>
+                        <button type="button" onclick="document.getElementById('insuranceExpiryModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div class="p-6 space-y-4 max-h-96 overflow-y-auto">
+                        @foreach ($expiredInsurances as $emp)
+                            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white">{{ $emp->name }}</h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Expired: {{ $emp->insurance_end_date->format('d M Y') }}</p>
+                                </div>
+                                <a href="{{ route('admin.employees.edit', $emp) }}" class="px-3 py-1.5 bg-primary-50 dark:bg-primary-950/20 text-primary-700 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/30 text-xs font-semibold rounded-lg transition no-underline">
+                                    Renew / Edit
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Custom Layout Script (Sidebar & Profile dropdown toggles) -->

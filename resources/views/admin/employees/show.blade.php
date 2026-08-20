@@ -84,6 +84,137 @@
         </div>
     </div>
 
+    <!-- Insurance, Qualifications, KYC & Bank Details -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Insurance Details -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Insurance Details</h3>
+            <dl class="grid grid-cols-3 gap-y-3 text-sm">
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Policy Number</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->insurance_policy_number ?: '—' }}</dd>
+                
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Policy PDF</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">
+                    @if ($employee->insurance_policy_pdf_path)
+                        <a href="{{ $employee->insurancePolicyPdfUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-500 no-underline font-semibold">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                            Download Policy PDF
+                        </a>
+                    @else
+                        —
+                    @endif
+                </dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Start Date</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->insurance_start_date?->format('d M Y') ?? '—' }}</dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">End Date</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">
+                    {{ $employee->insurance_end_date?->format('d M Y') ?? '—' }}
+                    @if ($employee->hasExpiredInsurance())
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-500 border border-red-200/30 dark:border-red-900/30 ml-2">Expired</span>
+                    @endif
+                </dd>
+            </dl>
+        </div>
+
+        <!-- Qualifications & Alternate Contact -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Qualifications & Alternate Contact</h3>
+            <dl class="grid grid-cols-3 gap-y-3 text-sm">
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Qualification</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->qualification ?: '—' }}</dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Alternate Mobile</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->alternate_mobile_number ?: '—' }}</dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Resume</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">
+                    @if ($employee->resume_path)
+                        <a href="{{ $employee->resumeUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-500 no-underline font-semibold">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                            Download Resume
+                        </a>
+                    @else
+                        —
+                    @endif
+                </dd>
+            </dl>
+        </div>
+
+        <!-- KYC Details -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">KYC Verification Documents</h3>
+            <dl class="grid grid-cols-3 gap-y-4 text-sm">
+                <!-- Aadhaar -->
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Aadhaar Number</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->aadhaar_card_number ?: '—' }}</dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Aadhaar Photo</dt>
+                <dd class="col-span-2">
+                    @if ($employee->aadhaar_photo_path)
+                        <a href="{{ $employee->aadhaarPhotoUrl() }}" target="_blank" class="block w-20 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 hover:opacity-85 shadow-sm transition">
+                            <img src="{{ $employee->aadhaarPhotoUrl() }}" class="w-full h-full object-cover" alt="Aadhaar photo">
+                        </a>
+                    @else
+                        <span class="text-slate-400 font-semibold">—</span>
+                    @endif
+                </dd>
+
+                <!-- PAN -->
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">PAN Number</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold" style="text-transform: uppercase;">{{ $employee->pan_card_number ?: '—' }}</dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">PAN Photo</dt>
+                <dd class="col-span-2">
+                    @if ($employee->pan_photo_path)
+                        <a href="{{ $employee->panPhotoUrl() }}" target="_blank" class="block w-20 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 hover:opacity-85 shadow-sm transition">
+                            <img src="{{ $employee->panPhotoUrl() }}" class="w-full h-full object-cover" alt="PAN photo">
+                        </a>
+                    @else
+                        <span class="text-slate-400 font-semibold">—</span>
+                    @endif
+                </dd>
+            </dl>
+        </div>
+
+        <!-- Bank Details -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Bank Details</h3>
+            <dl class="grid grid-cols-3 gap-y-3 text-sm">
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Bank Name</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->bank_name ?: '—' }}</dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Holder Name</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->bank_account_holder_name ?: '—' }}</dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Account Number</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->bank_account_number ?: '—' }}</dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">IFSC Code</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold" style="text-transform: uppercase;">{{ $employee->bank_ifsc_code ?: '—' }}</dd>
+
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Cancelled Cheque</dt>
+                <dd class="col-span-2">
+                    @if ($employee->bank_cheque_photo_path)
+                        @if (str_ends_with($employee->bank_cheque_photo_path, '.pdf'))
+                            <a href="{{ $employee->bankChequePhotoUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-500 no-underline font-semibold">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                                Download Cheque PDF
+                            </a>
+                        @else
+                            <a href="{{ $employee->bankChequePhotoUrl() }}" target="_blank" class="block w-20 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 hover:opacity-85 shadow-sm transition">
+                                <img src="{{ $employee->bankChequePhotoUrl() }}" class="w-full h-full object-cover" alt="Cheque photo">
+                            </a>
+                        @endif
+                    @else
+                        <span class="text-slate-400 font-semibold">—</span>
+                    @endif
+                </dd>
+            </dl>
+        </div>
+    </div>
+
     <!-- Effective Permissions -->
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6 mb-6">
         <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Effective Permissions</h3>

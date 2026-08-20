@@ -110,4 +110,196 @@
             <x-input-error :messages="$errors->get('profile_photo')" />
         </div>
     </div>
+
+    <!-- Section: Qualifications & Alternate Contact -->
+    <div class="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Qualifications & Alternate Contact</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <x-input-label for="qualification" value="Qualification" />
+                <x-text-input id="qualification" type="text" name="qualification" :value="old('qualification', $employee?->qualification)" placeholder="e.g. Bachelor of Science" />
+                <x-input-error :messages="$errors->get('qualification')" />
+            </div>
+            <div>
+                <x-input-label for="alternate_mobile_number" value="Alternate Mobile Number" />
+                <x-text-input id="alternate_mobile_number" type="tel" name="alternate_mobile_number" :value="old('alternate_mobile_number', $employee?->alternate_mobile_number)" />
+                <x-input-error :messages="$errors->get('alternate_mobile_number')" />
+            </div>
+            <div>
+                <x-input-label for="resume" value="Resume Upload (PDF/Word)" />
+                <input type="hidden" name="remove_resume" value="0">
+                <div class="flex items-center gap-3">
+                    <input id="resume" type="file" name="resume" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept=".pdf,.doc,.docx" onchange="window.previewImage(this, '#remove_resume_btn')">
+                    @if ($employee?->resume_path)
+                        <a href="{{ $employee->resumeUrl() }}" target="_blank" class="download-link inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 shrink-0" title="Download Resume">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                        </a>
+                    @endif
+                    <button type="button" id="remove_resume_btn" onclick="window.clearFormFile(this, 'remove_resume')" class="px-4 py-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/10 text-red-600 hover:bg-red-100 dark:hover:bg-red-950/20 rounded-xl text-sm font-semibold transition shrink-0 {{ ($employee?->resume_path) ? '' : 'hidden' }}">
+                        Remove
+                    </button>
+                </div>
+                <x-input-error :messages="$errors->get('resume')" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Insurance Details -->
+    <div class="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Insurance Policy Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <x-input-label for="insurance_policy_number" value="Insurance Policy Number" />
+                <x-text-input id="insurance_policy_number" type="text" name="insurance_policy_number" :value="old('insurance_policy_number', $employee?->insurance_policy_number)" placeholder="e.g. POL-123456" />
+                <x-input-error :messages="$errors->get('insurance_policy_number')" />
+            </div>
+            <div>
+                <x-input-label for="insurance_policy_pdf" value="Insurance Policy PDF" />
+                <input type="hidden" name="remove_insurance_policy_pdf" value="0">
+                <div class="flex items-center gap-3">
+                    <input id="insurance_policy_pdf" type="file" name="insurance_policy_pdf" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 dark:file:bg-primary-950/20 dark:file:text-primary-400 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/30 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900" accept=".pdf" onchange="window.previewImage(this, '#remove_insurance_pdf_btn')">
+                    @if ($employee?->insurance_policy_pdf_path)
+                        <a href="{{ $employee->insurancePolicyPdfUrl() }}" target="_blank" class="download-link inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 shrink-0" title="Download Policy PDF">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                        </a>
+                    @endif
+                    <button type="button" id="remove_insurance_pdf_btn" onclick="window.clearFormFile(this, 'remove_insurance_policy_pdf')" class="px-4 py-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/10 text-red-600 hover:bg-red-100 dark:hover:bg-red-950/20 rounded-xl text-sm font-semibold transition shrink-0 {{ ($employee?->insurance_policy_pdf_path) ? '' : 'hidden' }}">
+                        Remove
+                    </button>
+                </div>
+                <x-input-error :messages="$errors->get('insurance_policy_pdf')" />
+            </div>
+            <div>
+                <x-input-label for="insurance_start_date" value="Insurance Start Date" />
+                <x-text-input id="insurance_start_date" type="date" name="insurance_start_date" :value="old('insurance_start_date', $employee?->insurance_start_date?->format('Y-m-d'))" />
+                <x-input-error :messages="$errors->get('insurance_start_date')" />
+            </div>
+            <div>
+                <x-input-label for="insurance_end_date" value="Insurance End Date" />
+                <x-text-input id="insurance_end_date" type="date" name="insurance_end_date" :value="old('insurance_end_date', $employee?->insurance_end_date?->format('Y-m-d'))" />
+                <x-input-error :messages="$errors->get('insurance_end_date')" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: KYC Documents -->
+    <div class="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">KYC Documents</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Aadhaar -->
+            <div class="p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/20 space-y-4">
+                <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Aadhaar Card Details</h4>
+                <div>
+                    <x-input-label for="aadhaar_card_number" value="Aadhaar Card Number" />
+                    <x-text-input id="aadhaar_card_number" type="text" name="aadhaar_card_number" :value="old('aadhaar_card_number', $employee?->aadhaar_card_number)" placeholder="e.g. 1234 5678 9012" />
+                    <x-input-error :messages="$errors->get('aadhaar_card_number')" />
+                </div>
+                <div class="flex items-center gap-4">
+                    <input type="hidden" name="remove_aadhaar_photo" value="0">
+                    <div class="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
+                        @if ($employee?->aadhaar_photo_path)
+                            <img src="{{ $employee->aadhaarPhotoUrl() }}" alt="Aadhaar preview" class="w-full h-full object-cover aadhaar-preview-img">
+                        @else
+                            <div class="text-slate-400 aadhaar-placeholder-icon">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            </div>
+                            <img class="w-full h-full object-cover aadhaar-preview-img hidden">
+                        @endif
+                    </div>
+                    <div class="flex-1 space-y-1">
+                        <input id="aadhaar_photo" type="file" name="aadhaar_photo" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" accept="image/*" onchange="window.previewImage(this, '#remove_aadhaar_btn', '.aadhaar-preview-img', '.aadhaar-placeholder-icon')">
+                        <button type="button" id="remove_aadhaar_btn" onclick="window.clearFormFile(this, 'remove_aadhaar_photo', '.aadhaar-preview-img', '.aadhaar-placeholder-icon')" class="text-xs text-red-600 font-semibold hover:underline mt-1 {{ ($employee?->aadhaar_photo_path) ? '' : 'hidden' }}">Remove Photo</button>
+                    </div>
+                </div>
+                <x-input-error :messages="$errors->get('aadhaar_photo')" />
+            </div>
+
+            <!-- PAN -->
+            <div class="p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/20 space-y-4">
+                <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">PAN Card Details</h4>
+                <div>
+                    <x-input-label for="pan_card_number" value="PAN Card Number" />
+                    <x-text-input id="pan_card_number" type="text" name="pan_card_number" :value="old('pan_card_number', $employee?->pan_card_number)" placeholder="e.g. ABCDE1234F" style="text-transform: uppercase;" />
+                    <x-input-error :messages="$errors->get('pan_card_number')" />
+                </div>
+                <div class="flex items-center gap-4">
+                    <input type="hidden" name="remove_pan_photo" value="0">
+                    <div class="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
+                        @if ($employee?->pan_photo_path)
+                            <img src="{{ $employee->panPhotoUrl() }}" alt="PAN preview" class="w-full h-full object-cover pan-preview-img">
+                        @else
+                            <div class="text-slate-400 pan-placeholder-icon">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            </div>
+                            <img class="w-full h-full object-cover pan-preview-img hidden">
+                        @endif
+                    </div>
+                    <div class="flex-1 space-y-1">
+                        <input id="pan_photo" type="file" name="pan_photo" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" accept="image/*" onchange="window.previewImage(this, '#remove_pan_btn', '.pan-preview-img', '.pan-placeholder-icon')">
+                        <button type="button" id="remove_pan_btn" onclick="window.clearFormFile(this, 'remove_pan_photo', '.pan-preview-img', '.pan-placeholder-icon')" class="text-xs text-red-600 font-semibold hover:underline mt-1 {{ ($employee?->pan_photo_path) ? '' : 'hidden' }}">Remove Photo</button>
+                    </div>
+                </div>
+                <x-input-error :messages="$errors->get('pan_photo')" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Bank Details -->
+    <div class="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Bank Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <x-input-label for="bank_name" value="Bank Name" />
+                <x-text-input id="bank_name" type="text" name="bank_name" :value="old('bank_name', $employee?->bank_name)" placeholder="e.g. HDFC Bank" />
+                <x-input-error :messages="$errors->get('bank_name')" />
+            </div>
+            <div>
+                <x-input-label for="bank_account_holder_name" value="Account Holder Name" />
+                <x-text-input id="bank_account_holder_name" type="text" name="bank_account_holder_name" :value="old('bank_account_holder_name', $employee?->bank_account_holder_name)" placeholder="e.g. John Doe" />
+                <x-input-error :messages="$errors->get('bank_account_holder_name')" />
+            </div>
+            <div>
+                <x-input-label for="bank_account_number" value="Bank Account Number" />
+                <x-text-input id="bank_account_number" type="text" name="bank_account_number" :value="old('bank_account_number', $employee?->bank_account_number)" placeholder="e.g. 50100012345678" />
+                <x-input-error :messages="$errors->get('bank_account_number')" />
+            </div>
+            <div>
+                <x-input-label for="bank_ifsc_code" value="IFSC Code" />
+                <x-text-input id="bank_ifsc_code" type="text" name="bank_ifsc_code" :value="old('bank_ifsc_code', $employee?->bank_ifsc_code)" placeholder="e.g. HDFC0000123" style="text-transform: uppercase;" />
+                <x-input-error :messages="$errors->get('bank_ifsc_code')" />
+            </div>
+            <div class="col-span-1 md:col-span-2">
+                <x-input-label for="bank_cheque_photo" value="Cancelled Cheque Photo / PDF" />
+                <input type="hidden" name="remove_bank_cheque_photo" value="0">
+                <div class="flex items-center gap-4 mt-2">
+                    <div class="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 shadow-sm">
+                        @if ($employee?->bank_cheque_photo_path)
+                            @if (str_ends_with($employee->bank_cheque_photo_path, '.pdf'))
+                                <div class="text-slate-400 bank-cheque-placeholder-icon hidden">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                                </div>
+                                <a href="{{ $employee->bankChequePhotoUrl() }}" target="_blank" class="download-link flex items-center justify-center w-full h-full text-slate-500 bg-slate-50">PDF</a>
+                                <img class="w-full h-full object-cover bank-cheque-preview-img hidden">
+                            @else
+                                <img src="{{ $employee->bankChequePhotoUrl() }}" alt="Cheque preview" class="w-full h-full object-cover bank-cheque-preview-img">
+                                <div class="text-slate-400 bank-cheque-placeholder-icon hidden">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                </div>
+                            @endif
+                        @else
+                            <div class="text-slate-400 bank-cheque-placeholder-icon">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            </div>
+                            <img class="w-full h-full object-cover bank-cheque-preview-img hidden">
+                        @endif
+                    </div>
+                    <div class="flex-1 space-y-1">
+                        <input id="bank_cheque_photo" type="file" name="bank_cheque_photo" class="block w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" accept="image/*,.pdf" onchange="window.previewImage(this, '#remove_cheque_btn', '.bank-cheque-preview-img', '.bank-cheque-placeholder-icon')">
+                        <button type="button" id="remove_cheque_btn" onclick="window.clearFormFile(this, 'remove_bank_cheque_photo', '.bank-cheque-preview-img', '.bank-cheque-placeholder-icon')" class="text-xs text-red-600 font-semibold hover:underline mt-1 {{ ($employee?->bank_cheque_photo_path) ? '' : 'hidden' }}">Remove Attachment</button>
+                    </div>
+                </div>
+                <x-input-error :messages="$errors->get('bank_cheque_photo')" />
+            </div>
+        </div>
+    </div>
 </div>

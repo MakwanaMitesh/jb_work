@@ -36,6 +36,22 @@ class User extends Authenticatable
         'joining_date',
         'profile_photo_path',
         'status',
+        'insurance_policy_number',
+        'insurance_policy_pdf_path',
+        'insurance_start_date',
+        'insurance_end_date',
+        'qualification',
+        'resume_path',
+        'alternate_mobile_number',
+        'aadhaar_card_number',
+        'aadhaar_photo_path',
+        'pan_card_number',
+        'pan_photo_path',
+        'bank_account_number',
+        'bank_ifsc_code',
+        'bank_name',
+        'bank_account_holder_name',
+        'bank_cheque_photo_path',
     ];
 
     /**
@@ -59,6 +75,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'joining_date' => 'date',
+            'insurance_start_date' => 'date',
+            'insurance_end_date' => 'date',
         ];
     }
 
@@ -130,5 +148,38 @@ class User extends Authenticatable
     public function city(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function insurancePolicyPdfUrl(): ?string
+    {
+        return $this->insurance_policy_pdf_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->insurance_policy_pdf_path) : null;
+    }
+
+    public function resumeUrl(): ?string
+    {
+        return $this->resume_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->resume_path) : null;
+    }
+
+    public function aadhaarPhotoUrl(): ?string
+    {
+        return $this->aadhaar_photo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->aadhaar_photo_path) : null;
+    }
+
+    public function panPhotoUrl(): ?string
+    {
+        return $this->pan_photo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->pan_photo_path) : null;
+    }
+
+    public function bankChequePhotoUrl(): ?string
+    {
+        return $this->bank_cheque_photo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->bank_cheque_photo_path) : null;
+    }
+
+    public function hasExpiredInsurance(): bool
+    {
+        if (!$this->insurance_end_date) {
+            return false;
+        }
+        return $this->insurance_end_date->isPast();
     }
 }

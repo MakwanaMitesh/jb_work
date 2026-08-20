@@ -29,6 +29,38 @@ class UpdateEmployeeRequest extends FormRequest
             'role' => ['required', Rule::exists('roles', 'name')->where('guard_name', 'web')],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'profile_photo' => ['nullable', 'image', 'max:2048'],
+            
+            // Insurance
+            'insurance_policy_number' => ['nullable', 'string', 'max:100'],
+            'insurance_policy_pdf' => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
+            'insurance_start_date' => ['nullable', 'date'],
+            'insurance_end_date' => ['nullable', 'date', 'after_or_equal:insurance_start_date'],
+
+            // Qualifications
+            'qualification' => ['nullable', 'string', 'max:255'],
+            'resume' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+            'alternate_mobile_number' => ['nullable', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
+
+            // KYC
+            'aadhaar_card_number' => ['nullable', 'string', 'max:50'],
+            'aadhaar_photo' => ['nullable', 'image', 'max:2048'],
+            'pan_card_number' => ['nullable', 'string', 'max:50'],
+            'pan_photo' => ['nullable', 'image', 'max:2048'],
+
+            // Bank
+            'bank_account_number' => ['nullable', 'string', 'max:50'],
+            'bank_ifsc_code' => ['nullable', 'string', 'max:20'],
+            'bank_name' => ['nullable', 'string', 'max:150'],
+            'bank_account_holder_name' => ['nullable', 'string', 'max:150'],
+            'bank_cheque_photo' => ['nullable', 'image', 'max:2048'],
+
+            // File removal flags
+            'remove_profile_photo' => ['nullable', 'in:0,1'],
+            'remove_insurance_policy_pdf' => ['nullable', 'in:0,1'],
+            'remove_resume' => ['nullable', 'in:0,1'],
+            'remove_aadhaar_photo' => ['nullable', 'in:0,1'],
+            'remove_pan_photo' => ['nullable', 'in:0,1'],
+            'remove_bank_cheque_photo' => ['nullable', 'in:0,1'],
         ];
     }
 
@@ -36,6 +68,7 @@ class UpdateEmployeeRequest extends FormRequest
     {
         return [
             'mobile_number.regex' => 'The mobile number must be a valid phone number (e.g. +919876543210).',
+            'alternate_mobile_number.regex' => 'The alternate mobile number must be a valid phone number (e.g. +919876543210).',
         ];
     }
 }
