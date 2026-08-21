@@ -166,6 +166,51 @@ window.clearFormFile = function(btn, hiddenInputName, previewImgClass, placehold
     btn.classList.add('hidden');
 };
 
+window.previewFilePopup = function(url, type) {
+    if (!url) return;
+    
+    // Auto-detect type if not provided
+    if (!type) {
+        const ext = url.split('?')[0].split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) {
+            type = 'image';
+        } else if (ext === 'pdf') {
+            type = 'pdf';
+        } else {
+            type = 'other';
+        }
+    }
+
+    if (type === 'image') {
+        Swal.fire({
+            html: `<div class="p-1"><img src="${url}" class="w-full max-h-[75vh] object-contain rounded-xl shadow-inner"></div>`,
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: 'auto',
+            maxWidth: '90%',
+            background: 'transparent',
+            customClass: {
+                popup: 'bg-transparent border-0 shadow-none'
+            }
+        });
+    } else if (type === 'pdf') {
+        Swal.fire({
+            html: `<iframe src="${url}" class="w-full h-[75vh] border-0 rounded-xl" style="background: white;"></iframe>`,
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: '80%',
+            maxWidth: '1200px',
+            background: 'transparent',
+            customClass: {
+                popup: 'bg-transparent border-0 shadow-none'
+            }
+        });
+    } else {
+        // Fallback for doc/docx, just open in new tab
+        window.open(url, '_blank');
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     initColumnToggles();
     initPhoneInputs();

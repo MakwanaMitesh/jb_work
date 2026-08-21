@@ -34,10 +34,18 @@ class AgentManagementTest extends TestCase
             'first_name' => 'John',
             'last_name' => 'Smith',
             'email' => 'john.smith@example.com',
-            'mobile_number' => '9876543210',
+            'mobile_number' => '+919876543210',
             'city_id' => $this->city->id,
             'address' => '500 Congress Ave',
             'status' => 'active',
+            'qualification' => 'Bachelor of Science',
+            'alternate_mobile_number' => '+918765432109',
+            'aadhaar_card_number' => '123456789012',
+            'pan_card_number' => 'ABCDE1234F',
+            'bank_name' => 'Chase Bank',
+            'bank_account_holder_name' => 'John Smith',
+            'bank_account_number' => '123456789',
+            'bank_ifsc_code' => 'CHAS0000001',
         ], $overrides);
     }
 
@@ -52,6 +60,11 @@ class AgentManagementTest extends TestCase
         $this->assertNotNull($agent);
         $this->assertSame('John Smith', $agent->name);
         $this->assertTrue($agent->isActive());
+        $this->assertSame('Bachelor of Science', $agent->qualification);
+        $this->assertSame('+918765432109', $agent->alternate_mobile_number);
+        $this->assertSame('123456789012', $agent->aadhaar_card_number);
+        $this->assertSame('ABCDE1234F', $agent->pan_card_number);
+        $this->assertSame('Chase Bank', $agent->bank_name);
     }
 
     public function test_duplicate_email_is_rejected(): void
@@ -91,10 +104,12 @@ class AgentManagementTest extends TestCase
             ->put(route('admin.agents.update', $agent), $this->validPayload([
                 'first_name' => 'Johnny',
                 'last_name' => 'S.',
+                'qualification' => 'Master of Science',
             ]));
 
         $response->assertRedirect(route('admin.agents.index'));
         $this->assertSame('Johnny S.', $agent->fresh()->name);
+        $this->assertSame('Master of Science', $agent->fresh()->qualification);
     }
 
     public function test_admin_can_deactivate_and_reactivate_an_agent(): void

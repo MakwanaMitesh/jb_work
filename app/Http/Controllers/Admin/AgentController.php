@@ -73,12 +73,24 @@ class AgentController extends Controller
     public function store(StoreAgentRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        unset($data['profile_photo']);
+        unset($data['profile_photo'], $data['resume'], $data['aadhaar_photo'], $data['pan_photo'], $data['bank_cheque_photo']);
 
         $agent = new Agent($data);
 
         if ($request->hasFile('profile_photo')) {
             $agent->profile_photo_path = $request->file('profile_photo')->store('agents', 'public');
+        }
+        if ($request->hasFile('resume')) {
+            $agent->resume_path = $request->file('resume')->store('agents/resumes', 'public');
+        }
+        if ($request->hasFile('aadhaar_photo')) {
+            $agent->aadhaar_photo_path = $request->file('aadhaar_photo')->store('agents/kyc', 'public');
+        }
+        if ($request->hasFile('pan_photo')) {
+            $agent->pan_photo_path = $request->file('pan_photo')->store('agents/kyc', 'public');
+        }
+        if ($request->hasFile('bank_cheque_photo')) {
+            $agent->bank_cheque_photo_path = $request->file('bank_cheque_photo')->store('agents/bank', 'public');
         }
 
         $agent->save();
@@ -106,10 +118,11 @@ class AgentController extends Controller
     public function update(UpdateAgentRequest $request, Agent $agent): RedirectResponse
     {
         $data = $request->validated();
-        unset($data['profile_photo']);
+        unset($data['profile_photo'], $data['resume'], $data['aadhaar_photo'], $data['pan_photo'], $data['bank_cheque_photo']);
 
         $agent->fill($data);
 
+        // Profile Photo
         if ($request->input('remove_profile_photo') === '1') {
             if ($agent->profile_photo_path) {
                 Storage::disk('public')->delete($agent->profile_photo_path);
@@ -120,6 +133,58 @@ class AgentController extends Controller
                 Storage::disk('public')->delete($agent->profile_photo_path);
             }
             $agent->profile_photo_path = $request->file('profile_photo')->store('agents', 'public');
+        }
+
+        // Resume
+        if ($request->input('remove_resume') === '1') {
+            if ($agent->resume_path) {
+                Storage::disk('public')->delete($agent->resume_path);
+            }
+            $agent->resume_path = null;
+        } elseif ($request->hasFile('resume')) {
+            if ($agent->resume_path) {
+                Storage::disk('public')->delete($agent->resume_path);
+            }
+            $agent->resume_path = $request->file('resume')->store('agents/resumes', 'public');
+        }
+
+        // Aadhaar Photo
+        if ($request->input('remove_aadhaar_photo') === '1') {
+            if ($agent->aadhaar_photo_path) {
+                Storage::disk('public')->delete($agent->aadhaar_photo_path);
+            }
+            $agent->aadhaar_photo_path = null;
+        } elseif ($request->hasFile('aadhaar_photo')) {
+            if ($agent->aadhaar_photo_path) {
+                Storage::disk('public')->delete($agent->aadhaar_photo_path);
+            }
+            $agent->aadhaar_photo_path = $request->file('aadhaar_photo')->store('agents/kyc', 'public');
+        }
+
+        // PAN Photo
+        if ($request->input('remove_pan_photo') === '1') {
+            if ($agent->pan_photo_path) {
+                Storage::disk('public')->delete($agent->pan_photo_path);
+            }
+            $agent->pan_photo_path = null;
+        } elseif ($request->hasFile('pan_photo')) {
+            if ($agent->pan_photo_path) {
+                Storage::disk('public')->delete($agent->pan_photo_path);
+            }
+            $agent->pan_photo_path = $request->file('pan_photo')->store('agents/kyc', 'public');
+        }
+
+        // Bank Cheque Photo
+        if ($request->input('remove_bank_cheque_photo') === '1') {
+            if ($agent->bank_cheque_photo_path) {
+                Storage::disk('public')->delete($agent->bank_cheque_photo_path);
+            }
+            $agent->bank_cheque_photo_path = null;
+        } elseif ($request->hasFile('bank_cheque_photo')) {
+            if ($agent->bank_cheque_photo_path) {
+                Storage::disk('public')->delete($agent->bank_cheque_photo_path);
+            }
+            $agent->bank_cheque_photo_path = $request->file('bank_cheque_photo')->store('agents/bank', 'public');
         }
 
         $agent->save();

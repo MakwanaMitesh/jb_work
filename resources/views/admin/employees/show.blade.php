@@ -38,6 +38,8 @@
                 <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->last_name ?: '—' }}</dd>
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Mobile</dt>
                 <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->mobile_number ?: '—' }}</dd>
+                <dt class="text-slate-500 dark:text-slate-400 font-medium">Alternate Mobile</dt>
+                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->alternate_mobile_number ?: '—' }}</dd>
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">City</dt>
                 <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->city?->name ?: '—' }}</dd>
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Address</dt>
@@ -96,19 +98,15 @@
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Policy Document</dt>
                 <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">
                     @if ($employee->insurance_policy_pdf_path)
-                        @if (str_ends_with(strtolower($employee->insurance_policy_pdf_path), '.pdf'))
-                            <a href="{{ $employee->insurancePolicyPdfUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-500 no-underline font-semibold" download>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                                Download Policy PDF
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="window.previewFilePopup('{{ $employee->insurancePolicyPdfUrl() }}')" class="text-xs text-primary-600 hover:underline">
+                                Preview
+                            </button>
+                            <span class="text-slate-300 dark:text-slate-700">|</span>
+                            <a href="{{ $employee->insurancePolicyPdfUrl() }}" download class="text-xs text-slate-500 hover:underline">
+                                Download
                             </a>
-                        @else
-                            <div class="flex items-center gap-3">
-                                <a href="{{ $employee->insurancePolicyPdfUrl() }}" target="_blank" class="block w-20 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 hover:opacity-85 shadow-sm transition">
-                                    <img src="{{ $employee->insurancePolicyPdfUrl() }}" class="w-full h-full object-cover" alt="Insurance policy">
-                                </a>
-                                <a href="{{ $employee->insurancePolicyPdfUrl() }}" target="_blank" class="text-xs text-primary-600 font-semibold hover:underline block" download>Download Image</a>
-                            </div>
-                        @endif
+                        </div>
                     @else
                         —
                     @endif
@@ -127,32 +125,25 @@
             </dl>
         </div>
 
-        <!-- Qualifications & Alternate Contact -->
+        <!-- Qualifications -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6">
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Qualifications & Alternate Contact</h3>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Qualifications</h3>
             <dl class="grid grid-cols-3 gap-y-3 text-sm">
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Qualification</dt>
                 <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->qualification ?: '—' }}</dd>
 
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Alternate Mobile</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $employee->alternate_mobile_number ?: '—' }}</dd>
-
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Resume</dt>
                 <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">
                     @if ($employee->resume_path)
-                        @if (preg_match('/\.(pdf|doc|docx)$/i', $employee->resume_path))
-                            <a href="{{ $employee->resumeUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-500 no-underline font-semibold" download>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                                Download Resume Document
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="window.previewFilePopup('{{ $employee->resumeUrl() }}')" class="text-xs text-primary-600 hover:underline">
+                                Preview
+                            </button>
+                            <span class="text-slate-300 dark:text-slate-700">|</span>
+                            <a href="{{ $employee->resumeUrl() }}" download class="text-xs text-slate-500 hover:underline">
+                                Download
                             </a>
-                        @else
-                            <div class="flex items-center gap-3">
-                                <a href="{{ $employee->resumeUrl() }}" target="_blank" class="block w-20 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 hover:opacity-85 shadow-sm transition">
-                                    <img src="{{ $employee->resumeUrl() }}" class="w-full h-full object-cover" alt="Resume preview">
-                                </a>
-                                <a href="{{ $employee->resumeUrl() }}" target="_blank" class="text-xs text-primary-600 font-semibold hover:underline block" download>Download Image</a>
-                            </div>
-                        @endif
+                        </div>
                     @else
                         —
                     @endif
@@ -171,19 +162,15 @@
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Aadhaar Photo</dt>
                 <dd class="col-span-2">
                     @if ($employee->aadhaar_photo_path)
-                        @if (str_ends_with(strtolower($employee->aadhaar_photo_path), '.pdf'))
-                            <a href="{{ $employee->aadhaarPhotoUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-500 no-underline font-semibold" download>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                                Download Aadhaar PDF
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="window.previewFilePopup('{{ $employee->aadhaarPhotoUrl() }}')" class="text-xs text-primary-600 hover:underline">
+                                Preview
+                            </button>
+                            <span class="text-slate-300 dark:text-slate-700">|</span>
+                            <a href="{{ $employee->aadhaarPhotoUrl() }}" download class="text-xs text-slate-500 hover:underline">
+                                Download
                             </a>
-                        @else
-                            <div class="flex items-center gap-3">
-                                <a href="{{ $employee->aadhaarPhotoUrl() }}" target="_blank" class="block w-20 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 hover:opacity-85 shadow-sm transition">
-                                    <img src="{{ $employee->aadhaarPhotoUrl() }}" class="w-full h-full object-cover" alt="Aadhaar photo">
-                                </a>
-                                <a href="{{ $employee->aadhaarPhotoUrl() }}" target="_blank" class="text-xs text-primary-600 font-semibold hover:underline block" download>Download</a>
-                            </div>
-                        @endif
+                        </div>
                     @else
                         <span class="text-slate-400 font-semibold">—</span>
                     @endif
@@ -196,19 +183,15 @@
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">PAN Photo</dt>
                 <dd class="col-span-2">
                     @if ($employee->pan_photo_path)
-                        @if (str_ends_with(strtolower($employee->pan_photo_path), '.pdf'))
-                            <a href="{{ $employee->panPhotoUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-500 no-underline font-semibold" download>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                                Download PAN PDF
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="window.previewFilePopup('{{ $employee->panPhotoUrl() }}')" class="text-xs text-primary-600 hover:underline">
+                                Preview
+                            </button>
+                            <span class="text-slate-300 dark:text-slate-700">|</span>
+                            <a href="{{ $employee->panPhotoUrl() }}" download class="text-xs text-slate-500 hover:underline">
+                                Download
                             </a>
-                        @else
-                            <div class="flex items-center gap-3">
-                                <a href="{{ $employee->panPhotoUrl() }}" target="_blank" class="block w-20 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 hover:opacity-85 shadow-sm transition">
-                                    <img src="{{ $employee->panPhotoUrl() }}" class="w-full h-full object-cover" alt="PAN photo">
-                                </a>
-                                <a href="{{ $employee->panPhotoUrl() }}" target="_blank" class="text-xs text-primary-600 font-semibold hover:underline block" download>Download</a>
-                            </div>
-                        @endif
+                        </div>
                     @else
                         <span class="text-slate-400 font-semibold">—</span>
                     @endif
@@ -235,19 +218,15 @@
                 <dt class="text-slate-500 dark:text-slate-400 font-medium">Cancelled Cheque</dt>
                 <dd class="col-span-2">
                     @if ($employee->bank_cheque_photo_path)
-                        @if (str_ends_with(strtolower($employee->bank_cheque_photo_path), '.pdf'))
-                            <a href="{{ $employee->bankChequePhotoUrl() }}" target="_blank" class="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-500 no-underline font-semibold" download>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                                Download Cheque PDF
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="window.previewFilePopup('{{ $employee->bankChequePhotoUrl() }}')" class="text-xs text-primary-600 hover:underline">
+                                Preview
+                            </button>
+                            <span class="text-slate-300 dark:text-slate-700">|</span>
+                            <a href="{{ $employee->bankChequePhotoUrl() }}" download class="text-xs text-slate-500 hover:underline">
+                                Download
                             </a>
-                        @else
-                            <div class="flex items-center gap-3">
-                                <a href="{{ $employee->bankChequePhotoUrl() }}" target="_blank" class="block w-20 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 hover:opacity-85 shadow-sm transition">
-                                    <img src="{{ $employee->bankChequePhotoUrl() }}" class="w-full h-full object-cover" alt="Cheque photo">
-                                </a>
-                                <a href="{{ $employee->bankChequePhotoUrl() }}" target="_blank" class="text-xs text-primary-600 font-semibold hover:underline block" download>Download</a>
-                            </div>
-                        @endif
+                        </div>
                     @else
                         <span class="text-slate-400 font-semibold">—</span>
                     @endif
