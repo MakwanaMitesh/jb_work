@@ -33,7 +33,7 @@
         @endif
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto min-h-[200px]">
         <table class="w-full text-left border-collapse" id="{{ $tableId }}">
             <thead>
                 <tr class="bg-slate-50/75 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
