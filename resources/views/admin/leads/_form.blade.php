@@ -202,6 +202,12 @@
                     <x-input-error :messages="$errors->get('notes')" />
                 </div>
             </div>
+            
+            <div class="flex justify-end pt-4 border-t border-slate-200/80 dark:border-slate-800">
+                <button type="button" onclick="switchTab('bank-tab', 'bank-panel')" class="inline-flex items-center justify-center h-10 px-5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-sm transition focus:outline-none">
+                    Next: Bank Details
+                </button>
+            </div>
         </div>
 
         <!-- 2. Bank Details Panel -->
@@ -245,6 +251,15 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            
+            <div class="flex justify-between pt-4 border-t border-slate-200/80 dark:border-slate-800">
+                <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" class="inline-flex items-center justify-center h-10 px-5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm">
+                    Previous
+                </button>
+                <button type="button" onclick="switchTab('business-tab', 'business-panel')" class="inline-flex items-center justify-center h-10 px-5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-sm transition focus:outline-none">
+                    Next: Business Details
+                </button>
             </div>
         </div>
 
@@ -352,6 +367,15 @@
                 <x-text-input id="connectivity" type="text" name="connectivity" :value="old('connectivity', $lead?->connectivity)" placeholder="e.g. Near highway, Railway station" />
                 <x-input-error :messages="$errors->get('connectivity')" />
             </div>
+            
+            <div class="flex justify-between pt-4 border-t border-slate-200/80 dark:border-slate-800">
+                <button type="button" onclick="switchTab('bank-tab', 'bank-panel')" class="inline-flex items-center justify-center h-10 px-5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm">
+                    Previous
+                </button>
+                <button type="button" onclick="switchTab('loan-tab', 'loan-panel')" class="inline-flex items-center justify-center h-10 px-5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-sm transition focus:outline-none">
+                    Next: Loan Details
+                </button>
+            </div>
         </div>
 
         <!-- 4. Loan Details Panel -->
@@ -447,6 +471,12 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            
+            <div class="flex justify-start pt-4 border-t border-slate-200/80 dark:border-slate-800">
+                <button type="button" onclick="switchTab('business-tab', 'business-panel')" class="inline-flex items-center justify-center h-10 px-5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm">
+                    Previous
+                </button>
             </div>
         </div>
     </div>
