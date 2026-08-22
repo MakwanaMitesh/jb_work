@@ -127,4 +127,26 @@
             </tr>
         @endforelse
     </x-datatable-card>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dropdown Menu Toggles (Kebab Actions)
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-kebab-btn]');
+                if (btn) {
+                    e.stopPropagation();
+                    const container = btn.closest('[data-kebab-container]');
+                    const menu = container.querySelector('[data-kebab-menu]');
+                    
+                    // Hide all other menus
+                    document.querySelectorAll('[data-kebab-menu]').forEach(m => {
+                        if (m !== menu) m.classList.add('hidden');
+                    });
+                    
+                    menu.classList.toggle('hidden');
+                } else {
+                    document.querySelectorAll('[data-kebab-menu]').forEach(m => m.classList.add('hidden'));
+                }
+            });
+        });
+    </script>
 </x-admin-layout>
