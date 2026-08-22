@@ -47,4 +47,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->parameters(['cities' => 'city']);
     Route::patch('cities/{city}/toggle-status', [CityController::class, 'toggleStatus'])
         ->name('cities.toggle-status');
+
+    // Lead Management
+    Route::resource('leads', \App\Http\Controllers\Admin\LeadController::class)
+        ->parameters(['leads' => 'lead']);
 });
