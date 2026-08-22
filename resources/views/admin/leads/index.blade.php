@@ -123,7 +123,13 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" class="px-6 py-10 text-center text-sm text-slate-400">No leads found.</td>
+                <td class="px-6 py-10 text-center text-sm text-slate-400">No leads found.</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>
         @endforelse
     </x-datatable-card>
