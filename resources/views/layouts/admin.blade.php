@@ -182,6 +182,76 @@
                     });
                 }
 
+                // Global Dropdown Menu Toggles (Kebab Actions) with viewport-aware positioning
+                document.addEventListener('click', (e) => {
+                    const btn = e.target.closest('[data-kebab-btn]');
+                    if (btn) {
+                        e.stopPropagation();
+                        const container = btn.closest('[data-kebab-container]');
+                        const menu = container.querySelector('[data-kebab-menu]');
+                        
+                        // Hide all other menus
+                        document.querySelectorAll('[data-kebab-menu]').forEach(m => {
+                            if (m !== menu) {
+                                m.classList.add('hidden');
+                                m.style.position = '';
+                                m.style.top = '';
+                                m.style.left = '';
+                            }
+                        });
+                        
+                        const isHidden = menu.classList.contains('hidden');
+                        if (isHidden) {
+                            menu.classList.remove('hidden');
+                            
+                            // Calculate absolute viewport coordinates
+                            const rect = btn.getBoundingClientRect();
+                            const menuWidth = menu.offsetWidth || 176;
+                            const menuHeight = menu.offsetHeight || 120;
+                            
+                            let left = rect.right - menuWidth;
+                            if (left + menuWidth > window.innerWidth) {
+                                left = Math.max(10, window.innerWidth - menuWidth - 10);
+                            }
+                            if (left < 10) {
+                                left = 10;
+                            }
+                            
+                            let top = rect.bottom + 4;
+                            if (rect.bottom + menuHeight > window.innerHeight && rect.top - menuHeight > 0) {
+                                top = rect.top - menuHeight - 4;
+                            }
+                            
+                            menu.style.position = 'fixed';
+                            menu.style.top = `${top}px`;
+                            menu.style.left = `${left}px`;
+                            menu.style.margin = '0';
+                        } else {
+                            menu.classList.add('hidden');
+                            menu.style.position = '';
+                            menu.style.top = '';
+                            menu.style.left = '';
+                        }
+                    } else {
+                        document.querySelectorAll('[data-kebab-menu]').forEach(m => {
+                            m.classList.add('hidden');
+                            m.style.position = '';
+                            m.style.top = '';
+                            m.style.left = '';
+                        });
+                    }
+                });
+
+                // Dismiss open kebab menus on page/table scroll
+                window.addEventListener('scroll', () => {
+                    document.querySelectorAll('[data-kebab-menu]').forEach(m => {
+                        m.classList.add('hidden');
+                        m.style.position = '';
+                        m.style.top = '';
+                        m.style.left = '';
+                    });
+                }, true);
+
                 // Global modal close handler
                 document.addEventListener('click', (e) => {
                     const closeTrigger = e.target.closest('[data-modal-close]');
