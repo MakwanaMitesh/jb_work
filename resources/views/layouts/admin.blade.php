@@ -120,7 +120,7 @@
                 <div class="fixed inset-0 transition-opacity bg-slate-900/40" onclick="document.getElementById('insuranceExpiryModal').classList.add('hidden')"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                 
-                <div class="inline-block align-middle bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200 dark:border-slate-800">
+                <div class="relative z-10 inline-block align-middle bg-white dark:bg-slate-900 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200 dark:border-slate-800">
                     <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <h3 class="text-base font-bold text-slate-900 dark:text-white">Expired Insurance Policies</h3>
                         <button type="button" onclick="document.getElementById('insuranceExpiryModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-500">
