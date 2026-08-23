@@ -5,8 +5,8 @@
     
     <!-- Tab Navigation Header -->
     <div class="bg-slate-50/50 dark:bg-slate-950/25 border-b border-slate-200/80 dark:border-slate-800 px-6 py-4 flex flex-wrap gap-2">
-        <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" id="kyc-tab" class="tab-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-primary-600 dark:text-primary-400 font-semibold text-sm rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700 focus:outline-none transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" id="kyc-tab" class="tab-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-primary-600 dark:text-primary-400 font-semibold text-sm rounded-xl shadow-sm border border-primary-600 dark:border-primary-500 focus:outline-none transition">
+            <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             <span>KYC Details</span>
         </button>
         
@@ -505,7 +505,7 @@ function switchTab(tabId, panelId) {
 
     // Set target tab active styling classes
     const targetTab = document.getElementById(tabId);
-    targetTab.className = "tab-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-primary-600 dark:text-primary-400 font-semibold text-sm rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700 focus:outline-none transition";
+    targetTab.className = "tab-btn flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-primary-600 dark:text-primary-400 font-semibold text-sm rounded-xl shadow-sm border border-primary-600 dark:border-primary-500 focus:outline-none transition";
     
     // Set active SVG icon color class
     const activeSvg = targetTab.querySelector('svg');
