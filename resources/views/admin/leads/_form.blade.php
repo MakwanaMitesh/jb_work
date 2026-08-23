@@ -213,8 +213,16 @@
         <!-- 2. Bank Details Panel -->
         <div id="bank-panel" class="tab-panel space-y-6 hidden">
             <div>
-                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-2">Current Bank Details</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Provide details for up to 4 bank accounts.</p>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Current Bank Details</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage bank account profiles for this lead.</p>
+                    </div>
+                    <button type="button" onclick="addBankRow()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-primary-50 hover:bg-primary-100 dark:bg-primary-950/20 dark:hover:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-xs font-semibold rounded-lg shadow-sm border border-primary-200/50 dark:border-primary-800 transition focus:outline-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        <span>Add Bank</span>
+                    </button>
+                </div>
                 
                 <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
                     <table class="w-full text-left border-collapse text-sm">
@@ -225,29 +233,38 @@
                                 <th class="p-4 border-b border-slate-200 dark:border-slate-800">A/C Number</th>
                                 <th class="p-4 border-b border-slate-200 dark:border-slate-800">A/C Type</th>
                                 <th class="p-4 border-b border-slate-200 dark:border-slate-800">IFSC Code</th>
+                                <th class="p-4 border-b border-slate-200 dark:border-slate-800 w-16 text-center">Action</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                            @for ($i = 0; $i < 4; $i++)
-                                @php
-                                    $bank = $lead?->bank_details[$i] ?? null;
-                                @endphp
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
-                                    <td class="p-4 text-center font-semibold text-slate-500">{{ $i + 1 }}</td>
+                        <tbody id="bank-rows-container" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            @php
+                                $banks = old('bank_details', $lead?->bank_details ?? []);
+                                if (empty($banks)) {
+                                    $banks = [['bank_name' => '', 'account_number' => '', 'account_type' => '', 'ifsc_code' => '']];
+                                }
+                            @endphp
+                            @foreach ($banks as $index => $bank)
+                                <tr class="bank-row hover:bg-slate-50/50 dark:hover:bg-slate-800/10">
+                                    <td class="p-4 text-center font-semibold text-slate-500 bank-sr">{{ $index + 1 }}</td>
                                     <td class="p-2">
-                                        <input type="text" name="bank_details[{{ $i }}][bank_name]" value="{{ old("bank_details.{$i}.bank_name", $bank['bank_name'] ?? '') }}" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="Bank name">
+                                        <input type="text" name="bank_details[{{ $index }}][bank_name]" value="{{ $bank['bank_name'] ?? '' }}" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="Bank name">
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" name="bank_details[{{ $i }}][account_number]" value="{{ old("bank_details.{$i}.account_number", $bank['account_number'] ?? '') }}" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="A/C Number">
+                                        <input type="text" name="bank_details[{{ $index }}][account_number]" value="{{ $bank['account_number'] ?? '' }}" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="A/C Number">
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" name="bank_details[{{ $i }}][account_type]" value="{{ old("bank_details.{$i}.account_type", $bank['account_type'] ?? '') }}" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="e.g. Savings, Current">
+                                        <input type="text" name="bank_details[{{ $index }}][account_type]" value="{{ $bank['account_type'] ?? '' }}" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="e.g. Savings, Current">
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" name="bank_details[{{ $i }}][ifsc_code]" value="{{ old("bank_details.{$i}.ifsc_code", $bank['ifsc_code'] ?? '') }}" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="IFSC Code">
+                                        <input type="text" name="bank_details[{{ $index }}][ifsc_code]" value="{{ $bank['ifsc_code'] ?? '' }}" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="IFSC Code">
+                                    </td>
+                                    <td class="p-2 text-center">
+                                        <button type="button" onclick="removeBankRow(this)" class="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md transition focus:outline-none">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
                                     </td>
                                 </tr>
-                            @endfor
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -483,6 +500,49 @@
 </div>
 
 <script>
+let bankRowIndex = {{ count($banks) }};
+
+function addBankRow() {
+    const container = document.getElementById('bank-rows-container');
+    const tr = document.createElement('tr');
+    tr.className = 'bank-row hover:bg-slate-50/50 dark:hover:bg-slate-800/10';
+    tr.innerHTML = `
+        <td class="p-4 text-center font-semibold text-slate-500 bank-sr"></td>
+        <td class="p-2">
+            <input type="text" name="bank_details[\${bankRowIndex}][bank_name]" value="" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="Bank name">
+        </td>
+        <td class="p-2">
+            <input type="text" name="bank_details[\${bankRowIndex}][account_number]" value="" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="A/C Number">
+        </td>
+        <td class="p-2">
+            <input type="text" name="bank_details[\${bankRowIndex}][account_type]" value="" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="e.g. Savings, Current">
+        </td>
+        <td class="p-2">
+            <input type="text" name="bank_details[\${bankRowIndex}][ifsc_code]" value="" class="w-full bg-transparent border-0 focus:ring-1 focus:ring-primary-500 rounded-lg text-sm px-2 py-1 dark:text-white" placeholder="IFSC Code">
+        </td>
+        <td class="p-2 text-center">
+            <button type="button" onclick="removeBankRow(this)" class="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md transition focus:outline-none">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+        </td>
+    `;
+    container.appendChild(tr);
+    bankRowIndex++;
+    recalculateBankSr();
+}
+
+function removeBankRow(button) {
+    const row = button.closest('.bank-row');
+    row.remove();
+    recalculateBankSr();
+}
+
+function recalculateBankSr() {
+    document.querySelectorAll('.bank-sr').forEach((td, i) => {
+        td.textContent = i + 1;
+    });
+}
+
 function switchTab(tabId, panelId) {
     // Hide all panels
     document.querySelectorAll('.tab-panel').forEach(panel => {
