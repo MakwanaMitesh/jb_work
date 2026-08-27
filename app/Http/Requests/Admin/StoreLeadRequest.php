@@ -24,9 +24,11 @@ class StoreLeadRequest extends FormRequest
             'mobile_number' => ['required', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
             'alternate_mobile_number' => ['nullable', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
             'agent_id' => ['nullable', 'exists:agents,id'],
+            'loan_product_id' => ['required', 'exists:loan_products,id'],
+            'constitution_id' => ['required', 'exists:customer_constitutions,id'],
             'city_id' => ['nullable', 'exists:cities,id'],
             'source' => ['nullable', 'string', 'max:100'],
-            'status' => ['required', 'string', 'in:new,contacted,in_progress,converted,lost'],
+            'status' => ['required', 'string', 'in:new,contacted,in_progress,converted,lost,visit_pending,visit_completed,documentation_pending,documentation_in_progress,documentation_completed,under_process,approved,rejected,completed,cancelled'],
             'notes' => ['nullable', 'string', 'max:1000'],
             
             // New KYC Fields
@@ -96,5 +98,38 @@ class StoreLeadRequest extends FormRequest
             'mobile_number.regex' => 'The mobile number must be a valid phone number (e.g. +919876543210).',
             'alternate_mobile_number.regex' => 'The alternate mobile number must be a valid phone number (e.g. +919876543210).',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $productId = $this->input('loan_product_id');
+            $constitutionId = $this->input('constitution_id');
+            
+            if ($productId) {
+                $product = \App\Models\LoanProduct::find($productId);
+                if (!$product || $product->status !== 'active') {
+                    $validator->errors()->add('loan_product_id', 'The selected loan product is inactive or invalid.');
+                }
+            }
+
+            if ($constitutionId) {
+                $constitution = \App\Models\CustomerConstitution::find($constitutionId);
+                if (!$constitution || $constitution->status !== 'active') {
+                    $validator->errors()->add('constitution_id', 'The selected customer constitution is inactive or invalid.');
+                }
+            }
+
+            if ($productId && $constitutionId) {
+                $exists = \DB::table('loan_product_constitutions')
+                    ->where('loan_product_id', $productId)
+                    ->where('constitution_id', $constitutionId)
+                    ->where('status', 'active')
+                    ->exists();
+                if (!$exists) {
+                    $validator->errors()->add('loan_product_id', 'Selected loan product is not available for the selected customer constitution.');
+                }
+            }
+        });
     }
 }

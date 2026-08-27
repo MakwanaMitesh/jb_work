@@ -71,6 +71,7 @@
 
         // DataTable Initialization
         if (window.jQuery && $.fn.DataTable) {
+            $.fn.dataTable.ext.errMode = 'none';
             const tableElement = $('#' + tableId);
             const table = tableElement.DataTable({
                 pageLength: 10,

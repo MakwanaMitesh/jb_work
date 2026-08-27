@@ -156,6 +156,29 @@
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-input-label for="loan_product_id" value="Loan Product" :required="true" />
+                    <select id="loan_product_id" name="loan_product_id" required class="form-select w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 text-sm h-10 px-3">
+                        <option value="">Select Loan Product</option>
+                        @foreach ($loanProducts as $product)
+                            <option value="{{ $product->id }}" @selected(old('loan_product_id', $lead?->loan_product_id) == $product->id)>{{ $product->name }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('loan_product_id')" />
+                </div>
+                <div>
+                    <x-input-label for="constitution_id" value="Customer Constitution" :required="true" />
+                    <select id="constitution_id" name="constitution_id" required class="form-select w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 text-sm h-10 px-3">
+                        <option value="">Select Constitution</option>
+                        @foreach ($constitutions as $const)
+                            <option value="{{ $const->id }}" @selected(old('constitution_id', $lead?->constitution_id) == $const->id)>{{ $const->name }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('constitution_id')" />
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <x-input-label for="source" value="Lead Source" />
@@ -188,11 +211,9 @@
                 <div>
                     <x-input-label for="status" value="Status" :required="true" />
                     <select id="status" name="status" class="form-select w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 text-sm h-10 px-3">
-                        <option value="new" @selected(old('status', $lead?->status ?? 'new') === 'new')>New</option>
-                        <option value="contacted" @selected(old('status', $lead?->status) === 'contacted')>Contacted</option>
-                        <option value="in_progress" @selected(old('status', $lead?->status) === 'in_progress')>In Progress</option>
-                        <option value="converted" @selected(old('status', $lead?->status) === 'converted')>Converted</option>
-                        <option value="lost" @selected(old('status', $lead?->status) === 'lost')>Lost</option>
+                        @foreach(['new', 'contacted', 'in_progress', 'converted', 'lost', 'visit_pending', 'visit_completed', 'documentation_pending', 'documentation_in_progress', 'documentation_completed', 'under_process', 'approved', 'rejected', 'completed', 'cancelled'] as $st)
+                            <option value="{{ $st }}" @selected(old('status', $lead?->status ?? 'new') === $st)>{{ ucfirst(str_replace('_', ' ', $st)) }}</option>
+                        @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('status')" />
                 </div>

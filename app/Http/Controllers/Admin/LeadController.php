@@ -45,6 +45,14 @@ class LeadController extends Controller
             $query->where('agent_id', $agentId);
         }
 
+        if ($productId = request('loan_product_id')) {
+            $query->where('loan_product_id', $productId);
+        }
+
+        if ($constitutionId = request('constitution_id')) {
+            $query->where('constitution_id', $constitutionId);
+        }
+
         $sort = in_array(request('sort'), ['name', 'email', 'mobile_number', 'source', 'status', 'created_at']) ? request('sort') : 'created_at';
         $direction = request('direction') === 'asc' ? 'asc' : 'desc';
 
@@ -62,8 +70,10 @@ class LeadController extends Controller
 
         $cities = City::orderBy('name')->get();
         $agents = Agent::orderBy('first_name')->get();
+        $loanProducts = \App\Models\LoanProduct::orderBy('sort_order')->orderBy('name')->get();
+        $constitutions = \App\Models\CustomerConstitution::orderBy('sort_order')->orderBy('name')->get();
 
-        return view('admin.leads.index', compact('leads', 'cities', 'agents', 'sort', 'direction'));
+        return view('admin.leads.index', compact('leads', 'cities', 'agents', 'loanProducts', 'constitutions', 'sort', 'direction'));
     }
 
     /**
@@ -75,8 +85,10 @@ class LeadController extends Controller
 
         $cities = City::where('status', 'active')->orderBy('name')->get();
         $agents = Agent::where('status', 'active')->orderBy('first_name')->get();
+        $loanProducts = \App\Models\LoanProduct::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
+        $constitutions = \App\Models\CustomerConstitution::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
 
-        return view('admin.leads.create', compact('cities', 'agents'));
+        return view('admin.leads.create', compact('cities', 'agents', 'loanProducts', 'constitutions'));
     }
 
     /**
@@ -97,7 +109,14 @@ class LeadController extends Controller
     {
         $this->authorize('leads.view');
 
-        return view('admin.leads.show', compact('lead'));
+        $employees = \App\Models\User::where('status', 'active')
+            ->whereHas('roles', fn ($q) => $q->where('name', '!=', 'Agent'))
+            ->orderBy('name')
+            ->get();
+
+        $lead->load(['visits.employee', 'visits.creator', 'activities.user', 'assignments.employee', 'assignments.assigner', 'loanProduct', 'constitution']);
+
+        return view('admin.leads.show', compact('lead', 'employees'));
     }
 
     /**
@@ -109,8 +128,10 @@ class LeadController extends Controller
 
         $cities = City::where('status', 'active')->orderBy('name')->get();
         $agents = Agent::where('status', 'active')->orderBy('first_name')->get();
+        $loanProducts = \App\Models\LoanProduct::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
+        $constitutions = \App\Models\CustomerConstitution::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
 
-        return view('admin.leads.edit', compact('lead', 'cities', 'agents'));
+        return view('admin.leads.edit', compact('lead', 'cities', 'agents', 'loanProducts', 'constitutions'));
     }
 
     /**
@@ -135,5 +156,40 @@ class LeadController extends Controller
 
         return redirect()->route('admin.leads.index')
             ->with('success', "Lead \"{$lead->name}\" deleted.");
+    }
+
+    /**
+     * Assign lead to an employee.
+     */
+    public function assign(\Illuminate\Http\Request $request, Lead $lead): RedirectResponse
+    {
+        $this->authorize('leads.assign');
+
+        $validated = $request->validate([
+            'employee_id' => ['required', 'exists:users,id'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $lead->assignTo($validated['employee_id'], auth()->id() ?? \App\Models\User::first()?->id ?? 1, $validated['notes']);
+
+        return redirect()->route('admin.leads.show', $lead)
+            ->with('success', 'Lead assigned successfully.');
+    }
+
+    /**
+     * Manually update lead status.
+     */
+    public function updateStatus(\Illuminate\Http\Request $request, Lead $lead): RedirectResponse
+    {
+        $this->authorize('leads.change_status');
+
+        $validated = $request->validate([
+            'status' => ['required', 'string', 'in:new,visit_pending,visit_completed,documentation_pending,documentation_in_progress,documentation_completed,under_process,approved,rejected,completed,cancelled'],
+        ]);
+
+        $lead->update(['status' => $validated['status']]);
+
+        return redirect()->route('admin.leads.show', $lead)
+            ->with('success', 'Lead status updated successfully.');
     }
 }

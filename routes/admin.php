@@ -5,6 +5,10 @@ use App\Http\Controllers\Admin\AgentController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserPermissionController;
+use App\Http\Controllers\Admin\LeadController;
+use App\Http\Controllers\Admin\VisitController;
+use App\Http\Controllers\Admin\LoanProductController;
+use App\Http\Controllers\Admin\CustomerConstitutionController;
 use Illuminate\Support\Facades\Route;
 
 // Role & Permission management, and per-user direct permissions.
@@ -42,6 +46,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->name('agents.toggle-status');
 
     // City Management. Gated by city.* permissions inside CityController.
+    // City Management. Gated by city.* permissions inside CityController.
     Route::resource('cities', CityController::class)
         ->except(['show'])
         ->parameters(['cities' => 'city']);
@@ -49,6 +54,22 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->name('cities.toggle-status');
 
     // Lead Management
-    Route::resource('leads', \App\Http\Controllers\Admin\LeadController::class)
+    Route::post('leads/{lead}/assign', [LeadController::class, 'assign'])->name('leads.assign');
+    Route::post('leads/{lead}/status', [LeadController::class, 'updateStatus'])->name('leads.status');
+    
+    Route::resource('leads', LeadController::class)
         ->parameters(['leads' => 'lead']);
+
+    Route::post('leads/{lead}/visits', [VisitController::class, 'store'])->name('leads.visits.store');
+    Route::put('leads/{lead}/visits/{visit}', [VisitController::class, 'update'])->name('leads.visits.update');
+
+    // Loan Products Management
+    Route::patch('loan-products/{loan_product}/toggle-status', [LoanProductController::class, 'toggleStatus'])->name('loan-products.toggle-status');
+    Route::get('loan-products/{loan_product}/config', [LoanProductController::class, 'editConfig'])->name('loan-products.config.edit');
+    Route::post('loan-products/{loan_product}/config', [LoanProductController::class, 'updateConfig'])->name('loan-products.config.update');
+    Route::resource('loan-products', LoanProductController::class)->parameters(['loan-products' => 'loan_product']);
+
+    // Customer Constitutions Management
+    Route::patch('constitutions/{constitution}/toggle-status', [CustomerConstitutionController::class, 'toggleStatus'])->name('constitutions.toggle-status');
+    Route::resource('constitutions', CustomerConstitutionController::class);
 });

@@ -21,6 +21,11 @@ class Lead extends Model
         'mobile_number',
         'alternate_mobile_number',
         'agent_id',
+        'assigned_employee_id',
+        'assigned_by',
+        'assigned_at',
+        'loan_product_id',
+        'constitution_id',
         'city_id',
         'source',
         'status',
@@ -75,7 +80,98 @@ class Lead extends Model
         'itr_ay_2025_26' => 'boolean',
         'itr_ay_2024_25' => 'boolean',
         'date_of_birth' => 'date',
+        'assigned_at' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        static::saving(function ($lead) {
+            if ($lead->isDirty('constitution_id') && $lead->constitution_id) {
+                $constitution = CustomerConstitution::find($lead->constitution_id);
+                if ($constitution) {
+                    $lead->constitution_of_business = $constitution->name;
+                }
+            }
+        });
+
+        static::created(function ($lead) {
+            $lead->logActivity(
+                auth()->id() ?? User::first()?->id ?? 1,
+                'created',
+                'Lead created'
+            );
+        });
+
+        static::updated(function ($lead) {
+            if ($lead->isDirty('status')) {
+                $oldStatus = $lead->getOriginal('status');
+                $newStatus = $lead->status;
+                $lead->logActivity(
+                    auth()->id() ?? User::first()?->id ?? 1,
+                    'status_changed',
+                    "Status changed from '" . ucfirst($oldStatus) . "' to '" . ucfirst($newStatus) . "'"
+                );
+            }
+        });
+    }
+
+    /**
+     * Log an activity on this lead.
+     */
+    public function logActivity($userId, string $type, string $description): LeadActivity
+    {
+        return $this->activities()->create([
+            'user_id' => $userId,
+            'type' => $type,
+            'description' => $description,
+        ]);
+    }
+
+    /**
+     * Assign lead to an employee.
+     */
+    public function assignTo($employeeId, $assignedBy, $notes = null): void
+    {
+        $oldEmployeeId = $this->assigned_employee_id;
+        
+        $this->update([
+            'assigned_employee_id' => $employeeId,
+            'assigned_by' => $assignedBy,
+            'assigned_at' => now(),
+        ]);
+
+        $this->assignments()->create([
+            'employee_id' => $employeeId,
+            'assigned_by' => $assignedBy,
+            'assigned_at' => now(),
+            'notes' => $notes,
+        ]);
+
+        $employee = User::find($employeeId);
+        $employeeName = $employee ? $employee->name : 'Unknown';
+
+        if ($oldEmployeeId) {
+            $this->logActivity($assignedBy, 'reassigned', "Lead reassigned to {$employeeName}");
+        } else {
+            $this->logActivity($assignedBy, 'assigned', "Lead assigned to {$employeeName}");
+        }
+    }
+
+    /**
+     * Get the loan product requested by the lead.
+     */
+    public function loanProduct(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(LoanProduct::class);
+    }
+
+    /**
+     * Get the customer constitution of the lead.
+     */
+    public function constitution(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(CustomerConstitution::class);
+    }
 
     /**
      * Get the agent assigned to the lead.
@@ -91,5 +187,45 @@ class Lead extends Model
     public function city(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    /**
+     * Get the assigned employee.
+     */
+    public function assignedEmployee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_employee_id');
+    }
+
+    /**
+     * Get the user who assigned the lead.
+     */
+    public function assigner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
+    }
+
+    /**
+     * Get all assignments for this lead.
+     */
+    public function assignments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LeadAssignment::class);
+    }
+
+    /**
+     * Get all visits for this lead.
+     */
+    public function visits(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Visit::class);
+    }
+
+    /**
+     * Get all activities for this lead.
+     */
+    public function activities(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LeadActivity::class)->latest();
     }
 }

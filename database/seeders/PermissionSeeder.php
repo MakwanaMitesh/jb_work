@@ -78,6 +78,28 @@ class PermissionSeeder extends Seeder
             'assign' => 'Assign leads',
             'change_status' => 'Change lead status',
         ],
+        'visits' => [
+            'view' => 'View visits',
+            'create' => 'Create visits',
+            'edit' => 'Edit visits',
+            'delete' => 'Delete visits',
+        ],
+        'loan_products' => [
+            'view' => 'View loan products',
+            'create' => 'Create loan products',
+            'edit' => 'Edit loan products',
+            'delete' => 'Delete loan products',
+        ],
+        'constitutions' => [
+            'view' => 'View customer constitutions',
+            'create' => 'Create customer constitutions',
+            'edit' => 'Edit customer constitutions',
+            'delete' => 'Delete customer constitutions',
+        ],
+        'loan_product_config' => [
+            'view' => 'View loan product configurations',
+            'edit' => 'Edit loan product configurations',
+        ],
         'reports' => [
             'view' => 'View reports',
             'export' => 'Export reports',

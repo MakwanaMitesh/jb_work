@@ -24,11 +24,9 @@
                 <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Status</label>
                 <select data-filter-column="4" data-filter-type="regex" class="form-select w-full border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 text-sm h-10 px-3">
                     <option value="">All</option>
-                    <option value="New">New</option>
-                    <option value="Contacted">Contacted</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Converted">Converted</option>
-                    <option value="Lost">Lost</option>
+                    @foreach(['new', 'visit_pending', 'visit_completed', 'documentation_pending', 'documentation_in_progress', 'documentation_completed', 'under_process', 'approved', 'rejected', 'completed', 'cancelled'] as $st)
+                        <option value="{{ ucfirst(str_replace('_', ' ', $st)) }}">{{ ucfirst(str_replace('_', ' ', $st)) }}</option>
+                    @endforeach
                 </select>
             </div>
             <div>
@@ -49,6 +47,24 @@
                     @endforeach
                 </select>
             </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Loan Product</label>
+                <select data-filter-column="6" class="form-select w-full border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 text-sm h-10 px-3">
+                    <option value="">All</option>
+                    @foreach ($loanProducts as $product)
+                        <option value="{{ $product->name }}">{{ $product->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Constitution</label>
+                <select data-filter-column="7" class="form-select w-full border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary-500 focus:ring-primary-500/20 text-sm h-10 px-3">
+                    <option value="">All</option>
+                    @foreach ($constitutions as $const)
+                        <option value="{{ $const->name }}">{{ $const->name }}</option>
+                    @endforeach
+                </select>
+            </div>
         </x-slot:filters>
 
         <x-slot:thead>
@@ -58,6 +74,8 @@
             <th data-col="agent" class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Assigned Agent</th>
             <th data-col="status" class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
             <th data-col="created" class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Created Date</th>
+            <th data-col="loan_product" class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Loan Product</th>
+            <th data-col="constitution" class="px-6 py-3.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Constitution</th>
             <th class="px-6 py-3.5 text-right w-16"></th>
         </x-slot:thead>
 
@@ -76,10 +94,16 @@
                     @php
                         $color = match($lead->status) {
                             'new' => 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400 border border-blue-200/30 dark:border-blue-900/30',
-                            'contacted' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30',
-                            'in_progress' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20 dark:text-indigo-400 border border-indigo-200/30 dark:border-indigo-900/30',
-                            'converted' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30',
-                            'lost' => 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border border-slate-200/30 dark:border-slate-700/30',
+                            'visit_pending' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30',
+                            'visit_completed' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30',
+                            'documentation_pending' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20 dark:text-indigo-400 border border-indigo-200/30 dark:border-indigo-900/30',
+                            'documentation_in_progress' => 'bg-purple-50 text-purple-700 dark:bg-purple-950/20 dark:text-purple-400 border border-purple-200/30 dark:border-purple-900/30',
+                            'documentation_completed' => 'bg-teal-50 text-teal-700 dark:bg-teal-950/20 dark:text-teal-400 border border-teal-200/30 dark:border-teal-900/30',
+                            'under_process' => 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950/20 dark:text-cyan-400 border border-cyan-200/30 dark:border-cyan-900/30',
+                            'approved' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200/40 dark:border-emerald-900/40',
+                            'rejected' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400 border border-rose-200/30 dark:border-rose-900/30',
+                            'completed' => 'bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-400 border border-green-200/40 dark:border-green-900/40',
+                            'cancelled' => 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border border-slate-200/30 dark:border-slate-700/30',
                             default => 'bg-slate-100 text-slate-700'
                         };
                     @endphp
@@ -88,6 +112,8 @@
                     </span>
                 </td>
                 <td class="px-6 py-4.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400" data-col="created" data-order="{{ $lead->created_at?->timestamp ?? 0 }}">{{ $lead->created_at?->format('M d, Y') ?? '—' }}</td>
+                <td class="px-6 py-4.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400" data-col="loan_product">{{ $lead->loanProduct?->name ?? '—' }}</td>
+                <td class="px-6 py-4.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400" data-col="constitution">{{ $lead->constitution?->name ?? $lead->constitution_of_business ?? '—' }}</td>
                 <td class="px-6 py-4.5 whitespace-nowrap text-right">
                     <div class="relative inline-block text-left" data-kebab-container>
                         <button class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 flex items-center justify-center transition" type="button" data-kebab-btn>
@@ -123,13 +149,7 @@
             </tr>
         @empty
             <tr>
-                <td class="px-6 py-10 text-center text-sm text-slate-400">No leads found.</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td colspan="9" class="px-6 py-10 text-center text-sm text-slate-400">No leads found.</td>
             </tr>
         @endforelse
     </x-datatable-card>

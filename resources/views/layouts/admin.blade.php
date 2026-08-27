@@ -271,10 +271,11 @@
                             if ($el.hasClass('select2-hidden-accessible') || $el.hasClass('dt-input')) return;
 
                             const isInsideDropdown = $el.closest('.dropdown-menu').length > 0;
+                            const dialogParent = $el.closest('dialog');
                             $el.select2({
                                 theme: 'bootstrap-5',
                                 width: '100%',
-                                dropdownParent: isInsideDropdown ? $el.closest('.dropdown-menu') : $(document.body)
+                                dropdownParent: dialogParent.length > 0 ? dialogParent : (isInsideDropdown ? $el.closest('.dropdown-menu') : $(document.body))
                             });
                         });
                     };

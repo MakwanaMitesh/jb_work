@@ -57,6 +57,18 @@
                 <span>Employee Roles</span>
             </a>
         @endcan
+        @can('loan_products.view')
+            <a href="{{ route('admin.loan-products.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 {{ request()->routeIs('admin.loan-products.*') ? 'bg-primary-50 text-primary-700 dark:bg-primary-950/20 dark:text-primary-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">
+                {!! $navIcon('<path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" />') !!}
+                <span>Loan Products</span>
+            </a>
+        @endcan
+        @can('constitutions.view')
+            <a href="{{ route('admin.constitutions.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 {{ request()->routeIs('admin.constitutions.*') ? 'bg-primary-50 text-primary-700 dark:bg-primary-950/20 dark:text-primary-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">
+                {!! $navIcon('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />') !!}
+                <span>Constitutions</span>
+            </a>
+        @endcan
         @can('city.view')
             <a href="{{ route('admin.cities.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 {{ request()->routeIs('admin.cities.*') ? 'bg-primary-50 text-primary-700 dark:bg-primary-950/20 dark:text-primary-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">
                 {!! $navIcon('<path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5M2 12l10 5 10-5" />') !!}

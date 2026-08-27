@@ -38,6 +38,24 @@ class LeadManagementTest extends TestCase
             'city_id' => $this->city->id,
             'status' => 'active',
         ]);
+
+        $this->product = \App\Models\LoanProduct::create([
+            'name' => 'Home Loan',
+            'code' => 'HL',
+            'status' => 'active',
+        ]);
+
+        $this->constitution = \App\Models\CustomerConstitution::create([
+            'name' => 'Individual',
+            'code' => 'INDIVIDUAL',
+            'status' => 'active',
+        ]);
+
+        \App\Models\LoanProductConstitution::create([
+            'loan_product_id' => $this->product->id,
+            'constitution_id' => $this->constitution->id,
+            'status' => 'active',
+        ]);
     }
 
     private function validPayload(array $overrides = []): array
@@ -48,6 +66,8 @@ class LeadManagementTest extends TestCase
             'mobile_number' => '+919876543210',
             'alternate_mobile_number' => '+918765432109',
             'agent_id' => $this->agent->id,
+            'loan_product_id' => $this->product->id,
+            'constitution_id' => $this->constitution->id,
             'city_id' => $this->city->id,
             'source' => 'Website',
             'status' => 'new',
