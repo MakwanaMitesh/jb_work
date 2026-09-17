@@ -56,6 +56,11 @@ class LeadManagementTest extends TestCase
             'constitution_id' => $this->constitution->id,
             'status' => 'active',
         ]);
+
+        $this->bank = \App\Models\Bank::firstOrCreate(
+            ['name' => 'State Bank of India'],
+            ['status' => 'active']
+        );
     }
 
     private function validPayload(array $overrides = []): array
@@ -66,6 +71,7 @@ class LeadManagementTest extends TestCase
             'mobile_number' => '+919876543210',
             'alternate_mobile_number' => '+918765432109',
             'agent_id' => $this->agent->id,
+            'bank_id' => $this->bank->id,
             'loan_product_id' => $this->product->id,
             'constitution_id' => $this->constitution->id,
             'city_id' => $this->city->id,
@@ -172,6 +178,7 @@ class LeadManagementTest extends TestCase
             'aadhar_card' => '1234-5678-9012',
             'pan_card' => 'ABCDE1234F',
             'udyam_registration' => 'UDYAM-TX-00-1234567',
+            'fssai_license' => '12345678901234',
             'education' => 'Bachelor of Engineering',
             'mother_name' => 'Jane Doe',
             'itr_id' => 'itr_user_123',
@@ -180,6 +187,20 @@ class LeadManagementTest extends TestCase
             'itr_ay_2026_27' => '1',
             'itr_ay_2025_26' => '1',
             'itr_ay_2024_25' => '0',
+            'itr_details' => [
+                [
+                    'itr_id' => 'itr_user_123',
+                    'itr_password' => 'secretPass!',
+                    'itr_audited' => 'Yes',
+                    'assessment_year' => 'A.Y. 2026-27',
+                ],
+                [
+                    'itr_id' => 'itr_user_456',
+                    'itr_password' => 'secretPass456!',
+                    'itr_audited' => 'No',
+                    'assessment_year' => 'A.Y. 2025-26',
+                ],
+            ],
             'bank_details' => [
                 [
                     'bank_name' => 'First National Bank',
@@ -202,6 +223,7 @@ class LeadManagementTest extends TestCase
             'no_of_manpower' => '10',
             'business_location' => 'Downtown',
             'area_of_premises' => '1000 sq ft',
+            'land_and_factory_building' => 'Owned Industrial Shed',
             'connectivity' => 'High-speed Fiber',
             'required_loan_amount' => '500,000',
             'cc_amount' => '200,000',
@@ -219,6 +241,19 @@ class LeadManagementTest extends TestCase
                     'tenure' => '36 Months',
                 ],
             ],
+            'bank_loan_details' => [
+                'applicant_coapplicant_guarantor_name' => 'Rajesh Shah',
+                'visit_office_date' => '2026-07-28',
+                'office_organization_address' => 'Surat, Gujarat',
+                'type_of_organization' => ['Proprietorship'],
+                'nature_of_business' => ['Manufacturing'],
+                'office_ownership' => ['RENTED'],
+                'workplace_landmark' => 'VED ROAD',
+                'years_in_business' => '13 YEARS',
+                'designation_applicant_guarantor' => 'Proprietorship firm',
+                'whom_met_details' => 'Rajesh Shah - 9876543210',
+                'office_tvr_result' => 'Positive',
+            ],
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -230,12 +265,45 @@ class LeadManagementTest extends TestCase
         $this->assertNotNull($lead);
         $this->assertSame('Male', $lead->gender);
         $this->assertSame('Jane Doe', $lead->mother_name);
+        $this->assertSame('12345678901234', $lead->fssai_license);
+        $this->assertSame('Owned Industrial Shed', $lead->land_and_factory_building);
         $this->assertTrue($lead->itr_ay_2026_27);
         $this->assertFalse($lead->itr_ay_2024_25);
+        $this->assertIsArray($lead->itr_details);
+        $this->assertSame('itr_user_123', $lead->itr_id);
+        $this->assertSame('A.Y. 2025-26', $lead->itr_details[1]['assessment_year']);
         $this->assertIsArray($lead->bank_details);
         $this->assertSame('First National Bank', $lead->bank_details[0]['bank_name']);
         $this->assertSame('Tech Solutions LLC', $lead->business_name);
         $this->assertIsArray($lead->current_loans);
+        $this->assertIsArray($lead->bank_loan_details);
+        $this->assertSame('Rajesh Shah', $lead->bank_loan_details['applicant_coapplicant_guarantor_name']);
+        $this->assertSame('Positive', $lead->bank_loan_details['office_tvr_result']);
         $this->assertSame('Equipment Loan', $lead->current_loans[0]['loan_type']);
+    }
+
+    public function test_admin_can_download_inspection_sheet_pdf(): void
+    {
+        $lead = Lead::create($this->validPayload([
+            'bank_loan_details' => [
+                'applicant_coapplicant_guarantor_name' => 'GOPALBHAI ITALIYA',
+                'visit_office_date' => '2026-07-28',
+                'office_organization_address' => 'Plot 421 Ved Road Surat',
+                'type_of_organization' => ['Proprietorship'],
+                'nature_of_business' => ['Manufacturing'],
+                'office_ownership' => ['RENTED'],
+                'workplace_landmark' => 'VED ROAD',
+                'years_in_business' => '13 YEARS',
+                'designation_applicant_guarantor' => 'Proprietorship firm',
+                'whom_met_details' => 'GOPALBHAI ITALIYA - 9825684253',
+                'office_tvr_result' => 'Positive',
+            ],
+        ]));
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('admin.leads.inspection-sheet.pdf', $lead));
+
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'application/pdf');
     }
 }

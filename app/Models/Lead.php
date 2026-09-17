@@ -21,6 +21,7 @@ class Lead extends Model
         'mobile_number',
         'alternate_mobile_number',
         'agent_id',
+        'bank_id',
         'assigned_employee_id',
         'assigned_by',
         'assigned_at',
@@ -36,6 +37,7 @@ class Lead extends Model
         'aadhar_card',
         'pan_card',
         'udyam_registration',
+        'fssai_license',
         'education',
         'mother_name',
         'itr_id',
@@ -59,6 +61,7 @@ class Lead extends Model
         'no_of_manpower',
         'business_location',
         'area_of_premises',
+        'land_and_factory_building',
         'connectivity',
         'required_loan_amount',
         'cc_amount',
@@ -66,6 +69,8 @@ class Lead extends Model
         'term_loan_amount',
         'term_loan_machinery_details',
         'current_loans',
+        'itr_details',
+        'bank_loan_details',
     ];
 
     /**
@@ -76,12 +81,36 @@ class Lead extends Model
     protected $casts = [
         'bank_details' => 'array',
         'current_loans' => 'array',
+        'itr_details' => 'array',
+        'bank_loan_details' => 'array',
         'itr_ay_2026_27' => 'boolean',
         'itr_ay_2025_26' => 'boolean',
         'itr_ay_2024_25' => 'boolean',
         'date_of_birth' => 'date',
         'assigned_at' => 'datetime',
     ];
+
+    public function getFormattedItrDetailsAttribute(): array
+    {
+        if (!empty($this->itr_details) && is_array($this->itr_details)) {
+            return $this->itr_details;
+        }
+
+        if ($this->itr_id || $this->itr_password || $this->itr_audited || $this->itr_ay_2026_27 || $this->itr_ay_2025_26 || $this->itr_ay_2024_25) {
+            return [
+                [
+                    'itr_id' => $this->itr_id,
+                    'itr_password' => $this->itr_password,
+                    'itr_audited' => $this->itr_audited,
+                    'itr_ay_2026_27' => $this->itr_ay_2026_27,
+                    'itr_ay_2025_26' => $this->itr_ay_2025_26,
+                    'itr_ay_2024_25' => $this->itr_ay_2024_25,
+                ]
+            ];
+        }
+
+        return [];
+    }
 
     protected static function booted()
     {
@@ -91,6 +120,23 @@ class Lead extends Model
                 if ($constitution) {
                     $lead->constitution_of_business = $constitution->name;
                 }
+            }
+
+            if (is_array($lead->itr_details) && count($lead->itr_details) > 0) {
+                $first = $lead->itr_details[0];
+                if (empty($lead->itr_id)) {
+                    $lead->itr_id = $first['itr_id'] ?? null;
+                }
+                if (empty($lead->itr_password)) {
+                    $lead->itr_password = $first['itr_password'] ?? null;
+                }
+                if (empty($lead->itr_audited)) {
+                    $lead->itr_audited = $first['itr_audited'] ?? null;
+                }
+                $ay = $first['assessment_year'] ?? '';
+                $lead->itr_ay_2026_27 = !empty($first['itr_ay_2026_27']) || str_contains($ay, '2026-27');
+                $lead->itr_ay_2025_26 = !empty($first['itr_ay_2025_26']) || str_contains($ay, '2025-26');
+                $lead->itr_ay_2024_25 = !empty($first['itr_ay_2024_25']) || str_contains($ay, '2024-25');
             }
         });
 
@@ -155,6 +201,22 @@ class Lead extends Model
         } else {
             $this->logActivity($assignedBy, 'assigned', "Lead assigned to {$employeeName}");
         }
+    }
+
+    /**
+     * Get the bank assigned to the lead.
+     */
+    public function bank(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Bank::class);
+    }
+
+    /**
+     * Get documents associated with the lead.
+     */
+    public function leadDocuments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LeadDocument::class);
     }
 
     /**

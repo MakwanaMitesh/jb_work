@@ -27,6 +27,14 @@ class DashboardController extends Controller
 
         $recentEmployees = (clone $employees)->with('roles')->latest()->take(5)->get();
 
-        return view('dashboard', compact('stats', 'roleBreakdown', 'recentEmployees'));
+        $expiredInsurances = User::whereHas('roles', function ($q) {
+                $q->where('name', 'Employee');
+            })
+            ->where('status', 'active')
+            ->whereNotNull('insurance_end_date')
+            ->where('insurance_end_date', '<', now()->toDateString())
+            ->get();
+
+        return view('dashboard', compact('stats', 'roleBreakdown', 'recentEmployees', 'expiredInsurances'));
     }
 }

@@ -9,6 +9,9 @@ use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\VisitController;
 use App\Http\Controllers\Admin\LoanProductController;
 use App\Http\Controllers\Admin\CustomerConstitutionController;
+use App\Http\Controllers\Admin\AssessmentYearController;
+use App\Http\Controllers\Admin\BankController;
+use App\Http\Controllers\Admin\DocumentTypeController;
 use Illuminate\Support\Facades\Route;
 
 // Role & Permission management, and per-user direct permissions.
@@ -56,9 +59,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Lead Management
     Route::post('leads/{lead}/assign', [LeadController::class, 'assign'])->name('leads.assign');
     Route::post('leads/{lead}/status', [LeadController::class, 'updateStatus'])->name('leads.status');
-    
+
     Route::resource('leads', LeadController::class)
         ->parameters(['leads' => 'lead']);
+
+    Route::get('leads/{lead}/documents/{document}/download', [LeadController::class, 'downloadDocument'])->name('leads.documents.download');
+    Route::delete('leads/{lead}/documents/{document}', [LeadController::class, 'deleteDocument'])->name('leads.documents.destroy');
+    Route::get('leads/{lead}/inspection-sheet/pdf', [LeadController::class, 'downloadInspectionSheetPdf'])->name('leads.inspection-sheet.pdf');
 
     Route::post('leads/{lead}/visits', [VisitController::class, 'store'])->name('leads.visits.store');
     Route::put('leads/{lead}/visits/{visit}', [VisitController::class, 'update'])->name('leads.visits.update');
@@ -72,4 +79,16 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Customer Constitutions Management
     Route::patch('constitutions/{constitution}/toggle-status', [CustomerConstitutionController::class, 'toggleStatus'])->name('constitutions.toggle-status');
     Route::resource('constitutions', CustomerConstitutionController::class);
+
+    // Assessment Years Management
+    Route::patch('assessment-years/{assessment_year}/toggle-status', [AssessmentYearController::class, 'toggleStatus'])->name('assessment-years.toggle-status');
+    Route::resource('assessment-years', AssessmentYearController::class)->parameters(['assessment-years' => 'assessment_year']);
+
+    // Banks Management
+    Route::patch('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
+    Route::resource('banks', BankController::class);
+
+    // Document Master Management
+    Route::patch('document-types/{document_type}/toggle-status', [DocumentTypeController::class, 'toggleStatus'])->name('document-types.toggle-status');
+    Route::resource('document-types', DocumentTypeController::class)->parameters(['document-types' => 'document_type']);
 });

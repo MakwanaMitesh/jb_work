@@ -33,6 +33,10 @@
 
             <!-- Header Actions -->
             <div class="flex items-center gap-3 shrink-0">
+                <a href="{{ route('admin.leads.inspection-sheet.pdf', $lead) }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded-lg shadow-sm transition no-underline">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Inspection Sheet (PDF)
+                </a>
                 @can('leads.edit')
                     <a href="{{ route('admin.leads.edit', $lead) }}" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-600 hover:bg-primary-500 text-white text-xs font-semibold rounded-lg shadow-sm transition no-underline">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
@@ -47,7 +51,7 @@
     </div>
 
     <!-- Filament-style Header Widgets (Summary Grid) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
         <!-- Status Widget -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between min-h-[90px]">
             <span class="text-xs font-medium text-slate-400 uppercase tracking-wider font-semibold">Status</span>
@@ -87,6 +91,12 @@
             </div>
         </div>
 
+        <!-- Bank Widget -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between min-h-[90px]">
+            <span class="text-xs font-medium text-slate-400 uppercase tracking-wider font-semibold">Bank</span>
+            <span class="text-sm font-bold text-slate-900 dark:text-white mt-1">{{ $lead->bank?->name ?: '—' }}</span>
+        </div>
+
         <!-- Product Widget -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between min-h-[90px]">
             <span class="text-xs font-medium text-slate-400 uppercase tracking-wider font-semibold">Loan Product</span>
@@ -122,11 +132,27 @@
             <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" id="kyc-tab" class="tab-btn flex items-center px-4 py-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm rounded-lg transition focus:outline-none">
                 KYC & Personal Details
             </button>
+            @if (!empty($lead->bank_loan_details))
+                <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" id="bank-loan-tab" class="tab-btn flex items-center px-4 py-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm rounded-lg transition focus:outline-none">
+                    Bank Loan Report
+                </button>
+            @endif
             <button type="button" onclick="switchTab('business-tab', 'business-panel')" id="business-tab" class="tab-btn flex items-center px-4 py-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm rounded-lg transition focus:outline-none">
                 Business Profile
             </button>
             <button type="button" onclick="switchTab('finance-tab', 'finance-panel')" id="finance-tab" class="tab-btn flex items-center px-4 py-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm rounded-lg transition focus:outline-none">
                 Financials & Active Liabilities
+            </button>
+            @php
+                $uploadedDocCount = $lead->leadDocuments->count();
+            @endphp
+            <button type="button" onclick="switchTab('documents-tab', 'documents-panel')" id="documents-tab" class="tab-btn flex items-center gap-1.5 px-4 py-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm rounded-lg transition focus:outline-none">
+                <span>Documents</span>
+                @if ($uploadedDocCount > 0)
+                    <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-primary-100 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300">
+                        {{ $uploadedDocCount }}
+                    </span>
+                @endif
             </button>
         </div>
 
@@ -380,7 +406,7 @@
 
                 <div>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2 mb-4">KYC Identification Numbers</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm">
                         <div class="space-y-0.5">
                             <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">Aadhaar Card</span>
                             <span class="font-medium text-slate-900 dark:text-white font-mono">{{ $lead->aadhar_card ?: '—' }}</span>
@@ -393,12 +419,18 @@
                             <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">Udyam Registration</span>
                             <span class="font-medium text-slate-900 dark:text-white font-mono">{{ $lead->udyam_registration ?: '—' }}</span>
                         </div>
+                        <div class="space-y-0.5">
+                            <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">FSSAI License No.</span>
+                            <span class="font-medium text-slate-900 dark:text-white font-mono">{{ $lead->fssai_license ?: '—' }}</span>
+                        </div>
                     </div>
                 </div>
 
                 <div>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2 mb-4">ITR Filing & Login Credentials</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm mb-4">
+                    
+                    <!-- Top-Level Credentials -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm bg-slate-50/70 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 mb-4">
                         <div class="space-y-0.5">
                             <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">ITR Portal User ID</span>
                             <span class="font-medium text-slate-900 dark:text-white">{{ $lead->itr_id ?: '—' }}</span>
@@ -407,27 +439,185 @@
                             <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">ITR Password</span>
                             <span class="font-medium text-slate-900 dark:text-white font-mono">{{ $lead->itr_password ?: '—' }}</span>
                         </div>
-                        <div class="space-y-0.5">
-                            <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">ITR Audited Status</span>
-                            <span class="font-medium text-slate-900 dark:text-white">{{ $lead->itr_audited ?: '—' }}</span>
-                        </div>
                     </div>
-                    <div class="pt-3">
-                        <span class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Assessment Years Filed</span>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 dark:bg-slate-950/20 border border-slate-200/50 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $lead->itr_ay_2026_27 ? 'bg-emerald-500' : 'bg-slate-300' }}"></span> A.Y. 2026-27
-                            </span>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 dark:bg-slate-950/20 border border-slate-200/50 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $lead->itr_ay_2025_26 ? 'bg-emerald-500' : 'bg-slate-300' }}"></span> A.Y. 2025-26
-                            </span>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 dark:bg-slate-950/20 border border-slate-200/50 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                <span class="w-1.5 h-1.5 rounded-full {{ $lead->itr_ay_2024_25 ? 'bg-emerald-500' : 'bg-slate-300' }}"></span> A.Y. 2024-25
-                            </span>
+
+                    @php $itrList = $lead->formatted_itr_details; @endphp
+                    @if (count($itrList) > 0)
+                        <div class="space-y-4">
+                            @foreach ($itrList as $idx => $itr)
+                                <div class="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">ITR Profile #{{ $idx + 1 }}</div>
+                                        @if(!empty($itr['assessment_year']))
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 text-xs font-semibold">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                {{ $itr['assessment_year'] }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                        <div class="space-y-0.5">
+                                            <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">ITR Audited Status</span>
+                                            <span class="font-medium text-slate-900 dark:text-white">{{ $itr['itr_audited'] ?? '—' }}</span>
+                                        </div>
+                                        <div class="space-y-0.5">
+                                            <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">Assessment Year</span>
+                                            <span class="font-medium text-slate-900 dark:text-white">{{ $itr['assessment_year'] ?? '—' }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Documents -->
+                                    <div class="pt-3 border-t border-slate-200/60 dark:border-slate-800/60">
+                                        <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold mb-2">Uploaded ITR Documents</span>
+                                        <div class="flex flex-wrap gap-2">
+                                            @if(!empty($itr['audit_report']))
+                                                <a href="{{ Storage::url($itr['audit_report']) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition">
+                                                    <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    <span>Audit Report</span>
+                                                </a>
+                                            @endif
+                                            @if(!empty($itr['itr_file']))
+                                                <a href="{{ Storage::url($itr['itr_file']) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition">
+                                                    <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    <span>ITR File</span>
+                                                </a>
+                                            @endif
+                                            @if(!empty($itr['computation']))
+                                                <a href="{{ Storage::url($itr['computation']) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition">
+                                                    <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    <span>Computation</span>
+                                                </a>
+                                            @endif
+                                            @if(!empty($itr['itr_form']))
+                                                <a href="{{ Storage::url($itr['itr_form']) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition">
+                                                    <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    <span>ITR Form</span>
+                                                </a>
+                                            @endif
+                                            @if(empty($itr['audit_report']) && empty($itr['itr_file']) && empty($itr['computation']) && empty($itr['itr_form']))
+                                                <span class="text-xs text-slate-400 dark:text-slate-500 italic">No document files uploaded for this profile.</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-sm text-slate-500 dark:text-slate-400">No ITR details available.</p>
+                    @endif
+                </div>
+            </div>
+
+            <!-- PANEL 2.5: Bank Loan Verification Report -->
+            @if (!empty($lead->bank_loan_details))
+                @php $bld = $lead->bank_loan_details; @endphp
+                <div id="bank-loan-panel" class="tab-panel space-y-6 hidden">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-4">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Bank Loan Verification Report (Annexure V-A)</h3>
+                        <a href="{{ route('admin.leads.inspection-sheet.pdf', $lead) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40 text-xs font-semibold rounded-lg hover:bg-amber-100 transition no-underline">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Download Inspection Sheet (PDF)
+                        </a>
+                    </div>
+                        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                            <table class="w-full border-collapse text-sm">
+                                <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
+                                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                                        <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 w-12 text-center border-r border-slate-200 dark:border-slate-800">1</td>
+                                        <td class="p-4 font-semibold text-slate-700 dark:text-slate-300 w-1/3 border-r border-slate-200 dark:border-slate-800">Name of Applicant / Co-Applicant / Guarantor</td>
+                                        <td class="p-4 font-medium text-slate-900 dark:text-white">{{ $bld['applicant_coapplicant_guarantor_name'] ?? '—' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800">2</td>
+                                        <td class="p-4 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">Visit to Office / Work Place of Borrower</td>
+                                        <td class="p-4 font-medium text-slate-900 dark:text-white">Date of Visit: {{ !empty($bld['visit_office_date']) ? \Carbon\Carbon::parse($bld['visit_office_date'])->format('d/m/Y') : '—' }}</td>
+                                    </tr>
+                                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                                        <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800">3</td>
+                                        <td class="p-4 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">Name of Office / Organization, Address & Office Phone No.</td>
+                                        <td class="p-4 space-y-1">
+                                            <p class="font-medium text-slate-900 dark:text-white whitespace-pre-line">{{ $bld['office_organization_address'] ?? '—' }}</p>
+                                            @if (!empty($bld['office_phone_no']))
+                                                <p class="text-xs text-slate-500"><span class="font-semibold">Office Phone:</span> {{ $bld['office_phone_no'] }}</p>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800">4</td>
+                                        <td class="p-4 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">For Self Employed:</td>
+                                        <td class="p-4 space-y-3">
+                                            <div>
+                                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">A. Type of Organization</span>
+                                                <div class="flex flex-wrap gap-2">
+                                                    @forelse ($bld['type_of_organization'] ?? [] as $item)
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">✓ {{ $item }}</span>
+                                                    @empty
+                                                        <span class="text-slate-400 italic">None selected</span>
+                                                    @endforelse
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">B. Nature of Business</span>
+                                                <div class="flex flex-wrap gap-2">
+                                                    @forelse ($bld['nature_of_business'] ?? [] as $item)
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">✓ {{ $item }}</span>
+                                                    @empty
+                                                        <span class="text-slate-400 italic">None selected</span>
+                                                    @endforelse
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">C. Whether own office / rented / leased</span>
+                                                <div class="flex flex-wrap gap-2">
+                                                    @forelse ($bld['office_ownership'] ?? [] as $item)
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-300 border border-purple-200 dark:border-purple-800">✓ {{ $item }}</span>
+                                                    @empty
+                                                        <span class="text-slate-400 italic">None selected</span>
+                                                    @endforelse
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                                        <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800">5</td>
+                                        <td class="p-4 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">Land mark for Place of work</td>
+                                        <td class="p-4 font-medium text-slate-900 dark:text-white">{{ $bld['workplace_landmark'] ?? '—' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800">6</td>
+                                        <td class="p-4 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">Number of year Service / Business</td>
+                                        <td class="p-4 font-medium text-slate-900 dark:text-white">{{ $bld['years_in_business'] ?? '—' }}</td>
+                                    </tr>
+                                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                                        <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800">7</td>
+                                        <td class="p-4 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">Designation of APPLICANT / GUARANTOR</td>
+                                        <td class="p-4 font-medium text-slate-900 dark:text-white">{{ $bld['designation_applicant_guarantor'] ?? '—' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800">8</td>
+                                        <td class="p-4 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">Whom met (Person contacted & designation & Tel)</td>
+                                        <td class="p-4 font-medium text-slate-900 dark:text-white">{{ $bld['whom_met_details'] ?? '—' }}</td>
+                                    </tr>
+                                    <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                                        <td class="p-4 font-semibold text-slate-600 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800">9</td>
+                                        <td class="p-4 font-semibold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800">Office TVR Result (Positive / Negative)</td>
+                                        <td class="p-4 font-bold">
+                                            @if (($bld['office_tvr_result'] ?? '') === 'Positive')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">Positive</span>
+                                            @elseif (($bld['office_tvr_result'] ?? '') === 'Negative')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300">Negative</span>
+                                            @else
+                                                <span class="text-slate-400">—</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
 
             <!-- PANEL 3: Business Profile -->
             <div id="business-panel" class="tab-panel space-y-8 hidden">
@@ -467,7 +657,7 @@
 
                 <div>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2 mb-4">Operations Metrics</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-6 text-sm">
                         <div class="space-y-0.5">
                             <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">Experience (in Years)</span>
                             <span class="font-medium text-slate-900 dark:text-white">{{ $lead->business_experience ?: '—' }}</span>
@@ -479,6 +669,10 @@
                         <div class="space-y-0.5">
                             <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">Premises Area Size</span>
                             <span class="font-medium text-slate-900 dark:text-white">{{ $lead->area_of_premises ?: '—' }}</span>
+                        </div>
+                        <div class="space-y-0.5">
+                            <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">Land & Factory Building</span>
+                            <span class="font-medium text-slate-900 dark:text-white">{{ $lead->land_and_factory_building ?: '—' }}</span>
                         </div>
                         <div class="space-y-0.5">
                             <span class="text-xs text-slate-400 dark:text-slate-500 block font-semibold">Site Connectivity</span>
@@ -612,6 +806,123 @@
                 </div>
             </div>
 
+            <!-- PANEL 5: Documents Checklist & Files -->
+            @php
+                $docTypesShowList = $documentTypes ?? \App\Models\DocumentType::where('status', 'active')->ordered()->get();
+                $groupedLeadDocs = $lead->leadDocuments->groupBy('document_type_id');
+            @endphp
+            <div id="documents-panel" class="tab-panel space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span class="w-2 h-4 bg-primary-600 rounded-full"></span>
+                            Lead Documents
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Uploaded KYC, financial and project documents ({{ $uploadedDocCount }} attached).</p>
+                    </div>
+                    @can('leads.edit')
+                        <a href="{{ route('admin.leads.edit', $lead) }}#documents-panel" class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-xs font-semibold rounded-xl shadow-sm transition no-underline">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                            Manage & Edit Documents
+                        </a>
+                    @endcan
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @foreach ($docTypesShowList as $type)
+                        @php
+                            $docsForType = $groupedLeadDocs->get($type->id, collect());
+                            $isUploaded = $docsForType->isNotEmpty();
+                        @endphp
+                        <div class="p-5 sm:p-6 rounded-2xl border transition-all duration-200 flex flex-col justify-between space-y-4 {{ $isUploaded ? 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 shadow-sm hover:border-slate-300 dark:hover:border-slate-700' : 'bg-slate-50/50 dark:bg-slate-950/30 border-dashed border-slate-200 dark:border-slate-800' }}">
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono font-bold {{ $isUploaded ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300' : 'bg-slate-200/60 dark:bg-slate-800 text-slate-500' }}">
+                                        #{{ $loop->iteration }}
+                                    </span>
+                                    @if ($isUploaded)
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold border border-emerald-200/60 dark:border-emerald-800/60">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            Uploaded ({{ $docsForType->count() }})
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 text-slate-400 text-[11px] font-semibold">
+                                            Pending
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <div class="flex items-start justify-between gap-2">
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                                        {{ $type->name }}
+                                    </h4>
+                                    @can('leads.edit')
+                                        <a href="{{ route('admin.leads.edit', $lead) }}#documents-panel" title="Edit / Upload {{ $type->name }}" class="p-1 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 rounded-md transition shrink-0">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                        </a>
+                                    @endcan
+                                </div>
+                            </div>
+
+                            <div class="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-2.5">
+                                @if ($isUploaded)
+                                    @foreach ($docsForType as $docItem)
+                                        <div class="p-3 bg-slate-50/80 dark:bg-slate-800/40 rounded-xl border border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-3 text-xs hover:border-slate-300 dark:hover:border-slate-700 transition">
+                                            <div class="truncate max-w-[150px] sm:max-w-[170px]">
+                                                <span class="font-semibold text-slate-900 dark:text-white block truncate" title="{{ $docItem->original_name }}">
+                                                    @if ($docItem->side)
+                                                        <span class="capitalize font-bold text-primary-600 dark:text-primary-400">[{{ $docItem->side }}]</span>
+                                                    @endif
+                                                    {{ $docItem->original_name }}
+                                                </span>
+                                                <span class="text-[10px] text-slate-400 font-medium block mt-0.5">{{ $docItem->formatted_file_size }}</span>
+                                            </div>
+
+                                            <div class="flex items-center gap-1 shrink-0">
+                                                {{-- View Button --}}
+                                                <a href="{{ route('admin.leads.documents.download', [$lead, $docItem]) }}" target="_blank" title="View Document" class="p-1.5 text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 rounded-lg hover:bg-white dark:hover:bg-slate-900 transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                </a>
+
+                                                {{-- Download Button --}}
+                                                <a href="{{ route('admin.leads.documents.download', [$lead, $docItem]) }}" download title="Download Document" class="p-1.5 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 rounded-lg hover:bg-white dark:hover:bg-slate-900 transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                                </a>
+
+                                                @can('leads.edit')
+                                                    {{-- Edit Button --}}
+                                                    <a href="{{ route('admin.leads.edit', $lead) }}#documents-panel" title="Edit / Replace Document" class="p-1.5 text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 rounded-lg hover:bg-white dark:hover:bg-slate-900 transition">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                                    </a>
+
+                                                    {{-- Delete Button --}}
+                                                    <form action="{{ route('admin.leads.documents.destroy', [$lead, $docItem]) }}" method="POST" onsubmit="return confirm('Remove this document?')" class="inline-block">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" title="Delete Document" class="p-1.5 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 rounded-lg hover:bg-white dark:hover:bg-slate-900 transition">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="py-4 text-center">
+                                        <span class="text-xs text-slate-400 dark:text-slate-500 italic block mb-2">No file uploaded</span>
+                                        @can('leads.edit')
+                                            <a href="{{ route('admin.leads.edit', $lead) }}#documents-panel" class="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 font-semibold hover:underline">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                Upload Document
+                                            </a>
+                                        @endcan
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
         </div>
     </div>
 

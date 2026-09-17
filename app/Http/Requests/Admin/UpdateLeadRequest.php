@@ -24,6 +24,7 @@ class UpdateLeadRequest extends FormRequest
             'mobile_number' => ['required', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
             'alternate_mobile_number' => ['nullable', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
             'agent_id' => ['nullable', 'exists:agents,id'],
+            'bank_id' => ['nullable', 'exists:banks,id'],
             'loan_product_id' => ['required', 'exists:loan_products,id'],
             'constitution_id' => ['required', 'exists:customer_constitutions,id'],
             'city_id' => ['nullable', 'exists:cities,id'],
@@ -38,6 +39,7 @@ class UpdateLeadRequest extends FormRequest
             'aadhar_card' => ['nullable', 'string', 'max:30'],
             'pan_card' => ['nullable', 'string', 'max:30'],
             'udyam_registration' => ['nullable', 'string', 'max:50'],
+            'fssai_license' => ['nullable', 'string', 'max:100'],
             'education' => ['nullable', 'string', 'max:100'],
             'mother_name' => ['nullable', 'string', 'max:150'],
             
@@ -48,6 +50,13 @@ class UpdateLeadRequest extends FormRequest
             'itr_ay_2026_27' => ['nullable', 'boolean'],
             'itr_ay_2025_26' => ['nullable', 'boolean'],
             'itr_ay_2024_25' => ['nullable', 'boolean'],
+            'itr_details' => ['nullable', 'array'],
+            'itr_details.*.assessment_year' => ['nullable', 'string', 'max:100'],
+            'itr_details.*.itr_audited' => ['nullable', 'string', 'max:10'],
+            'itr_details.*.audit_report' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:10240'],
+            'itr_details.*.itr_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:10240'],
+            'itr_details.*.computation' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:10240'],
+            'itr_details.*.itr_form' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:10240'],
             
             // Bank Details (JSON Array)
             'bank_details' => ['nullable', 'array'],
@@ -55,6 +64,9 @@ class UpdateLeadRequest extends FormRequest
             'bank_details.*.account_number' => ['nullable', 'string', 'max:50'],
             'bank_details.*.account_type' => ['nullable', 'string', 'max:50'],
             'bank_details.*.ifsc_code' => ['nullable', 'string', 'max:30'],
+            
+            // Bank Loan Verification Details
+            'bank_loan_details' => ['nullable', 'array'],
             
             // Business Details
             'business_name' => ['nullable', 'string', 'max:150'],
@@ -71,6 +83,7 @@ class UpdateLeadRequest extends FormRequest
             'no_of_manpower' => ['nullable', 'string', 'max:50'],
             'business_location' => ['nullable', 'string', 'max:150'],
             'area_of_premises' => ['nullable', 'string', 'max:100'],
+            'land_and_factory_building' => ['nullable', 'string'],
             'connectivity' => ['nullable', 'string', 'max:150'],
             
             // Required Loan
@@ -130,6 +143,88 @@ class UpdateLeadRequest extends FormRequest
                     $validator->errors()->add('loan_product_id', 'Selected loan product is not available for the selected customer constitution.');
                 }
             }
+
+            $this->validateLeadDocuments($validator);
         });
+    }
+
+    protected function validateLeadDocuments($validator)
+    {
+        $lead = $this->route('lead');
+        $documentTypes = \App\Models\DocumentType::where('status', 'active')->get();
+
+        foreach ($documentTypes as $docType) {
+            $code = $docType->code;
+            $id = $docType->id;
+            $allowedMimes = implode(',', $docType->allowed_file_types ?? ['pdf', 'jpg', 'jpeg', 'png']);
+            $maxSizeKb = $docType->max_file_size_kb;
+
+            if ($docType->has_front_back) {
+                $frontFile = $this->file("documents.{$code}.front") ?? $this->file("documents.{$id}.front");
+                $backFile = $this->file("documents.{$code}.back") ?? $this->file("documents.{$id}.back");
+
+                $hasExistingFront = $lead && $lead->leadDocuments()->where('document_type_id', $docType->id)->where('side', 'front')->exists();
+                $hasExistingBack = $lead && $lead->leadDocuments()->where('document_type_id', $docType->id)->where('side', 'back')->exists();
+
+                if ($docType->is_required) {
+                    if (!$frontFile && !$hasExistingFront) {
+                        $validator->errors()->add("documents.{$code}.front", "The {$docType->name} (Front side) is required.");
+                    }
+                    if (!$backFile && !$hasExistingBack) {
+                        $validator->errors()->add("documents.{$code}.back", "The {$docType->name} (Back side) is required.");
+                    }
+                }
+
+                if ($frontFile) {
+                    $this->validateUploadedFile($validator, "documents.{$code}.front", $frontFile, $allowedMimes, $maxSizeKb, "{$docType->name} (Front side)");
+                }
+                if ($backFile) {
+                    $this->validateUploadedFile($validator, "documents.{$code}.back", $backFile, $allowedMimes, $maxSizeKb, "{$docType->name} (Back side)");
+                }
+            } elseif ($docType->allow_multiple) {
+                $files = $this->file("documents.{$code}.files") ?? $this->file("documents.{$id}.files") ?? $this->file("documents.{$code}") ?? [];
+                if (!is_array($files) && $files) {
+                    $files = [$files];
+                }
+
+                $hasExisting = $lead && $lead->leadDocuments()->where('document_type_id', $docType->id)->exists();
+
+                if ($docType->is_required && empty($files) && !$hasExisting) {
+                    $validator->errors()->add("documents.{$code}", "At least one {$docType->name} document is required.");
+                }
+
+                foreach ($files as $idx => $f) {
+                    if ($f) {
+                        $this->validateUploadedFile($validator, "documents.{$code}.{$idx}", $f, $allowedMimes, $maxSizeKb, "{$docType->name} file #" . ($idx + 1));
+                    }
+                }
+            } else {
+                $singleFile = $this->file("documents.{$code}.file") ?? $this->file("documents.{$id}.file") ?? $this->file("documents.{$code}") ?? $this->file("documents.{$id}");
+                $hasExisting = $lead && $lead->leadDocuments()->where('document_type_id', $docType->id)->exists();
+
+                if ($docType->is_required && !$singleFile && !$hasExisting) {
+                    $validator->errors()->add("documents.{$code}", "The {$docType->name} document is required.");
+                }
+
+                if ($singleFile) {
+                    $this->validateUploadedFile($validator, "documents.{$code}", $singleFile, $allowedMimes, $maxSizeKb, $docType->name);
+                }
+            }
+        }
+    }
+
+    protected function validateUploadedFile($validator, $key, $file, $allowedMimes, $maxSizeKb, $label)
+    {
+        $ext = strtolower($file->getClientOriginalExtension());
+        $allowedArray = array_map('trim', explode(',', $allowedMimes));
+
+        if (!in_array($ext, $allowedArray)) {
+            $validator->errors()->add($key, "The {$label} must be a file of type: " . implode(', ', $allowedArray) . ".");
+        }
+
+        if (($file->getSize() / 1024) > $maxSizeKb) {
+            $maxMb = round($maxSizeKb / 1024, 1);
+            $validator->errors()->add($key, "The {$label} size must not exceed {$maxMb}MB.");
+        }
     }
 }

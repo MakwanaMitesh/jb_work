@@ -87,8 +87,11 @@ class LeadController extends Controller
         $agents = Agent::where('status', 'active')->orderBy('first_name')->get();
         $loanProducts = \App\Models\LoanProduct::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
         $constitutions = \App\Models\CustomerConstitution::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
+        $assessmentYears = \App\Models\AssessmentYear::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
+        $masterBanks = \App\Models\Bank::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
+        $documentTypes = \App\Models\DocumentType::where('status', 'active')->ordered()->get();
 
-        return view('admin.leads.create', compact('cities', 'agents', 'loanProducts', 'constitutions'));
+        return view('admin.leads.create', compact('cities', 'agents', 'loanProducts', 'constitutions', 'assessmentYears', 'masterBanks', 'documentTypes'));
     }
 
     /**
@@ -96,7 +99,11 @@ class LeadController extends Controller
      */
     public function store(StoreLeadRequest $request): RedirectResponse
     {
-        $lead = Lead::create($request->validated());
+        $validated = $request->validated();
+        $validated['itr_details'] = $this->processItrDetailsFiles($request);
+
+        $lead = Lead::create($validated);
+        $this->processLeadDocumentUploads($request, $lead);
 
         return redirect()->route('admin.leads.index')
             ->with('success', "Lead \"{$lead->name}\" created successfully.");
@@ -114,9 +121,21 @@ class LeadController extends Controller
             ->orderBy('name')
             ->get();
 
-        $lead->load(['visits.employee', 'visits.creator', 'activities.user', 'assignments.employee', 'assignments.assigner', 'loanProduct', 'constitution']);
+        $lead->load([
+            'visits.employee',
+            'visits.creator',
+            'activities.user',
+            'assignments.employee',
+            'assignments.assigner',
+            'bank',
+            'loanProduct',
+            'constitution',
+            'leadDocuments.documentType',
+        ]);
 
-        return view('admin.leads.show', compact('lead', 'employees'));
+        $documentTypes = \App\Models\DocumentType::where('status', 'active')->ordered()->get();
+
+        return view('admin.leads.show', compact('lead', 'employees', 'documentTypes'));
     }
 
     /**
@@ -130,8 +149,13 @@ class LeadController extends Controller
         $agents = Agent::where('status', 'active')->orderBy('first_name')->get();
         $loanProducts = \App\Models\LoanProduct::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
         $constitutions = \App\Models\CustomerConstitution::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
+        $assessmentYears = \App\Models\AssessmentYear::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
+        $masterBanks = \App\Models\Bank::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
+        $documentTypes = \App\Models\DocumentType::where('status', 'active')->ordered()->get();
 
-        return view('admin.leads.edit', compact('lead', 'cities', 'agents', 'loanProducts', 'constitutions'));
+        $lead->load('leadDocuments.documentType');
+
+        return view('admin.leads.edit', compact('lead', 'cities', 'agents', 'loanProducts', 'constitutions', 'assessmentYears', 'masterBanks', 'documentTypes'));
     }
 
     /**
@@ -139,10 +163,185 @@ class LeadController extends Controller
      */
     public function update(UpdateLeadRequest $request, Lead $lead): RedirectResponse
     {
-        $lead->update($request->validated());
+        $validated = $request->validated();
+        $validated['itr_details'] = $this->processItrDetailsFiles($request, $lead->itr_details);
+
+        $lead->update($validated);
+        $this->processLeadDocumentUploads($request, $lead);
 
         return redirect()->route('admin.leads.index')
             ->with('success', "Lead \"{$lead->name}\" updated successfully.");
+    }
+
+    /**
+     * Download a lead document securely.
+     */
+    public function downloadDocument(Lead $lead, \App\Models\LeadDocument $document)
+    {
+        $this->authorize('leads.view');
+
+        if ($document->lead_id !== $lead->id) {
+            abort(403, 'Unauthorized access to lead document.');
+        }
+
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($document->file_path)) {
+            abort(404, 'File not found.');
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->download(
+            $document->file_path,
+            $document->original_name
+        );
+    }
+
+    /**
+     * Delete a lead document securely.
+     */
+    public function deleteDocument(Lead $lead, \App\Models\LeadDocument $document): RedirectResponse
+    {
+        $this->authorize('leads.edit');
+
+        if ($document->lead_id !== $lead->id) {
+            abort(403, 'Unauthorized access to lead document.');
+        }
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($document->file_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($document->file_path);
+        }
+
+        $document->delete();
+
+        return redirect()->back()->with('success', 'Document removed successfully.');
+    }
+
+    /**
+     * Helper to process file uploads inside itr_details array.
+     */
+    protected function processItrDetailsFiles(\Illuminate\Http\Request $request, ?array $existingDetails = null): array
+    {
+        $itrDetails = $request->input('itr_details', []);
+        if (!is_array($itrDetails)) {
+            return [];
+        }
+
+        $processed = [];
+        foreach ($itrDetails as $index => $item) {
+            $row = [
+                'assessment_year' => $item['assessment_year'] ?? '',
+                'itr_audited' => $item['itr_audited'] ?? '',
+                'audit_report' => null,
+                'itr_file' => null,
+                'computation' => null,
+                'itr_form' => null,
+            ];
+
+            foreach (['audit_report', 'itr_file', 'computation', 'itr_form'] as $field) {
+                if ($request->hasFile("itr_details.{$index}.{$field}")) {
+                    $file = $request->file("itr_details.{$index}.{$field}");
+                    $row[$field] = $file->store('leads/itr', 'public');
+                } elseif (isset($item["existing_{$field}"])) {
+                    $row[$field] = $item["existing_{$field}"];
+                } elseif (isset($existingDetails[$index][$field])) {
+                    $row[$field] = $existingDetails[$index][$field];
+                }
+            }
+
+            $processed[] = $row;
+        }
+
+        return $processed;
+    }
+
+    /**
+     * Helper to process dynamic lead document uploads.
+     */
+    protected function processLeadDocumentUploads(\Illuminate\Http\Request $request, Lead $lead): void
+    {
+        $documentTypes = \App\Models\DocumentType::where('status', 'active')->get();
+
+        foreach ($documentTypes as $docType) {
+            $code = $docType->code;
+            $id = $docType->id;
+
+            if ($docType->has_front_back) {
+                foreach (['front', 'back'] as $side) {
+                    $file = $request->file("documents.{$code}.{$side}") ?? $request->file("documents.{$id}.{$side}");
+                    if ($file) {
+                        $existing = $lead->leadDocuments()
+                            ->where('document_type_id', $docType->id)
+                            ->where('side', $side)
+                            ->first();
+
+                        if ($existing) {
+                            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($existing->file_path)) {
+                                \Illuminate\Support\Facades\Storage::disk('public')->delete($existing->file_path);
+                            }
+                            $existing->delete();
+                        }
+
+                        $path = $file->store("leads/{$lead->id}/documents", 'public');
+                        \App\Models\LeadDocument::create([
+                            'lead_id' => $lead->id,
+                            'document_type_id' => $docType->id,
+                            'side' => $side,
+                            'file_path' => $path,
+                            'original_name' => $file->getClientOriginalName(),
+                            'mime_type' => $file->getClientMimeType() ?: $file->getMimeType(),
+                            'file_size' => $file->getSize(),
+                            'uploaded_by' => auth()->id(),
+                        ]);
+                    }
+                }
+            } elseif ($docType->allow_multiple) {
+                $files = $request->file("documents.{$code}.files") ?? $request->file("documents.{$id}.files") ?? $request->file("documents.{$code}");
+                if ($files) {
+                    if (!is_array($files)) {
+                        $files = [$files];
+                    }
+                    foreach ($files as $file) {
+                        if ($file) {
+                            $path = $file->store("leads/{$lead->id}/documents", 'public');
+                            \App\Models\LeadDocument::create([
+                                'lead_id' => $lead->id,
+                                'document_type_id' => $docType->id,
+                                'side' => null,
+                                'file_path' => $path,
+                                'original_name' => $file->getClientOriginalName(),
+                                'mime_type' => $file->getClientMimeType() ?: $file->getMimeType(),
+                                'file_size' => $file->getSize(),
+                                'uploaded_by' => auth()->id(),
+                            ]);
+                        }
+                    }
+                }
+            } else {
+                $file = $request->file("documents.{$code}.file") ?? $request->file("documents.{$id}.file") ?? $request->file("documents.{$code}") ?? $request->file("documents.{$id}");
+                if ($file) {
+                    $existing = $lead->leadDocuments()
+                        ->where('document_type_id', $docType->id)
+                        ->first();
+
+                    if ($existing) {
+                        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($existing->file_path)) {
+                            \Illuminate\Support\Facades\Storage::disk('public')->delete($existing->file_path);
+                        }
+                        $existing->delete();
+                    }
+
+                    $path = $file->store("leads/{$lead->id}/documents", 'public');
+                    \App\Models\LeadDocument::create([
+                        'lead_id' => $lead->id,
+                        'document_type_id' => $docType->id,
+                        'side' => null,
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'mime_type' => $file->getClientMimeType() ?: $file->getMimeType(),
+                        'file_size' => $file->getSize(),
+                        'uploaded_by' => auth()->id(),
+                    ]);
+                }
+            }
+        }
     }
 
     /**
@@ -191,5 +390,23 @@ class LeadController extends Controller
 
         return redirect()->route('admin.leads.show', $lead)
             ->with('success', 'Lead status updated successfully.');
+    }
+
+    /**
+     * Download the Pre-Sanction Inspection Sheet (Annexure V-A) PDF.
+     */
+    public function downloadInspectionSheetPdf(Lead $lead)
+    {
+        $this->authorize('leads.view');
+
+        $lead->load(['bank', 'city', 'constitution']);
+        $bld = $lead->bank_loan_details ?? [];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.leads.pdf.inspection_sheet', compact('lead', 'bld'));
+        $pdf->setPaper('a4', 'portrait');
+
+        $fileName = 'inspection_sheet_lead_' . $lead->id . '.pdf';
+
+        return $pdf->download($fileName);
     }
 }

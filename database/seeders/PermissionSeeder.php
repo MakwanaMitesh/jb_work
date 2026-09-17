@@ -70,6 +70,13 @@ class PermissionSeeder extends Seeder
             'download' => 'Download documents',
             'delete' => 'Delete documents',
         ],
+        'document_types' => [
+            'view' => 'View document master',
+            'create' => 'Create document master',
+            'edit' => 'Edit document master',
+            'delete' => 'Delete document master',
+            'activate' => 'Activate or deactivate document master',
+        ],
         'leads' => [
             'view' => 'View leads',
             'create' => 'Create leads',
