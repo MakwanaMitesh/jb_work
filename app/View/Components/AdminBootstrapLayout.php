@@ -5,18 +5,15 @@ namespace App\View\Components;
 use Illuminate\View\Component;
 use Illuminate\View\View;
 
-class AdminLayout extends Component
+class AdminBootstrapLayout extends Component
 {
     public function __construct(
         public ?string $title = null,
         public bool $whiteBg = false,
     ) {}
 
-    /**
-     * Get the view / contents that represents the component.
-     */
     public function render(): View
     {
-        return view('layouts.admin');
+        return view('layouts.admin-bootstrap');
     }
 }

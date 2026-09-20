@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-bootstrap-layout>
     <div class="mb-4">
         <h1 class="h4 fw-bold mb-1">Reset password</h1>
         <p class="jb-auth-subtitle mb-0">Choose a new password for your account</p>
@@ -12,30 +12,30 @@
 
         <!-- Email Address -->
         <div class="mb-3">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" />
+            <x-input-label-bs for="email" :value="__('Email')" />
+            <x-text-input-bs id="email" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
+            <x-input-error-bs :messages="$errors->get('email')" />
         </div>
 
         <!-- Password -->
         <div class="mb-3">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" type="password" name="password" required autocomplete="new-password" placeholder="••••••••" />
-            <x-input-error :messages="$errors->get('password')" />
+            <x-input-label-bs for="password" :value="__('Password')" />
+            <x-text-input-bs id="password" type="password" name="password" required autocomplete="new-password" placeholder="••••••••" />
+            <x-input-error-bs :messages="$errors->get('password')" />
         </div>
 
         <!-- Confirm Password -->
         <div class="mb-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-            <x-text-input id="password_confirmation"
+            <x-input-label-bs for="password_confirmation" :value="__('Confirm Password')" />
+            <x-text-input-bs id="password_confirmation"
                                 type="password"
                                 name="password_confirmation" required autocomplete="new-password"
                                 placeholder="••••••••" />
-            <x-input-error :messages="$errors->get('password_confirmation')" />
+            <x-input-error-bs :messages="$errors->get('password_confirmation')" />
         </div>
 
-        <x-primary-button class="w-100 py-2">
+        <x-primary-button-bs class="w-100 py-2">
             {{ __('Reset Password') }}
-        </x-primary-button>
+        </x-primary-button-bs>
     </form>
-</x-guest-layout>
+</x-guest-bootstrap-layout>

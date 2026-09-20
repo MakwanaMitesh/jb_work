@@ -6,9 +6,9 @@
         </p>
     </header>
 
-    <x-danger-button type="button" data-bs-toggle="modal" data-bs-target="#confirmUserDeletion">
+    <x-danger-button-bs type="button" data-bs-toggle="modal" data-bs-target="#confirmUserDeletion">
         {{ __('Delete Account') }}
-    </x-danger-button>
+    </x-danger-button-bs>
 
     <div class="modal fade" id="confirmUserDeletion" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -26,13 +26,13 @@
                             {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
                         </p>
 
-                        <x-input-label for="password" value="Password" />
-                        <x-text-input id="password" name="password" type="password" placeholder="{{ __('Password') }}" />
-                        <x-input-error :messages="$errors->userDeletion->get('password')" />
+                        <x-input-label-bs for="password" value="Password" />
+                        <x-text-input-bs id="password" name="password" type="password" placeholder="{{ __('Password') }}" />
+                        <x-input-error-bs :messages="$errors->userDeletion->get('password')" />
                     </div>
                     <div class="modal-footer">
-                        <x-secondary-button type="button" data-bs-dismiss="modal">{{ __('Cancel') }}</x-secondary-button>
-                        <x-danger-button>{{ __('Delete Account') }}</x-danger-button>
+                        <x-secondary-button-bs type="button" data-bs-dismiss="modal">{{ __('Cancel') }}</x-secondary-button-bs>
+                        <x-danger-button-bs>{{ __('Delete Account') }}</x-danger-button-bs>
                     </div>
                 </form>
             </div>

@@ -1,27 +1,29 @@
-<x-app-layout>
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <div class="text-sm font-medium text-slate-500 mb-1">
-                <a href="{{ route('admin.assessment-years.index') }}" class="hover:text-slate-600 dark:hover:text-slate-300">Assessment Years</a>
-                <span class="mx-1">/</span>
-                <span class="text-slate-900 dark:text-white">Edit</span>
-            </div>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Edit Assessment Year: {{ $assessmentYear->name }}</h1>
+{{--
+    Was <x-app-layout>, a component that does not exist in this project, so
+    this page returned a 500. Now on the standard admin layout like every
+    other edit screen.
+--}}
+<x-admin-bootstrap-layout :title="'Edit Assessment Year — ' . $assessmentYear->name">
+    <div class="mb-4">
+        <nav class="jb-breadcrumb">
+            <a href="{{ route('admin.assessment-years.index') }}">Assessment Years</a>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style="opacity:.6"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" /></svg>
+            <span class="current">Edit</span>
+        </nav>
+
+        <div class="d-flex align-items-center justify-content-between">
+            <h1 class="jb-page-title">Edit Assessment Year: {{ $assessmentYear->name }}</h1>
+            <a href="{{ route('admin.assessment-years.index') }}" class="btn btn-secondary">Cancel</a>
         </div>
-        <a href="{{ route('admin.assessment-years.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm">
-            Cancel
-        </a>
     </div>
 
-    <form method="POST" action="{{ route('admin.assessment-years.update', $assessmentYear) }}" class="space-y-6">
+    <form method="POST" action="{{ route('admin.assessment-years.update', $assessmentYear) }}">
         @csrf
         @method('PUT')
         @include('admin.assessment_years._form', ['assessmentYear' => $assessmentYear])
 
-        <div class="flex justify-end gap-3">
-            <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm rounded-xl transition shadow-sm">
-                Update Assessment Year
-            </button>
+        <div class="mt-4 d-flex justify-content-end gap-3">
+            <x-primary-button-bs>Update Assessment Year</x-primary-button-bs>
         </div>
     </form>
-</x-app-layout>
+</x-admin-bootstrap-layout>

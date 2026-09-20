@@ -1,4 +1,4 @@
-<x-admin-layout title="Profile">
+<x-admin-bootstrap-layout title="Profile">
     <div class="mb-4">
         <h1 class="h4 fw-bold mb-1">Profile</h1>
         <p class="text-muted small mb-0">Manage your account information and password.</p>
@@ -21,4 +21,4 @@
             </div>
         </div>
     </div>
-</x-admin-layout>
+</x-admin-bootstrap-layout>

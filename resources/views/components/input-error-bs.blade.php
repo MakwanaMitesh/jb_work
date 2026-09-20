@@ -1,7 +1,8 @@
 @props(['messages'])
 
+{{-- Bootstrap counterpart of x-input-error. --}}
 @if ($messages)
-    <div {{ $attributes->merge(['class' => 'text-red-600 dark:text-red-400 text-xs mt-1']) }}>
+    <div {{ $attributes->merge(['class' => 'jb-form-error']) }}>
         @foreach ((array) $messages as $message)
             <div>{{ $message }}</div>
         @endforeach

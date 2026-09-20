@@ -2,6 +2,7 @@ import './bootstrap';
 
 import Swal from 'sweetalert2';
 import intlTelInput from 'intl-tel-input';
+import 'intl-tel-input/dist/css/intlTelInput.css';
 
 window.Swal = Swal;
 
@@ -62,7 +63,7 @@ function initColumnToggles() {
 
         const applyVisibility = (col, visible) => {
             table.querySelectorAll(`[data-col="${col}"]`).forEach((el) => {
-                el.classList.toggle('d-none', !visible);
+                el.classList.toggle('jb-hidden', !visible);
             });
         };
 
@@ -81,8 +82,21 @@ function initColumnToggles() {
     });
 }
 
+/**
+ * Resolve the wrapper around a file/image field.
+ *
+ * Prefers the `data-upload-field` hook. The class-based fallback exists only
+ * for markup not yet carrying that attribute and can be deleted once every
+ * upload field is annotated — those are CSS framework classes, so they stop
+ * existing when Tailwind is removed.
+ */
+function uploadFieldContainer(el) {
+    return el.closest('[data-upload-field]')
+        || el.closest('.flex-col, .flex-row, .grid, .grid-cols-1');
+}
+
 window.previewImage = function(input, removeBtnId, previewClass, placeholderClass) {
-    const parentContainer = input.closest('.flex-col, .flex-row, .grid, .grid-cols-1');
+    const parentContainer = uploadFieldContainer(input);
     if (!parentContainer) return;
     const preview = previewClass ? parentContainer.querySelector(previewClass) : parentContainer.querySelector('.profile-preview-img');
     const placeholder = placeholderClass ? parentContainer.querySelector(placeholderClass) : parentContainer.querySelector('.profile-placeholder-icon');
@@ -94,16 +108,16 @@ window.previewImage = function(input, removeBtnId, previewClass, placeholderClas
         reader.onload = function(e) {
             if (preview) {
                 preview.src = e.target.result;
-                preview.classList.remove('hidden');
+                preview.classList.remove('jb-hidden');
             }
             if (placeholder) {
-                placeholder.classList.add('hidden');
+                placeholder.classList.add('jb-hidden');
             }
             if (removeInput) {
                 removeInput.value = '0';
             }
             if (removeBtn) {
-                removeBtn.classList.remove('hidden');
+                removeBtn.classList.remove('jb-hidden');
             }
         };
         reader.readAsDataURL(input.files[0]);
@@ -111,7 +125,7 @@ window.previewImage = function(input, removeBtnId, previewClass, placeholderClas
 };
 
 window.clearImage = function(btn) {
-    const parentContainer = btn.closest('.flex-col, .flex-row');
+    const parentContainer = uploadFieldContainer(btn);
     if (!parentContainer) return;
     const input = parentContainer.querySelector('input[type="file"]');
     const removeInput = parentContainer.querySelector('input[name="remove_profile_photo"]');
@@ -129,17 +143,17 @@ window.clearImage = function(btn) {
     // Reset preview
     if (preview) {
         preview.src = '';
-        preview.classList.add('hidden');
+        preview.classList.add('jb-hidden');
     }
     if (placeholder) {
-        placeholder.classList.remove('hidden');
+        placeholder.classList.remove('jb-hidden');
     }
     // Hide remove button
-    btn.classList.add('hidden');
+    btn.classList.add('jb-hidden');
 };
 
 window.clearFormFile = function(btn, hiddenInputName, previewImgClass, placeholderIconClass) {
-    const rootContainer = btn.closest('.flex-col, .flex-row, .grid-cols-1, .grid');
+    const rootContainer = uploadFieldContainer(btn);
     if (!rootContainer) return;
     const input = rootContainer.querySelector('input[type="file"]');
     const removeInput = rootContainer.querySelector(`input[name="${hiddenInputName}"]`);
@@ -155,15 +169,15 @@ window.clearFormFile = function(btn, hiddenInputName, previewImgClass, placehold
     }
     if (preview) {
         preview.src = '';
-        preview.classList.add('hidden');
+        preview.classList.add('jb-hidden');
     }
     if (placeholder) {
-        placeholder.classList.remove('hidden');
+        placeholder.classList.remove('jb-hidden');
     }
     if (downloadLink) {
-        downloadLink.classList.add('hidden');
+        downloadLink.classList.add('jb-hidden');
     }
-    btn.classList.add('hidden');
+    btn.classList.add('jb-hidden');
 };
 
 window.previewFilePopup = function(url, type) {

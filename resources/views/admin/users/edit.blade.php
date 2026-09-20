@@ -1,45 +1,42 @@
-<x-admin-layout :title="'Permissions — ' . $user->name">
-    <div class="mb-6">
-        <!-- Breadcrumbs -->
-        <nav class="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs font-medium mb-1.5">
-            <a href="{{ route('admin.users.index') }}" class="hover:text-slate-600 dark:hover:text-slate-300">Users</a>
-            <svg class="w-3.5 h-3.5 opacity-60" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" /></svg>
-            <span class="text-slate-900 dark:text-slate-200">Permissions</span>
+<x-admin-bootstrap-layout :title="'Permissions — ' . $user->name">
+    <div class="mb-4">
+        <nav class="jb-breadcrumb">
+            <a href="{{ route('admin.users.index') }}">Users</a>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style="opacity:.6"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" /></svg>
+            <span class="current">Permissions</span>
         </nav>
-        <div class="flex items-center gap-3">
-            <a href="{{ route('admin.users.index') }}" class="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ route('admin.users.index') }}" class="jb-back-btn">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             </a>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-950 dark:text-white">Edit User Permissions</h1>
+            <h1 class="jb-page-title">Edit User Permissions</h1>
         </div>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <p class="m-0 mt-1" style="font-size:var(--text-sm);color:var(--slate-500)">
             {{ $user->name }} ({{ $user->email }}) ·
             @forelse ($user->roles as $role)
-                Role: <strong class="text-slate-900 dark:text-white">{{ $role->name }}</strong>{{ ! $loop->last ? ', ' : '' }}
+                Role: <strong style="color:var(--slate-900)">{{ $role->name }}</strong>{{ ! $loop->last ? ', ' : '' }}
             @empty
                 No role assigned
             @endforelse
         </p>
     </div>
 
-    <form method="POST" action="{{ route('admin.users.permissions.update', $user) }}" class="space-y-6">
+    <form method="POST" action="{{ route('admin.users.permissions.update', $user) }}">
         @csrf
         @method('PUT')
 
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6 sm:p-8">
-            <div class="bg-blue-50 border border-blue-200/50 dark:bg-blue-950/20 dark:border-blue-900/30 rounded-lg p-4 mb-6 text-sm text-blue-800 dark:text-blue-400">
+        <div class="jb-card p-4 p-sm-5 mb-4">
+            <div class="jb-alert jb-alert-info mb-4">
                 These permissions are granted directly to this user in addition to their assigned role permissions.
             </div>
 
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Direct Permissions</h3>
+            <h3 class="jb-section-title mb-3">Direct Permissions</h3>
             @include('admin.partials.permission-checkboxes', ['selectedIds' => old('permissions', $userPermissionIds)])
         </div>
 
-        <div class="flex items-center gap-3">
-            <x-primary-button>Save changes</x-primary-button>
-            <a href="{{ route('admin.users.index') }}" class="inline-flex items-center justify-center h-10 px-5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm">
-                Cancel
-            </a>
+        <div class="d-flex align-items-center gap-3">
+            <x-primary-button-bs>Save changes</x-primary-button-bs>
+            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary jb-btn-tall">Cancel</a>
         </div>
     </form>
-</x-admin-layout>
+</x-admin-bootstrap-layout>

@@ -13,15 +13,15 @@
         @method('patch')
 
         <div class="mb-3">
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" />
+            <x-input-label-bs for="name" :value="__('Name')" />
+            <x-text-input-bs id="name" name="name" type="text" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+            <x-input-error-bs :messages="$errors->get('name')" />
         </div>
 
         <div class="mb-3">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" />
+            <x-input-label-bs for="email" :value="__('Email')" />
+            <x-text-input-bs id="email" name="email" type="email" :value="old('email', $user->email)" required autocomplete="username" />
+            <x-input-error-bs :messages="$errors->get('email')" />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div class="mt-2 small">
@@ -40,7 +40,7 @@
         </div>
 
         <div class="d-flex align-items-center gap-3">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <x-primary-button-bs>{{ __('Save') }}</x-primary-button-bs>
 
             @if (session('status') === 'profile-updated')
                 <span class="text-success small">{{ __('Saved.') }}</span>

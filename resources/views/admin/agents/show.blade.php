@@ -1,8 +1,8 @@
-<x-admin-layout :title="$agent->name">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div class="flex items-center gap-4">
+<x-admin-bootstrap-layout :title="$agent->name">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
             @if ($agent->profilePhotoUrl())
-                <img src="{{ $agent->profilePhotoUrl() }}" alt="" class="w-14 h-14 rounded-full object-cover shrink-0">
+                <img src="{{ $agent->profilePhotoUrl() }}" alt="" class="rounded-circle object-fit-cover flex-shrink-0" width="56" height="56">
             @else
                 @php
                     $initials = '';
@@ -12,172 +12,154 @@
                         $initials = strtoupper(substr($agent->first_name ?? $agent->email, 0, 2));
                     }
                 @endphp
-                <span class="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center text-lg font-bold shrink-0 border border-slate-200 dark:border-slate-700">{{ $initials }}</span>
+                <span class="jb-avatar jb-avatar-lg">{{ $initials }}</span>
             @endif
             <div>
-                <h1 class="text-2xl font-bold text-slate-950 dark:text-white leading-tight">{{ $agent->name }}</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ $agent->email }}</p>
+                <h1 class="jb-page-title">{{ $agent->name }}</h1>
+                <p class="m-0 mt-1" style="font-size:var(--text-sm);color:var(--slate-500)">{{ $agent->email }}</p>
             </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="d-flex align-items-center gap-2">
             @can('agent.edit')
-                <a href="{{ route('admin.agents.edit', $agent) }}" class="inline-flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold rounded-lg shadow-sm transition no-underline">
-                    Edit
-                </a>
+                <a href="{{ route('admin.agents.edit', $agent) }}" class="btn btn-primary">Edit</a>
             @endcan
-            <a href="{{ route('admin.agents.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm no-underline">
-                Back
-            </a>
+            <a href="{{ route('admin.agents.index') }}" class="btn btn-secondary">Back</a>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <!-- Basic Information -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6">
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Basic Information</h3>
-            <dl class="grid grid-cols-3 gap-y-3 text-sm">
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">First Name</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->first_name ?: '—' }}</dd>
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Last Name</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->last_name ?: '—' }}</dd>
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Mobile</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->mobile_number ?: '—' }}</dd>
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Alternate Mobile</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->alternate_mobile_number ?: '—' }}</dd>
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">City</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->city?->name ?: '—' }}</dd>
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Address</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->address ?: '—' }}</dd>
-            </dl>
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="jb-card h-100 p-4">
+                <h3 class="jb-section-title mb-3">Basic Information</h3>
+                <dl class="jb-dl">
+                    <dt>First Name</dt>
+                    <dd>{{ $agent->first_name ?: '—' }}</dd>
+                    <dt>Last Name</dt>
+                    <dd>{{ $agent->last_name ?: '—' }}</dd>
+                    <dt>Mobile</dt>
+                    <dd>{{ $agent->mobile_number ?: '—' }}</dd>
+                    <dt>Alternate Mobile</dt>
+                    <dd>{{ $agent->alternate_mobile_number ?: '—' }}</dd>
+                    <dt>City</dt>
+                    <dd>{{ $agent->city?->name ?: '—' }}</dd>
+                    <dt>Address</dt>
+                    <dd>{{ $agent->address ?: '—' }}</dd>
+                </dl>
+            </div>
         </div>
 
-        <!-- Status -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6">
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Agent Status</h3>
-            <dl class="grid grid-cols-3 gap-y-3 text-sm">
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Status</dt>
-                <dd class="col-span-2">
-                    @if ($agent->isActive())
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-500 border border-emerald-200/30 dark:border-emerald-900/30">Active</span>
-                    @else
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">Inactive</span>
-                    @endif
-                </dd>
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Created Date</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->created_at?->format('d M Y') ?? '—' }}</dd>
-            </dl>
-        </div>
-    </div>
-
-    <!-- Qualifications, KYC & Bank Details -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <!-- Qualifications -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6">
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Qualifications</h3>
-            <dl class="grid grid-cols-3 gap-y-3 text-sm">
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Qualification</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->qualification ?: '—' }}</dd>
-
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Resume</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">
-                    @if ($agent->resume_path)
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="window.previewFilePopup('{{ $agent->resumeUrl() }}')" class="text-xs text-primary-600 hover:underline">
-                                Preview
-                            </button>
-                            <span class="text-slate-300 dark:text-slate-700">|</span>
-                            <a href="{{ $agent->resumeUrl() }}" download class="text-xs text-slate-500 hover:underline">
-                                Download
-                            </a>
-                        </div>
-                    @else
-                        —
-                    @endif
-                </dd>
-            </dl>
-        </div>
-
-        <!-- KYC Details -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6">
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">KYC Verification Documents</h3>
-            <dl class="grid grid-cols-3 gap-y-4 text-sm">
-                <!-- Aadhaar -->
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Aadhaar Number</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->aadhaar_card_number ?: '—' }}</dd>
-
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Aadhaar Photo</dt>
-                <dd class="col-span-2">
-                    @if ($agent->aadhaar_photo_path)
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="window.previewFilePopup('{{ $agent->aadhaarPhotoUrl() }}')" class="text-xs text-primary-600 hover:underline">
-                                Preview
-                            </button>
-                            <span class="text-slate-300 dark:text-slate-700">|</span>
-                            <a href="{{ $agent->aadhaarPhotoUrl() }}" download class="text-xs text-slate-500 hover:underline">
-                                Download
-                            </a>
-                        </div>
-                    @else
-                        <span class="text-slate-400 font-semibold">—</span>
-                    @endif
-                </dd>
-
-                <!-- PAN -->
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">PAN Number</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold" style="text-transform: uppercase;">{{ $agent->pan_card_number ?: '—' }}</dd>
-
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">PAN Photo</dt>
-                <dd class="col-span-2">
-                    @if ($agent->pan_photo_path)
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="window.previewFilePopup('{{ $agent->panPhotoUrl() }}')" class="text-xs text-primary-600 hover:underline">
-                                Preview
-                            </button>
-                            <span class="text-slate-300 dark:text-slate-700">|</span>
-                            <a href="{{ $agent->panPhotoUrl() }}" download class="text-xs text-slate-500 hover:underline">
-                                Download
-                            </a>
-                        </div>
-                    @else
-                        <span class="text-slate-400 font-semibold">—</span>
-                    @endif
-                </dd>
-            </dl>
-        </div>
-
-        <!-- Bank Details -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-6 col-span-1 lg:col-span-2">
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Bank Details</h3>
-            <dl class="grid grid-cols-3 gap-y-3 text-sm">
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Bank Name</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->bank_name ?: '—' }}</dd>
-
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Holder Name</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->bank_account_holder_name ?: '—' }}</dd>
-
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Account Number</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold">{{ $agent->bank_account_number ?: '—' }}</dd>
-
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">IFSC Code</dt>
-                <dd class="col-span-2 text-slate-900 dark:text-white font-semibold" style="text-transform: uppercase;">{{ $agent->bank_ifsc_code ?: '—' }}</dd>
-
-                <dt class="text-slate-500 dark:text-slate-400 font-medium">Cancelled Cheque</dt>
-                <dd class="col-span-2">
-                    @if ($agent->bank_cheque_photo_path)
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="window.previewFilePopup('{{ $agent->bankChequePhotoUrl() }}')" class="text-xs text-primary-600 hover:underline">
-                                Preview
-                            </button>
-                            <span class="text-slate-300 dark:text-slate-700">|</span>
-                            <a href="{{ $agent->bankChequePhotoUrl() }}" download class="text-xs text-slate-500 hover:underline">
-                                Download
-                            </a>
-                        </div>
-                    @else
-                        <span class="text-slate-400 font-semibold">—</span>
-                    @endif
-                </dd>
-            </dl>
+        <div class="col-12 col-lg-6">
+            <div class="jb-card h-100 p-4">
+                <h3 class="jb-section-title mb-3">Agent Status</h3>
+                <dl class="jb-dl">
+                    <dt>Status</dt>
+                    <dd>
+                        @if ($agent->isActive())
+                            <span class="jb-badge jb-badge-sm jb-badge-emerald">Active</span>
+                        @else
+                            <span class="jb-badge jb-badge-sm jb-badge-slate">Inactive</span>
+                        @endif
+                    </dd>
+                    <dt>Created Date</dt>
+                    <dd>{{ $agent->created_at?->format('d M Y') ?? '—' }}</dd>
+                </dl>
+            </div>
         </div>
     </div>
-</x-admin-layout>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="jb-card h-100 p-4">
+                <h3 class="jb-section-title mb-3">Qualifications</h3>
+                <dl class="jb-dl">
+                    <dt>Qualification</dt>
+                    <dd>{{ $agent->qualification ?: '—' }}</dd>
+
+                    <dt>Resume</dt>
+                    <dd>
+                        @if ($agent->resume_path)
+                            <div class="jb-file-actions">
+                                <button type="button" onclick="window.previewFilePopup('{{ $agent->resumeUrl() }}')" class="jb-file-link">Preview</button>
+                                <span class="jb-file-sep">|</span>
+                                <a href="{{ $agent->resumeUrl() }}" download class="jb-file-link-muted">Download</a>
+                            </div>
+                        @else
+                            —
+                        @endif
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="jb-card h-100 p-4">
+                <h3 class="jb-section-title mb-3">KYC Verification Documents</h3>
+                <dl class="jb-dl jb-dl-roomy">
+                    <dt>Aadhaar Number</dt>
+                    <dd>{{ $agent->aadhaar_card_number ?: '—' }}</dd>
+
+                    <dt>Aadhaar Photo</dt>
+                    <dd>
+                        @if ($agent->aadhaar_photo_path)
+                            <div class="jb-file-actions">
+                                <button type="button" onclick="window.previewFilePopup('{{ $agent->aadhaarPhotoUrl() }}')" class="jb-file-link">Preview</button>
+                                <span class="jb-file-sep">|</span>
+                                <a href="{{ $agent->aadhaarPhotoUrl() }}" download class="jb-file-link-muted">Download</a>
+                            </div>
+                        @else
+                            <span style="color:var(--slate-400)">—</span>
+                        @endif
+                    </dd>
+
+                    <dt>PAN Number</dt>
+                    <dd class="text-uppercase">{{ $agent->pan_card_number ?: '—' }}</dd>
+
+                    <dt>PAN Photo</dt>
+                    <dd>
+                        @if ($agent->pan_photo_path)
+                            <div class="jb-file-actions">
+                                <button type="button" onclick="window.previewFilePopup('{{ $agent->panPhotoUrl() }}')" class="jb-file-link">Preview</button>
+                                <span class="jb-file-sep">|</span>
+                                <a href="{{ $agent->panPhotoUrl() }}" download class="jb-file-link-muted">Download</a>
+                            </div>
+                        @else
+                            <span style="color:var(--slate-400)">—</span>
+                        @endif
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="jb-card p-4">
+                <h3 class="jb-section-title mb-3">Bank Details</h3>
+                <dl class="jb-dl">
+                    <dt>Bank Name</dt>
+                    <dd>{{ $agent->bank_name ?: '—' }}</dd>
+
+                    <dt>Holder Name</dt>
+                    <dd>{{ $agent->bank_account_holder_name ?: '—' }}</dd>
+
+                    <dt>Account Number</dt>
+                    <dd>{{ $agent->bank_account_number ?: '—' }}</dd>
+
+                    <dt>IFSC Code</dt>
+                    <dd class="text-uppercase">{{ $agent->bank_ifsc_code ?: '—' }}</dd>
+
+                    <dt>Cancelled Cheque</dt>
+                    <dd>
+                        @if ($agent->bank_cheque_photo_path)
+                            <div class="jb-file-actions">
+                                <button type="button" onclick="window.previewFilePopup('{{ $agent->bankChequePhotoUrl() }}')" class="jb-file-link">Preview</button>
+                                <span class="jb-file-sep">|</span>
+                                <a href="{{ $agent->bankChequePhotoUrl() }}" download class="jb-file-link-muted">Download</a>
+                            </div>
+                        @else
+                            <span style="color:var(--slate-400)">—</span>
+                        @endif
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</x-admin-bootstrap-layout>
