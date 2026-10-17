@@ -21,6 +21,18 @@ class LeadDocument extends Model
         'uploaded_by',
     ];
 
+    protected static function booted()
+    {
+        static::created(function ($doc) {
+            $docType = $doc->documentType?->name ?: 'Document';
+            $doc->lead?->logActivity(
+                $doc->uploaded_by ?? auth()->id() ?? 1,
+                'document_uploaded',
+                "Document '{$doc->original_name}' ({$docType}) uploaded"
+            );
+        });
+    }
+
     public function lead(): BelongsTo
     {
         return $this->belongsTo(Lead::class);

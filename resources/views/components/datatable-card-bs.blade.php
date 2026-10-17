@@ -113,8 +113,15 @@
                 });
             });
 
+            // Initial badge update
+            updateBadge();
+
             if (clearBtn) {
                 clearBtn.addEventListener('click', () => {
+                    if (window.location.search) {
+                        window.location.href = window.location.pathname;
+                        return;
+                    }
                     filterInputs.forEach(input => {
                         $(input).val('').trigger('change');
                     });

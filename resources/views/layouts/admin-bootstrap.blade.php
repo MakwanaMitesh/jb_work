@@ -125,6 +125,22 @@
                     }
                 });
 
+                // Row-action / filter dropdowns living inside a scrollable or
+                // overflow-hidden card (e.g. table-responsive) get visually
+                // clipped by that ancestor since Popper's default 'absolute'
+                // strategy keeps the menu inside the nearest positioned
+                // overflow context. Pinning every dropdown to the 'fixed'
+                // strategy positions it relative to the viewport instead, so
+                // it always renders fully regardless of the table's height.
+                document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach((el) => {
+                    bootstrap.Dropdown.getOrCreateInstance(el, {
+                        popperConfig: (defaultConfig) => ({
+                            ...defaultConfig,
+                            strategy: 'fixed',
+                        }),
+                    });
+                });
+
                 // Select2 initializer (same contract as the Tailwind layout)
                 if (window.jQuery && $.fn.select2) {
                     window.initSelect2 = function (selector) {

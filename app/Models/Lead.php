@@ -10,6 +10,64 @@ class Lead extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public const STATUS_NEW = 'new';
+    public const STATUS_CONTACTED = 'contacted';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_VISIT_PENDING = 'visit_pending';
+    public const STATUS_VISIT_COMPLETED = 'visit_completed';
+    public const STATUS_DOC_PENDING = 'documentation_pending';
+    public const STATUS_DOC_IN_PROGRESS = 'documentation_in_progress';
+    public const STATUS_DOC_COMPLETED = 'documentation_completed';
+    public const STATUS_UNDER_PROCESS = 'under_process';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_CONVERTED = 'converted';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_REJECTED = 'rejected';
+    public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_LOST = 'lost';
+
+    public const STATUSES = [
+        self::STATUS_NEW => 'New',
+        self::STATUS_CONTACTED => 'Contacted',
+        self::STATUS_IN_PROGRESS => 'In Progress',
+        self::STATUS_VISIT_PENDING => 'Visit Pending',
+        self::STATUS_VISIT_COMPLETED => 'Visit Completed',
+        self::STATUS_DOC_PENDING => 'Documentation Pending',
+        self::STATUS_DOC_IN_PROGRESS => 'Documentation In Progress',
+        self::STATUS_DOC_COMPLETED => 'Documentation Completed',
+        self::STATUS_UNDER_PROCESS => 'Under Process',
+        self::STATUS_APPROVED => 'Approved',
+        self::STATUS_CONVERTED => 'Converted',
+        self::STATUS_COMPLETED => 'Completed',
+        self::STATUS_REJECTED => 'Rejected',
+        self::STATUS_CANCELLED => 'Cancelled',
+        self::STATUS_LOST => 'Lost',
+    ];
+
+    public const PENDING_ACTIVE_STATUSES = [
+        self::STATUS_NEW,
+        self::STATUS_CONTACTED,
+        self::STATUS_IN_PROGRESS,
+        self::STATUS_VISIT_PENDING,
+        self::STATUS_VISIT_COMPLETED,
+        self::STATUS_DOC_PENDING,
+        self::STATUS_DOC_IN_PROGRESS,
+        self::STATUS_DOC_COMPLETED,
+        self::STATUS_UNDER_PROCESS,
+    ];
+
+    public const APPROVED_CONVERTED_STATUSES = [
+        self::STATUS_APPROVED,
+        self::STATUS_CONVERTED,
+        self::STATUS_COMPLETED,
+    ];
+
+    public const REJECTED_CLOSED_STATUSES = [
+        self::STATUS_REJECTED,
+        self::STATUS_CANCELLED,
+        self::STATUS_LOST,
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -32,6 +90,8 @@ class Lead extends Model
         'status',
         'notes',
         'date_of_birth',
+        'place_of_birth',
+        'occupation',
         'gender',
         'address',
         'aadhar_card',
@@ -40,6 +100,8 @@ class Lead extends Model
         'fssai_license',
         'education',
         'mother_name',
+        'father_full_name',
+        'relationship',
         'itr_id',
         'itr_password',
         'itr_audited',
@@ -204,8 +266,74 @@ class Lead extends Model
     }
 
     /**
+     * Check if Pre-Sanction Inspection Sheet is applicable for this lead.
+     * Applicable ONLY when Bank is SBI (State Bank of India) AND Loan Product is Business Loan.
+     */
+    public function isInspectionSheetApplicable(): bool
+    {
+        $bankName = strtolower(trim($this->bank?->name ?? ''));
+        $isSbi = str_contains($bankName, 'sbi') || str_contains($bankName, 'state bank');
+
+        $loanProductName = strtolower(trim($this->loanProduct?->name ?? ''));
+        $loanProductCode = strtolower(trim($this->loanProduct?->code ?? ''));
+        $isBusinessLoan = str_contains($loanProductName, 'business') || $loanProductCode === 'bl';
+
+        return $isSbi && $isBusinessLoan;
+    }
+
+    public function hasGeneratedCma(): bool
+    {
+        return \Illuminate\Support\Facades\Storage::disk('public')->exists('cma/' . $this->id . '/CMA.xlsx');
+    }
+
+    public function hasGeneratedDpr(): bool
+    {
+        return \Illuminate\Support\Facades\Storage::disk('public')->exists('dpr/' . $this->id . '/DPR.docx');
+    }
+
+    public function hasGeneratedOr(): bool
+    {
+        return \Illuminate\Support\Facades\Storage::disk('public')->exists('or/' . $this->id . '/OR.docx');
+    }
+
+    public function hasGeneratedSbiStockStatement(): bool
+    {
+        return \Illuminate\Support\Facades\Storage::disk('public')->exists('sbi_stock_statement/' . $this->id . '/SBI_Stock_statement.xlsx');
+    }
+
+    public function hasGeneratedInspectionSheet(): bool
+    {
+        return \Illuminate\Support\Facades\Storage::disk('public')->exists('inspection_sheets/' . $this->id . '/inspection_sheet_lead_' . $this->id . '.pdf');
+    }
+
+    /**
      * Get the bank assigned to the lead.
      */
+    public function applicationForm(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ApplicationForm::class);
+    }
+
+    public function dprReport(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(DprReport::class);
+    }
+
+    public function cmaProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(CmaProfile::class);
+    }
+
+    public function opinionReport(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(OpinionReport::class);
+    }
+
+    public function stockStatement(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(StockStatement::class);
+    }
+
     public function bank(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Bank::class);

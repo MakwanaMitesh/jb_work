@@ -21,5 +21,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useTailwind();
+
+        \Illuminate\Support\Facades\Gate::before(function ($user, $ability, $arguments = []) {
+            if ($ability === 'toggleStatus' && isset($arguments[0]) && $arguments[0] instanceof \App\Models\Role) {
+                return null;
+            }
+
+            return $user->hasRole('Admin') ? true : null;
+        });
     }
 }

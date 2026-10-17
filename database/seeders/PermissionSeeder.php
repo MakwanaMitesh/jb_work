@@ -68,7 +68,47 @@ class PermissionSeeder extends Seeder
             'view' => 'View documents',
             'upload' => 'Upload documents',
             'download' => 'Download documents',
+            'download_all' => 'Download all uploaded documents',
             'delete' => 'Delete documents',
+        ],
+        'cma' => [
+            'view' => 'View CMA profile form',
+            'create' => 'Create CMA profile form',
+            'update' => 'Update CMA profile form',
+            'generate' => 'Generate CMA report',
+            'download' => 'Download CMA report',
+        ],
+        'dpr' => [
+            'view' => 'View DPR form',
+            'create' => 'Create DPR form',
+            'update' => 'Update DPR form',
+            'generate' => 'Generate DPR document',
+            'download' => 'Download DPR document',
+        ],
+        'or' => [
+            'view' => 'View OR (opinion report) form',
+            'create' => 'Create OR (opinion report) form',
+            'update' => 'Update OR (opinion report) form',
+            'generate' => 'Generate OR (opinion report) document',
+            'download' => 'Download OR (opinion report) document',
+        ],
+        'sbi_stock_statement' => [
+            'view' => 'View SBI Stock Statement form',
+            'create' => 'Create SBI Stock Statement form',
+            'update' => 'Update SBI Stock Statement form',
+            'generate' => 'Generate SBI Stock Statement',
+            'download' => 'Download SBI Stock Statement',
+        ],
+        'application_form' => [
+            'view' => 'View application form',
+            'create' => 'Create application form',
+            'update' => 'Update application form',
+            'generate' => 'Generate application form workbook',
+            'download' => 'Download application form workbook',
+        ],
+        'inspection_sheet' => [
+            'generate' => 'Generate inspection sheet report',
+            'download' => 'Download inspection sheet report',
         ],
         'document_types' => [
             'view' => 'View document master',
@@ -84,6 +124,14 @@ class PermissionSeeder extends Seeder
             'delete' => 'Delete leads',
             'assign' => 'Assign leads',
             'change_status' => 'Change lead status',
+        ],
+        'rough_leads' => [
+            'view' => 'View rough leads',
+            'create' => 'Create rough leads',
+            'edit' => 'Edit rough leads',
+            'delete' => 'Delete rough leads',
+            'change_status' => 'Change rough lead status',
+            'convert' => 'Convert rough lead to main lead',
         ],
         'visits' => [
             'view' => 'View visits',
@@ -124,6 +172,11 @@ class PermissionSeeder extends Seeder
             'create' => 'Create statuses',
             'edit' => 'Edit statuses',
             'delete' => 'Delete statuses',
+        ],
+        'contact_enquiry' => [
+            'view' => 'View contact enquiries',
+            'update' => 'Update contact enquiries',
+            'delete' => 'Delete contact enquiries',
         ],
     ];
 

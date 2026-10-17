@@ -6,13 +6,53 @@
     <div class="jb-tabs">
         <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" id="kyc-tab" class="jb-tab-btn active">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            <span>KYC Details</span>
+            <span>Details Sheet</span>
         </button>
 
-        <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" id="bank-loan-tab" class="jb-tab-btn jb-hidden">
+        <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" id="bank-loan-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             <span>Bank Loan</span>
         </button>
+
+        @can('application_form.view')
+                <button type="button" onclick="switchTab('application-form-tab', 'application-form-panel')" id="application-form-tab" class="jb-tab-btn">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <span>Application Form</span>
+                </button>
+        @endcan
+
+        <button type="button" onclick="switchTab('documents-tab', 'documents-panel')" id="documents-tab" class="jb-tab-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Documents</span>
+        </button>
+
+        @can('sbi_stock_statement.view')
+        <button type="button" onclick="switchTab('stock-statement-tab', 'stock-statement-panel')" id="stock-statement-tab" class="jb-tab-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            <span>Stock Statement</span>
+        </button>
+        @endcan
+
+        @can('or.view')
+        <button type="button" onclick="switchTab('opinion-report-tab', 'opinion-report-panel')" id="opinion-report-tab" class="jb-tab-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <span>Opinion Report</span>
+        </button>
+        @endcan
+
+        @can('cma.view')
+        <button type="button" onclick="switchTab('cma-tab', 'cma-panel')" id="cma-tab" class="jb-tab-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>CMA</span>
+        </button>
+        @endcan
+
+        @can('dpr.view')
+        <button type="button" onclick="switchTab('dpr-tab', 'dpr-panel')" id="dpr-tab" class="jb-tab-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>DPR</span>
+        </button>
+        @endcan
 
         <button type="button" onclick="switchTab('bank-tab', 'bank-panel')" id="bank-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
@@ -29,10 +69,6 @@
             <span>Loan Details</span>
         </button>
 
-        <button type="button" onclick="switchTab('documents-tab', 'documents-panel')" id="documents-tab" class="jb-tab-btn">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>Documents</span>
-        </button>
     </div>
 
     <div class="p-4 p-sm-5">
@@ -71,6 +107,37 @@
                     <x-input-label-bs for="mother_name" value="Mother Name" />
                     <x-text-input-bs id="mother_name" type="text" name="mother_name" :value="old('mother_name', $lead?->mother_name)" placeholder="Enter mother's name" />
                     <x-input-error-bs :messages="$errors->get('mother_name')" />
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12 col-md-4">
+                    <x-input-label-bs for="father_full_name" value="Father Full Name" />
+                    <x-text-input-bs id="father_full_name" type="text" name="father_full_name" :value="old('father_full_name', $lead?->father_full_name)" placeholder="Enter father's full name" />
+                    <x-input-error-bs :messages="$errors->get('father_full_name')" />
+                </div>
+                <div class="col-12 col-md-4">
+                    <x-input-label-bs for="relationship" value="Relationship (for affidavit)" />
+                    <select id="relationship" name="relationship" class="form-select jb-input">
+                        <option value="">Select Relationship</option>
+                        <option value="Son" @selected(old('relationship', $lead?->relationship) === 'Son')>Son</option>
+                        <option value="Daughter" @selected(old('relationship', $lead?->relationship) === 'Daughter')>Daughter</option>
+                        <option value="Wife" @selected(old('relationship', $lead?->relationship) === 'Wife')>Wife</option>
+                    </select>
+                    <x-input-error-bs :messages="$errors->get('relationship')" />
+                </div>
+                <div class="col-12 col-md-4">
+                    <x-input-label-bs for="place_of_birth" value="Place of Birth" />
+                    <x-text-input-bs id="place_of_birth" type="text" name="place_of_birth" :value="old('place_of_birth', $lead?->place_of_birth)" placeholder="Enter place of birth" />
+                    <x-input-error-bs :messages="$errors->get('place_of_birth')" />
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <x-input-label-bs for="occupation" value="Occupation" />
+                    <x-text-input-bs id="occupation" type="text" name="occupation" :value="old('occupation', $lead?->occupation)" placeholder="e.g. Business, Service, Self-Employed" />
+                    <x-input-error-bs :messages="$errors->get('occupation')" />
                 </div>
             </div>
 
@@ -266,8 +333,8 @@
                     <x-input-error-bs :messages="$errors->get('loan_product_id')" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-input-label-bs for="constitution_id" value="Customer Constitution" :required="true" />
-                    <select id="constitution_id" name="constitution_id" required class="form-select jb-input">
+                    <x-input-label-bs for="constitution_id" value="Customer Constitution" />
+                    <select id="constitution_id" name="constitution_id" class="form-select jb-input">
                         <option value="">Select Constitution</option>
                         @foreach ($constitutions as $const)
                             <option value="{{ $const->id }}" @selected(old('constitution_id', $lead?->constitution_id) == $const->id)>{{ $const->name }}</option>
@@ -323,8 +390,8 @@
             </div>
 
             <div class="d-flex justify-content-end pt-3 border-top">
-                <button type="button" onclick="switchTab('bank-tab', 'bank-panel')" class="btn btn-secondary jb-btn-tall">
-                    Next: Bank Details
+                <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" class="btn btn-secondary jb-btn-tall">
+                    Next: Bank Loan
                 </button>
             </div>
         </div>
@@ -502,12 +569,48 @@
                     </table>
                 </div>
 
+                <div class="jb-inset-box mt-4">
+                    <h4 class="fw-bold mb-3" style="font-size:var(--text-sm);color:var(--slate-800)">Branch &amp; Sign-off Details <span class="jb-muted fw-normal">(printed on the Inspection Sheet PDF)</span></h4>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label class="jb-field-label" for="bld_file_no">File No.</label>
+                            <input type="text" id="bld_file_no" name="bank_loan_details[file_no]" value="{{ old('bank_loan_details.file_no', $bld['file_no'] ?? '') }}" class="jb-report-input" placeholder="Bank file number">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="jb-field-label" for="bld_branch_name">Branch Name</label>
+                            <input type="text" id="bld_branch_name" name="bank_loan_details[branch_name]" value="{{ old('bank_loan_details.branch_name', $bld['branch_name'] ?? '') }}" class="jb-report-input" placeholder="e.g. AMCC BARDOLI Branch">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="jb-field-label" for="bld_branch_code">Branch Code</label>
+                            <input type="text" id="bld_branch_code" name="bank_loan_details[branch_code]" value="{{ old('bank_loan_details.branch_code', $bld['branch_code'] ?? '') }}" class="jb-report-input" placeholder="e.g. 0062744">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="jb-field-label" for="bld_manager_name">Manager Name</label>
+                            <input type="text" id="bld_manager_name" name="bank_loan_details[manager_name]" value="{{ old('bank_loan_details.manager_name', $bld['manager_name'] ?? '') }}" class="jb-report-input" placeholder="Branch manager name">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="jb-field-label" for="bld_manager_ss_no">Manager S.S. No.</label>
+                            <input type="text" id="bld_manager_ss_no" name="bank_loan_details[manager_ss_no]" value="{{ old('bank_loan_details.manager_ss_no', $bld['manager_ss_no'] ?? '') }}" class="jb-report-input" placeholder="Staff number">
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <label class="jb-field-label m-0" for="bld_remarks">Inspection Remarks / Observations</label>
+                                <button type="button" id="bld_remarks_regenerate" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    Regenerate from Lead Data
+                                </button>
+                            </div>
+                            <textarea id="bld_remarks" name="bank_loan_details[inspection_remarks]" rows="6" class="jb-report-input" data-has-saved-value="{{ !empty($bld['inspection_remarks'] ?? '') ? '1' : '0' }}" placeholder="Narrative printed below the table on the PDF (visit summary, machinery, staff, location, overall finding...). Auto-updates as you fill in the Lead's name/address/activity — edit freely to override.">{{ old('bank_loan_details.inspection_remarks', $bld['inspection_remarks'] ?? \App\Support\InspectionSheetRemarks::generate($lead, $bld)) }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="d-flex justify-content-between pt-3 mt-3 border-top">
                     <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" class="btn btn-secondary jb-btn-tall">
                         Previous
                     </button>
-                    <button type="button" onclick="switchTab('bank-tab', 'bank-panel')" class="btn btn-secondary jb-btn-tall">
-                        Next: Bank Details
+                    <button type="button" onclick="switchTab('application-form-tab', 'application-form-panel')" class="btn btn-secondary jb-btn-tall">
+                        Next: Application Form
                     </button>
                 </div>
             </div>
@@ -580,9 +683,27 @@
             </div>
 
             <div class="d-flex justify-content-between pt-3 mt-3 border-top">
-                <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" class="btn btn-secondary jb-btn-tall">
-                    Previous
-                </button>
+                @can('dpr.view')
+                    <button type="button" onclick="switchTab('dpr-tab', 'dpr-panel')" class="btn btn-secondary jb-btn-tall">
+                        Previous: DPR
+                    </button>
+                @elsecan('cma.view')
+                    <button type="button" onclick="switchTab('cma-tab', 'cma-panel')" class="btn btn-secondary jb-btn-tall">
+                        Previous: CMA
+                    </button>
+                @elsecan('or.view')
+                    <button type="button" onclick="switchTab('opinion-report-tab', 'opinion-report-panel')" class="btn btn-secondary jb-btn-tall">
+                        Previous: Opinion Report
+                    </button>
+                @elsecan('sbi_stock_statement.view')
+                    <button type="button" onclick="switchTab('stock-statement-tab', 'stock-statement-panel')" class="btn btn-secondary jb-btn-tall">
+                        Previous: Stock Statement
+                    </button>
+                @else
+                    <button type="button" onclick="switchTab('documents-tab', 'documents-panel')" class="btn btn-secondary jb-btn-tall">
+                        Previous: Documents
+                    </button>
+                @endcan
                 <button type="button" onclick="switchTab('business-tab', 'business-panel')" class="btn btn-secondary jb-btn-tall">
                     Next: Business Details
                 </button>
@@ -810,12 +931,9 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between pt-3 mt-3 border-top">
+            <div class="d-flex justify-content-start pt-3 mt-3 border-top">
                 <button type="button" onclick="switchTab('business-tab', 'business-panel')" class="btn btn-secondary jb-btn-tall">
                     Previous
-                </button>
-                <button type="button" onclick="switchTab('documents-tab', 'documents-panel')" class="btn btn-secondary jb-btn-tall">
-                    Next: Documents
                 </button>
             </div>
         </div>
@@ -826,153 +944,136 @@
             $existingLeadDocs = $lead ? $lead->leadDocuments->groupBy('document_type_id') : collect();
         @endphp
         <div id="documents-panel" class="tab-panel jb-hidden">
-            <div class="border-bottom pb-3 mb-4 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2">
-                <div>
-                    <h3 class="d-flex align-items-center gap-2 fw-bold m-0" style="font-size:var(--text-base);color:var(--slate-900)">
-                        <span style="width:.5rem;height:1rem;background:var(--primary-600);border-radius:var(--radius-full)"></span>
-                        Lead Documents Checklist & Upload
-                    </h3>
-                    <p class="mt-1 mb-0" style="font-size:var(--text-xs);color:var(--slate-500)">Upload required KYC, financial, and project documents for this lead based on configured Document Master rules.</p>
-                </div>
+            <div class="border-bottom pb-3 mb-3">
+                <h3 class="fw-bold m-0" style="font-size:var(--text-base);color:var(--slate-900)">Lead Documents Checklist &amp; Upload</h3>
+                <p class="mt-1 mb-0" style="font-size:var(--text-xs);color:var(--slate-500)">Upload required KYC, financial, and project documents for this lead. New files are saved when you save the lead.</p>
             </div>
 
-            <div class="row g-3">
-                @foreach ($docTypesList as $docType)
-                    @php
-                        $code = $docType->code;
-                        $id = $docType->id;
-                        $uploadedDocs = $existingLeadDocs->get($docType->id, collect());
-                        $acceptAttr = implode(',', array_map(fn($e) => '.' . trim($e), $docType->allowed_file_types ?? ['pdf', 'jpg', 'jpeg', 'png']));
-                    @endphp
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0" style="font-size:var(--text-sm)">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Document Name</th>
+                            <th class="text-center" style="width:22%">Upload</th>
+                            <th class="text-center">Download</th>
+                            <th class="text-center">Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($docTypesList as $docType)
+                            @php
+                                $code = $docType->code;
+                                $uploadedDocs = $existingLeadDocs->get($docType->id, collect())->sortBy(fn ($d) => $d->side === 'back' ? 1 : 0)->values();
+                                $acceptAttr = implode(',', array_map(fn($e) => '.' . trim($e), $docType->allowed_file_types ?? ['pdf', 'jpg', 'jpeg', 'png']));
+                                $rowCount = max(1, $uploadedDocs->count());
+                            @endphp
 
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="doc-item-wrapper jb-doc-item d-flex flex-column gap-3 h-100">
-                            <h4 class="fw-bold m-0" style="font-size:var(--text-sm);color:var(--slate-900)">
-                                {{ $docType->name }}
-                            </h4>
+                            @for ($i = 0; $i < $rowCount; $i++)
+                                @php $docItem = $uploadedDocs->get($i); @endphp
+                                <tr>
+                                    @if ($i === 0)
+                                        <td rowspan="{{ $rowCount }}">{{ $docType->name }}</td>
 
-                            {{-- UPLOAD CONTROLS BASED ON CONFIGURATION --}}
-                            {{-- 1. FRONT & BACK DOCUMENT --}}
-                            @if ($docType->has_front_back)
-                                @php
-                                    $frontDoc = $uploadedDocs->firstWhere('side', 'front');
-                                    $backDoc = $uploadedDocs->firstWhere('side', 'back');
-                                @endphp
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex flex-wrap align-items-center gap-2">
-                                        <label class="jb-upload-label">
-                                            <input type="file" name="documents[{{ $code }}][front]" accept="{{ $acceptAttr }}" class="jb-hidden" onchange="handleFileSelect(this, '{{ $code }}-front-selected')">
-                                            <span>Upload Front</span>
-                                        </label>
-
-                                        <label class="jb-upload-label">
-                                            <input type="file" name="documents[{{ $code }}][back]" accept="{{ $acceptAttr }}" class="jb-hidden" onchange="handleFileSelect(this, '{{ $code }}-back-selected')">
-                                            <span>Upload Back</span>
-                                        </label>
-                                    </div>
-
-                                    <div class="d-flex flex-column gap-1" style="font-size:var(--text-xs)">
-                                        @if ($frontDoc)
-                                            <div class="jb-file-confirm">
-                                                <svg width="14" height="14" class="flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                <span class="fw-semibold">Front:</span>
-                                                <span class="text-truncate" style="max-width:150px" title="{{ $frontDoc->original_name }}">{{ $frontDoc->original_name }}</span>
-                                                <a href="{{ route('admin.leads.documents.download', [$lead, $frontDoc]) }}" target="_blank" class="fw-bold ms-1" style="color:inherit">View</a>
-                                            </div>
-                                        @endif
-                                        <div id="{{ $code }}-front-selected" class="jb-file-selected-note jb-hidden">
-                                            <span>Front selected:</span>
-                                            <span class="file-name fw-semibold text-truncate" style="max-width:180px"></span>
-                                        </div>
-
-                                        @if ($backDoc)
-                                            <div class="jb-file-confirm">
-                                                <svg width="14" height="14" class="flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                <span class="fw-semibold">Back:</span>
-                                                <span class="text-truncate" style="max-width:150px" title="{{ $backDoc->original_name }}">{{ $backDoc->original_name }}</span>
-                                                <a href="{{ route('admin.leads.documents.download', [$lead, $backDoc]) }}" target="_blank" class="fw-bold ms-1" style="color:inherit">View</a>
-                                            </div>
-                                        @endif
-                                        <div id="{{ $code }}-back-selected" class="jb-file-selected-note jb-hidden">
-                                            <span>Back selected:</span>
-                                            <span class="file-name fw-semibold text-truncate" style="max-width:180px"></span>
-                                        </div>
-                                    </div>
-
-                                    <x-input-error-bs :messages="$errors->get('documents.' . $code . '.front')" />
-                                    <x-input-error-bs :messages="$errors->get('documents.' . $code . '.back')" />
-                                </div>
-
-                            {{-- 2. MULTIPLE FILES DOCUMENT --}}
-                            @elseif ($docType->allow_multiple)
-                                <div class="d-flex flex-column gap-2">
-                                    <div id="multiple-files-container-{{ $code }}" class="d-flex flex-wrap align-items-center gap-2">
-                                        <label class="jb-upload-label">
-                                            <input type="file" name="documents[{{ $code }}][files][]" accept="{{ $acceptAttr }}" class="jb-hidden" data-row-id="row-initial-{{ $code }}" onchange="handleMultipleFileSelect(this)">
-                                            <span>Upload File</span>
-                                        </label>
-
-                                        <button type="button" onclick="addMultipleFileInput('{{ $code }}', '{{ $acceptAttr }}')" class="btn btn-sm" style="background:var(--slate-100);color:var(--slate-700)">
-                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                                            Add Another
-                                        </button>
-                                    </div>
-
-                                    <div class="d-flex flex-column gap-1" style="font-size:var(--text-xs)">
-                                        @if ($uploadedDocs->isNotEmpty())
-                                            @foreach ($uploadedDocs as $docItem)
-                                                <div class="jb-file-confirm">
-                                                    <svg width="14" height="14" class="flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                    <span class="text-truncate" style="max-width:180px" title="{{ $docItem->original_name }}">{{ $docItem->original_name }}</span>
-                                                    <a href="{{ route('admin.leads.documents.download', [$lead, $docItem]) }}" target="_blank" class="fw-bold ms-1" style="color:inherit">View</a>
+                                        <td rowspan="{{ $rowCount }}" class="doc-item-wrapper">
+                                            @can('documents.upload')
+                                                <div class="d-flex flex-column align-items-center gap-2">
+                                                    @if ($docType->has_front_back)
+                                                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                                                            <label class="btn btn-outline-secondary btn-sm mb-0">
+                                                                <input type="file" name="documents[{{ $code }}][front]" accept="{{ $acceptAttr }}" class="jb-hidden" onchange="handleFileSelect(this, '{{ $code }}-front-selected')">
+                                                                Upload Front
+                                                            </label>
+                                                            <label class="btn btn-outline-secondary btn-sm mb-0">
+                                                                <input type="file" name="documents[{{ $code }}][back]" accept="{{ $acceptAttr }}" class="jb-hidden" onchange="handleFileSelect(this, '{{ $code }}-back-selected')">
+                                                                Upload Back
+                                                            </label>
+                                                        </div>
+                                                        <div id="{{ $code }}-front-selected" class="jb-hidden text-muted" style="font-size:var(--text-xs)">Front: <span class="file-name"></span></div>
+                                                        <div id="{{ $code }}-back-selected" class="jb-hidden text-muted" style="font-size:var(--text-xs)">Back: <span class="file-name"></span></div>
+                                                        <x-input-error-bs :messages="$errors->get('documents.' . $code . '.front')" />
+                                                        <x-input-error-bs :messages="$errors->get('documents.' . $code . '.back')" />
+                                                    @elseif ($docType->allow_multiple)
+                                                        <div id="multiple-files-container-{{ $code }}" class="d-flex flex-wrap justify-content-center gap-2">
+                                                            <label class="btn btn-outline-secondary btn-sm mb-0">
+                                                                <input type="file" name="documents[{{ $code }}][files][]" accept="{{ $acceptAttr }}" class="jb-hidden" data-row-id="row-initial-{{ $code }}" onchange="handleMultipleFileSelect(this)">
+                                                                Upload File
+                                                            </label>
+                                                            <button type="button" onclick="addMultipleFileInput('{{ $code }}', '{{ $acceptAttr }}')" class="btn btn-outline-secondary btn-sm">Add Another</button>
+                                                        </div>
+                                                        <div class="multiple-selected-list d-flex flex-column gap-1 text-muted" style="font-size:var(--text-xs)"></div>
+                                                        <x-input-error-bs :messages="$errors->get('documents.' . $code)" />
+                                                    @else
+                                                        <label class="btn btn-outline-secondary btn-sm mb-0">
+                                                            <input type="file" name="documents[{{ $code }}][file]" accept="{{ $acceptAttr }}" class="jb-hidden" onchange="handleFileSelect(this, '{{ $code }}-single-selected')">
+                                                            Upload File
+                                                        </label>
+                                                        <div id="{{ $code }}-single-selected" class="jb-hidden text-muted" style="font-size:var(--text-xs)"><span class="file-name"></span></div>
+                                                        <x-input-error-bs :messages="$errors->get('documents.' . $code)" />
+                                                    @endif
                                                 </div>
-                                            @endforeach
-                                        @endif
-                                        <div class="multiple-selected-list d-flex flex-column gap-1"></div>
-                                    </div>
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endcan
+                                        </td>
+                                    @endif
 
-                                    <x-input-error-bs :messages="$errors->get('documents.' . $code)" />
-                                </div>
-
-                            {{-- 3. SINGLE FILE DOCUMENT --}}
-                            @else
-                                @php $singleUploaded = $uploadedDocs->first(); @endphp
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex flex-wrap align-items-center gap-2">
-                                        <label class="jb-upload-label">
-                                            <input type="file" name="documents[{{ $code }}][file]" accept="{{ $acceptAttr }}" class="jb-hidden" onchange="handleFileSelect(this, '{{ $code }}-single-selected')">
-                                            <span>Upload File</span>
-                                        </label>
-                                    </div>
-
-                                    <div class="d-flex flex-column gap-1" style="font-size:var(--text-xs)">
-                                        @if ($singleUploaded)
-                                            <div class="jb-file-confirm">
-                                                <svg width="14" height="14" class="flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                <span class="text-truncate" style="max-width:180px" title="{{ $singleUploaded->original_name }}">{{ $singleUploaded->original_name }}</span>
-                                                <a href="{{ route('admin.leads.documents.download', [$lead, $singleUploaded]) }}" target="_blank" class="fw-bold ms-1" style="color:inherit">View</a>
-                                            </div>
-                                        @endif
-                                        <div id="{{ $code }}-single-selected" class="jb-file-selected-note jb-hidden">
-                                            <span>Selected:</span>
-                                            <span class="file-name fw-semibold text-truncate" style="max-width:180px"></span>
-                                        </div>
-                                    </div>
-
-                                    <x-input-error-bs :messages="$errors->get('documents.' . $code)" />
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                @endforeach
+                                    @if ($docItem && $lead)
+                                        <td class="text-center">
+                                            @can('documents.download')
+                                                <a href="{{ route('admin.leads.documents.download', [$lead, $docItem]) }}" class="text-decoration-none" title="{{ $docItem->original_name }}">Download</a>
+                                            @endcan
+                                        </td>
+                                        <td class="text-center">
+                                            @can('documents.delete')
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteLeadDocument('{{ route('admin.leads.documents.destroy', [$lead, $docItem]) }}')">Delete</button>
+                                            @endcan
+                                        </td>
+                                    @else
+                                        <td></td>
+                                        <td></td>
+                                    @endif
+                                </tr>
+                            @endfor
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
 
-            <div class="d-flex justify-content-start pt-3 mt-4 border-top">
-                <button type="button" onclick="switchTab('loan-tab', 'loan-panel')" class="btn btn-secondary jb-btn-tall">
-                    Previous: Loan Details
+            <div class="d-flex justify-content-between pt-3 mt-4 border-top">
+                <button type="button" onclick="switchTab('application-form-tab', 'application-form-panel')" class="btn btn-secondary jb-btn-tall">
+                    Previous: Application Form
                 </button>
+                @can('sbi_stock_statement.view')
+                    <button type="button" onclick="switchTab('stock-statement-tab', 'stock-statement-panel')" class="btn btn-secondary jb-btn-tall">
+                        Next: Stock Statement
+                    </button>
+                @else
+                    <button type="button" onclick="switchTab('bank-tab', 'bank-panel')" class="btn btn-secondary jb-btn-tall">
+                        Next: Bank Details
+                    </button>
+                @endcan
             </div>
         </div>
+
+        @can('application_form.view')
+            @include('admin.leads.partials.application-form', ['lead' => $lead])
+        @endcan
+
+        @can('sbi_stock_statement.view')
+            @include('admin.leads.partials.stock-statement', ['lead' => $lead])
+        @endcan
+
+        @can('or.view')
+            @include('admin.leads.partials.opinion-report', ['lead' => $lead])
+        @endcan
+
+        @can('cma.view')
+            @include('admin.leads.partials.cma', ['lead' => $lead])
+        @endcan
+
+        @can('dpr.view')
+            @include('admin.leads.partials.dpr', ['lead' => $lead])
+        @endcan
     </div>
 </div>
 
@@ -1137,53 +1238,27 @@ function switchTab(tabId, panelId) {
     // Show target panel
     document.getElementById(panelId).classList.remove('jb-hidden');
 
-    // Reset tab buttons — only the active/inactive state, so any independent
-    // visibility toggle (e.g. the conditional bank-loan-tab) is untouched.
+    // Reset tab buttons — only the active/inactive state.
     document.querySelectorAll('.jb-tab-btn').forEach(tab => tab.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
 }
 
-function checkBankLoanTabVisibility() {
-    const bankSelect = document.getElementById('bank_id');
-    const loanProductSelect = document.getElementById('loan_product_id');
-    const bankLoanTab = document.getElementById('bank-loan-tab');
-
-    if (!bankSelect || !loanProductSelect || !bankLoanTab) return;
-
-    const bankVal = bankSelect.value;
-    const productVal = loanProductSelect.value;
-
-    const bankText = bankSelect.options[bankSelect.selectedIndex]?.text?.toLowerCase() || '';
-    const productText = loanProductSelect.options[loanProductSelect.selectedIndex]?.text?.toLowerCase() || '';
-
-    const hasExistingData = {{ !empty($lead?->bank_loan_details) ? 'true' : 'false' }};
-
-    const isSbi = bankText.includes('sbi') || bankText.includes('state bank') || bankVal !== '';
-    const isBusinessLoan = productText.includes('business loan') || productText.includes('business') || productVal !== '';
-
-    if (hasExistingData || (bankVal !== '' && isBusinessLoan)) {
-        bankLoanTab.classList.remove('jb-hidden');
-    } else {
-        bankLoanTab.classList.add('jb-hidden');
-        const bankLoanPanel = document.getElementById('bank-loan-panel');
-        if (bankLoanPanel && !bankLoanPanel.classList.contains('jb-hidden')) {
-            switchTab('kyc-tab', 'kyc-panel');
-        }
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-    const bankSelect = document.getElementById('bank_id');
-    const loanProductSelect = document.getElementById('loan_product_id');
-
-    if (bankSelect) bankSelect.addEventListener('change', checkBankLoanTabVisibility);
-    if (loanProductSelect) loanProductSelect.addEventListener('change', checkBankLoanTabVisibility);
-
-    if (window.jQuery) {
-        window.jQuery('#bank_id, #loan_product_id').on('change', checkBankLoanTabVisibility);
-    }
-
-    checkBankLoanTabVisibility();
+    @if (session('open_tab') === 'dpr' || collect($errors->keys())->contains(fn ($k) => str_starts_with($k, 'dpr.')))
+        if (document.getElementById('dpr-tab')) switchTab('dpr-tab', 'dpr-panel');
+    @endif
+    @if (session('open_tab') === 'cma' || collect($errors->keys())->contains(fn ($k) => str_starts_with($k, 'cma.')))
+        if (document.getElementById('cma-tab')) switchTab('cma-tab', 'cma-panel');
+    @endif
+    @if (session('open_tab') === 'opinion-report' || collect($errors->keys())->contains(fn ($k) => str_starts_with($k, 'opr.')))
+        if (document.getElementById('opinion-report-tab')) switchTab('opinion-report-tab', 'opinion-report-panel');
+    @endif
+    @if (session('open_tab') === 'stock-statement' || collect($errors->keys())->contains(fn ($k) => str_starts_with($k, 'ss.')))
+        if (document.getElementById('stock-statement-tab')) switchTab('stock-statement-tab', 'stock-statement-panel');
+    @endif
+    @if (session('open_tab') === 'application-form' || collect($errors->keys())->contains(fn ($k) => str_starts_with($k, 'af')))
+        if (document.getElementById('application-form-tab')) switchTab('application-form-tab', 'application-form-panel');
+    @endif
 
     // Track manual edits in Bank Loan fields
     ['bld_applicant', 'bld_office_address', 'bld_years'].forEach(id => {
@@ -1225,7 +1300,91 @@ document.addEventListener('DOMContentLoaded', function() {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', syncBankLoanLive);
     });
+
+    // Realtime "Inspection Remarks / Observations" paragraph.
+    // Regenerates from the fields below as the user types, until the user
+    // edits the textarea directly (or it already holds a previously saved
+    // paragraph) — at that point it's left alone unless "Regenerate" is clicked.
+    const bldRemarks = document.getElementById('bld_remarks');
+    if (bldRemarks) {
+        if (bldRemarks.dataset.hasSavedValue === '1') {
+            bldRemarks.dataset.manuallyEdited = 'true';
+        }
+        bldRemarks.addEventListener('input', () => bldRemarks.dataset.manuallyEdited = 'true');
+
+        const remarksSourceIds = [
+            'name', 'business_name', 'firm_name', 'business_address',
+            'business_activity', 'business_experience', 'no_of_manpower',
+            'constitution_id', 'city_id', 'term_loan_machinery_details', 'term_loan_amount',
+        ];
+
+        let remarksDebounceTimer = null;
+
+        function fetchRemarksPreview(force) {
+            const payload = {};
+            remarksSourceIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) payload[id] = el.value;
+            });
+            const visitDateEl = document.querySelector('[name="bank_loan_details[visit_office_date]"]');
+            if (visitDateEl) payload.visit_office_date = visitDateEl.value;
+            const tvrEl = document.querySelector('input[name="bank_loan_details[office_tvr_result]"]:checked');
+            if (tvrEl) payload.office_tvr_result = tvrEl.value;
+
+            fetch('{{ route('admin.leads.inspection-remarks.preview') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+                body: JSON.stringify(payload),
+            })
+                .then(res => (res.ok ? res.json() : Promise.reject()))
+                .then(data => {
+                    if (force || bldRemarks.dataset.manuallyEdited !== 'true') {
+                        bldRemarks.value = data.remarks || '';
+                        if (force) bldRemarks.dataset.manuallyEdited = 'false';
+                    }
+                })
+                .catch(() => {});
+        }
+
+        function scheduleRemarksPreview() {
+            if (bldRemarks.dataset.manuallyEdited === 'true') return;
+            clearTimeout(remarksDebounceTimer);
+            remarksDebounceTimer = setTimeout(() => fetchRemarksPreview(false), 400);
+        }
+
+        remarksSourceIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', scheduleRemarksPreview);
+        });
+
+        const regenerateBtn = document.getElementById('bld_remarks_regenerate');
+        if (regenerateBtn) {
+            regenerateBtn.addEventListener('click', () => fetchRemarksPreview(true));
+        }
+    }
 });
+
+// The delete button sits inside the lead form, so it posts through a throwaway form instead of nesting one.
+function deleteLeadDocument(url) {
+    if (!confirm('Remove this document?')) return;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    const token = document.querySelector('input[name="_token"]');
+    [['_token', token ? token.value : ''], ['_method', 'DELETE']].forEach(([name, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+}
 
 function handleFileSelect(input, targetId) {
     const el = document.getElementById(targetId);
@@ -1270,7 +1429,7 @@ function addMultipleFileInput(code, acceptAttr) {
     const addBtn = container.querySelector('button');
 
     const label = document.createElement('label');
-    label.className = 'jb-upload-label';
+    label.className = 'btn btn-outline-secondary btn-sm mb-0';
 
     const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
     const input = document.createElement('input');
@@ -1281,11 +1440,8 @@ function addMultipleFileInput(code, acceptAttr) {
     input.setAttribute('data-row-id', rowId);
     input.onchange = function() { handleMultipleFileSelect(this); };
 
-    const span = document.createElement('span');
-    span.textContent = 'Upload File';
-
     label.appendChild(input);
-    label.appendChild(span);
+    label.appendChild(document.createTextNode('Upload File'));
     container.insertBefore(label, addBtn);
     input.click();
 }

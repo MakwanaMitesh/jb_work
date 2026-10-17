@@ -358,6 +358,58 @@ class UiSmokeTest extends TestCase
     }
 
     /**
+     * The inspection sheet PDF must be fully data-driven: ticked/unticked
+     * checkbox glyphs (DomPDF cannot render SVG), and no hardcoded branch,
+     * manager or narrative text.
+     */
+    public function test_inspection_sheet_is_data_driven_with_checkbox_glyphs(): void
+    {
+        $lead = \App\Models\Lead::create([
+            'name' => 'Pdf Lead',
+            'mobile_number' => '+919777777777',
+            'status' => 'new',
+        ]);
+
+        $render = fn (array $bld) => view('admin.leads.pdf.inspection_sheet', ['lead' => $lead, 'bld' => $bld])->render();
+
+        $html = $render([
+            'type_of_organization' => ['Proprietorship'],
+            'nature_of_business' => ['Manufacturing'],
+            'office_ownership' => ['RENTED'],
+            'branch_name' => 'TEST BRANCH',
+            'branch_code' => '99',
+            'manager_name' => 'Jane Manager',
+            'manager_ss_no' => 'S1',
+            'inspection_remarks' => "Line one\nLine two",
+        ]);
+
+        $this->assertStringContainsString('&#9745;', $html, 'ticked box glyph missing');
+        $this->assertStringContainsString('&#9744;', $html, 'unticked box glyph missing');
+        $this->assertSame(3, substr_count($html, '&#9745;'), 'exactly the 3 selected options should be ticked');
+        $this->assertStringContainsString('TEST BRANCH (99)', $html);
+        $this->assertStringContainsString('Jane Manager', $html);
+        $this->assertStringContainsString('Line one<br />', $html);
+        $this->assertStringNotContainsString('<svg', $html, 'DomPDF cannot render inline SVG');
+
+        // Wording follows the bank sheet; only the lead's data is substituted.
+        $lead->update(['business_name' => 'RADHE CREATION']);
+        $auto = $render(['visit_office_date' => '2026-07-28', 'office_organization_address' => 'PLOT 421, SURAT', 'office_tvr_result' => 'Positive']);
+        $this->assertStringContainsString('Visited the firm RADHE CREATION on 28/07/2026.', $auto);
+        $this->assertStringContainsString('The unit is located at PLOT 421, SURAT and met proprietor Mr Pdf Lead of RADHE CREATION.', $auto);
+        $this->assertStringContainsString('Overall visit found positive and satisfactory response.', $auto);
+
+        $lead->update(['business_name' => null]);
+        // Title is fixed to SBI whatever bank the lead has.
+        $this->assertStringContainsString('State Bank of India', $html);
+
+        $blank = $render([]);
+        foreach (['PRASHANT', 'P11937', '0062744', 'BARDOLI'] as $hardcoded) {
+            $this->assertStringNotContainsString($hardcoded, $blank, "{$hardcoded} must not be hardcoded");
+        }
+        $this->assertStringNotContainsString('&#9745;', $blank);
+    }
+
+    /**
      * welcome.blade.php (route "/") is Laravel's default scaffold page, out
      * of scope for the admin app migration, but it depended on the Tailwind
      * CSS entry via @vite. Removing that entry without touching this page

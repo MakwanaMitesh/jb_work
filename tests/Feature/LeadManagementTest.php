@@ -284,7 +284,13 @@ class LeadManagementTest extends TestCase
 
     public function test_admin_can_download_inspection_sheet_pdf(): void
     {
+        $businessLoan = \App\Models\LoanProduct::firstOrCreate(
+            ['code' => 'BL'],
+            ['name' => 'Business Loan', 'status' => 'active']
+        );
+
         $lead = Lead::create($this->validPayload([
+            'loan_product_id' => $businessLoan->id,
             'bank_loan_details' => [
                 'applicant_coapplicant_guarantor_name' => 'GOPALBHAI ITALIYA',
                 'visit_office_date' => '2026-07-28',

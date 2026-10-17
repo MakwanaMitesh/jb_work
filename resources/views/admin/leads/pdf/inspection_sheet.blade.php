@@ -4,342 +4,195 @@
     <meta charset="UTF-8">
     <title>Pre-Sanction Inspection Sheet (Annexure V-A)</title>
     <style>
-        @page {
-            margin: 20px 25px;
-        }
-        body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            line-height: 1.35;
-            color: #000000;
-        }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .font-bold { font-weight: bold; }
-        .uppercase { text-transform: uppercase; }
+        @page { margin: 26px 30px; }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.25; color: #000; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
 
-        /* SBI Logo & Header Table */
-        .top-header-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 5px;
-        }
-        .top-header-table td {
-            vertical-align: top;
-        }
-        .bank-name-text {
-            font-size: 12px;
-            font-weight: bold;
-            line-height: 1.2;
-        }
-        .branch-name-text {
-            font-size: 11px;
-            font-weight: bold;
-            line-height: 1.2;
-        }
-        .file-no-box {
-            border: 1px solid #000;
-            padding: 3px 8px;
-            width: 220px;
-            font-size: 11px;
-            margin-left: auto;
-            text-align: left;
-        }
+        .top-header { width: 100%; border-collapse: collapse; }
+        .top-header td { vertical-align: top; }
+        .bank-name { font-size: 12.5px; line-height: 1.25; }
+        .file-no-box { border: 1px solid #000; width: 290px; margin: 5px auto 0 auto; padding: 2px 8px; text-align: left; font-size: 11.5px; }
+        .main-title { font-size: 12px; text-align: center; margin: 9px 0 1px 0; line-height: 1.25; }
 
-        .main-title {
-            font-size: 11.5px;
-            font-weight: bold;
-            text-align: center;
-            margin: 6px 0 8px 0;
-            line-height: 1.35;
-        }
+        .sheet { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .sheet th, .sheet td { border: 1px solid #000; padding: 7px 8px; vertical-align: middle; font-size: 12px; word-wrap: break-word; }
+        .sheet th { font-weight: normal; text-align: center; padding: 3px 8px; }
+        .sheet th.w-row-th, .w-row th { border: 0 !important; padding: 0 !important; height: 0; font-size: 0; line-height: 0; }
+        .c-sno { text-align: center; font-weight: bold; }
+        .c-letter { text-align: center; }
+        .c-obs { text-align: center; }
+        .r-tall td { padding-top: 19px; padding-bottom: 19px; }
+        .r-mid td { padding-top: 13px; padding-bottom: 13px; }
 
-        /* Table layout matching screenshot */
-        .table-inspection {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 0px;
-        }
-        .table-inspection th, .table-inspection td {
-            border: 1px solid #000;
-            padding: 4px 6px;
-            vertical-align: top;
-            font-size: 10.5px;
-        }
-        .table-inspection th {
-            font-weight: bold;
-            text-align: center;
-            font-size: 10.5px;
-        }
+        .chk { font-family: 'DejaVu Sans', sans-serif; font-size: 12px; line-height: 1; }
+        .opt { display: inline-block; margin: 0 6px 2px 0; white-space: nowrap; font-size: 11px; font-weight: bold; }
 
-        .sno-col { width: 6%; text-align: center; font-weight: bold; }
-        .part-col { width: 38%; font-weight: bold; }
-        .obs-col { width: 56%; }
-
-        .checkbox-container {
-            font-size: 10px;
-        }
-        .chk-box {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border: 1px solid #000;
-            line-height: 9px;
-            text-align: center;
-            margin-right: 3px;
-            vertical-align: middle;
-            background: #ffffff;
-        }
-
-        /* Main Bottom Paragraph */
-        .main-paragraph {
-            border: 1px solid #000;
-            border-top: none;
-            padding: 6px 8px;
-            font-size: 10px;
-            line-height: 1.4;
-            text-align: justify;
-            margin-bottom: 15px;
-            min-height: 80px;
-        }
-
-        .main-paragraph p {
-            margin: 0 0 5px 0;
-            text-indent: 0;
-        }
-
-        .footer-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 10.5px;
-        }
-        .footer-table td {
-            vertical-align: top;
-        }
+        .remarks { border: 1px solid #000; border-top: none; padding: 6px 8px 8px 8px; font-size: 12px; line-height: 1.3; text-align: justify; }
+        .footer { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 12px; }
+        .footer td { vertical-align: top; }
     </style>
 </head>
 <body>
 
-    @php
-        $bankName = $lead->bank?->name ?? 'State Bank of India';
-        $cityName = $lead->city?->name ?? '';
-        $branchName = $cityName ? 'AMCC ' . strtoupper($cityName) . ' Branch' : 'AMCC BARDOLI Branch';
-        $branchObsHeader = 'Observations of Branch Manager<br>' . ($cityName ? 'AMCC ' . strtoupper($cityName) : 'AMCC BARDOLI') . ' (0062744)';
+@php
+    $t = fn ($v) => trim((string) $v);
 
-        $bizName = $lead->business_name ?: ($lead->firm_name ?: '');
-        $applicantName = $bld['applicant_coapplicant_guarantor_name'] ?? ($lead->name ? $lead->name . ($bizName ? ' – Prop. Of ' . $bizName : '') : '');
-        $visitDate = !empty($bld['visit_office_date']) ? \Carbon\Carbon::parse($bld['visit_office_date'])->format('d/m/Y') : '';
-        
-        $officeAddr = $bld['office_organization_address'] ?? ($lead->business_address ?: ($lead->address ?: ''));
-        $officePhone = $bld['office_phone_no'] ?? ($lead->mobile_number ?: '');
+    // This annexure is the State Bank of India form, so the title is fixed
+    // regardless of which bank is selected on the lead.
+    $bankName    = 'State Bank of India';
+    $branchName  = $t($bld['branch_name'] ?? '');
+    $branchCode  = $t($bld['branch_code'] ?? '');
+    $fileNo      = $t($bld['file_no'] ?? '');
+    $managerName = $t($bld['manager_name'] ?? '');
+    $managerSsNo = $t($bld['manager_ss_no'] ?? '');
 
-        $selectedOrgs = (array) ($bld['type_of_organization'] ?? []);
-        $allOrgs = ['Partnership', 'Proprietorship', 'Pvt. Ltd.', 'Public Ltd', 'Others'];
+    $bizName = $t($lead->business_name ?: $lead->firm_name);
+    $applicantName = $t($bld['applicant_coapplicant_guarantor_name'] ?? '')
+        ?: $t($lead->name . ($bizName ? ' - Prop. Of ' . $bizName : ''));
 
-        $selectedNature = (array) ($bld['nature_of_business'] ?? []);
-        $allNature = ['TRADING', 'contractor', 'Processing', 'Builder', 'Manufacturing', 'Brokerage', 'Consultancy', 'Professional', 'Others'];
+    $visit = ! empty($bld['visit_office_date']) ? \Carbon\Carbon::parse($bld['visit_office_date']) : null;
+    $visitDate = $visit?->format('d/m/Y') ?? '';
+    $footerDate = $visit?->format('d.m.Y') ?? '';
 
-        $selectedOwnership = (array) ($bld['office_ownership'] ?? []);
-        $allOwnership = ['OWNED', 'RENTED', 'LEASED'];
+    $officeAddr  = $t($bld['office_organization_address'] ?? '') ?: $t($lead->business_address ?: $lead->address);
+    $officePhone = $t($bld['office_phone_no'] ?? '');
 
-        $landmark = $bld['workplace_landmark'] ?? '';
-        $yearsBiz = $bld['years_in_business'] ?? ($lead->business_experience ?: '');
-        $designation = $bld['designation_applicant_guarantor'] ?? '';
-        $whomMet = $bld['whom_met_details'] ?? '';
-        $tvrResult = $bld['office_tvr_result'] ?? '';
-    @endphp
+    $selectedOrgs = (array) ($bld['type_of_organization'] ?? []);
+    $allOrgs = ['Partnership', 'Proprietorship', 'Pvt. Ltd.', 'Public Ltd', 'Others'];
+    $selectedNature = (array) ($bld['nature_of_business'] ?? []);
+    $allNature = ['TRADING', 'Contractor', 'Processing', 'Builder', 'Manufacturing', 'Brokerage', 'Consultancy', 'Professional', 'Others'];
+    $selectedOwnership = (array) ($bld['office_ownership'] ?? []);
+    $allOwnership = ['OWNED', 'RENTED', 'LEASED'];
 
-    <!-- Top SBI Header Table -->
-    <table class="top-header-table">
+    $landmark    = $t($bld['workplace_landmark'] ?? '');
+    $yearsBiz    = $t($bld['years_in_business'] ?? '') ?: $t($lead->business_experience);
+    $designation = $t($bld['designation_applicant_guarantor'] ?? '');
+    $whomMet     = $t($bld['whom_met_details'] ?? '');
+    $tvrResult   = $t($bld['office_tvr_result'] ?? '');
+
+    $branchWithCode = trim($branchName . ($branchCode ? ' (' . $branchCode . ')' : ''));
+    $remarks = $t($bld['inspection_remarks'] ?? '') ?: \App\Support\InspectionSheetRemarks::generate($lead, $bld);
+@endphp
+
+    <table class="top-header">
         <tr>
-            <td style="width: 50px; padding-right: 8px;">
-                <!-- SBI Blue Logo -->
-                <svg width="42" height="42" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="50" fill="#0086cd"/>
-                    <circle cx="50" cy="38" r="16" fill="#ffffff"/>
-                    <rect x="44" y="38" width="12" height="48" fill="#ffffff"/>
-                </svg>
+            <td style="width: 56px;">
             </td>
-            <td style="text-align: center;">
-                <div class="bank-name-text">{{ $bankName }},</div>
-                <div class="branch-name-text">{{ $branchName }}</div>
-                <div style="margin-top: 4px;">
-                    <div class="file-no-box">
-                        <strong>File No.</strong> &nbsp; {{ $lead->id }}
-                    </div>
+            <td class="center">
+                <div class="bank-name">
+                    @if ($bankName){{ $bankName }}{{ $branchName ? ',' : '' }}@endif
+                    @if ($branchName)<br>{{ $branchName }}@endif
                 </div>
+                <div class="file-no-box">File No. {{ $fileNo }}</div>
             </td>
+            <td style="width: 56px;"></td>
         </tr>
     </table>
 
-    <!-- Main Title -->
     <div class="main-title">
-        PRE-SANCTION INSPECTION SHEET (OFFICE/BUSINESS OF THE APPLICANT / GARANTOR)<br>
+        PRE-SANCTION INSPECTION SHEET (OFFICE/BUSINESS OF THE APPLICANT / GUARANTOR)<br>
         ANNEXURE V-A
     </div>
 
-    <!-- 9 Rows Table -->
-    <table class="table-inspection">
+    <table class="sheet">
         <thead>
+            <tr class="w-row">
+                <th style="width: 8%;"></th><th style="width: 5%;"></th><th style="width: 39%;"></th><th style="width: 48%;"></th>
+            </tr>
             <tr>
-                <th class="sno-col">SI.NO.</th>
-                <th class="part-col">Particulars</th>
-                <th class="obs-col">{!! $branchObsHeader !!}</th>
+                <th>SI.NO.</th>
+                <th colspan="2" style="text-align: left;">Particulars</th>
+                <th>Observations of Branch Manager{!! $branchWithCode ? '<br>' . e($branchWithCode) : '' !!}</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Row 1 -->
-            <tr>
-                <td class="sno-col">1</td>
-                <td class="part-col">Name of the Applicant / Co-Applicant/ Guarantor</td>
-                <td class="obs-col text-center font-bold" style="white-space: pre-line;">{{ $applicantName }}</td>
+            <tr class="r-tall">
+                <td class="c-sno">1</td>
+                <td colspan="2">Name of the Applicant / Co-Applicant/ Guarantor</td>
+                <td class="c-obs" style="white-space: pre-line;">{{ $applicantName }}</td>
             </tr>
 
-            <!-- Row 2 -->
-            <tr>
-                <td class="sno-col">2</td>
-                <td class="part-col">Visit to the Office/ Work Place of the Borrower</td>
-                <td class="obs-col text-center font-bold">Date of Visit: {{ $visitDate }}</td>
+            <tr class="r-tall">
+                <td class="c-sno">&nbsp;</td>
+                <td colspan="2">Visit to the Office/ Work Place of the Borrower</td>
+                <td class="c-obs">Date of Visit: {{ $visitDate }}</td>
             </tr>
 
-            <!-- Row 3 -->
-            <tr>
-                <td class="sno-col">3</td>
-                <td class="part-col">
-                    Name of the Office/ Organization, address:<br>
-                    <div style="text-align: right; font-weight: bold; margin-top: 4px;">Office</div>
-                    <div style="margin-top: 8px;">Phone No.</div>
-                </td>
-                <td class="obs-col text-center font-bold" style="white-space: pre-line;">
-                    {{ $officeAddr }}
-                    @if($officePhone)
-                        <div style="margin-top: 4px; font-weight: normal;">Phone: {{ $officePhone }}</div>
-                    @endif
-                </td>
+            <tr class="r-tall">
+                <td class="c-sno">3</td>
+                <td colspan="2">Name of the Office/ Organization, address:<br><span style="float: right; margin-right: 8px;">Office</span><br>Phone No.</td>
+                <td class="c-obs" style="white-space: pre-line;">{{ $officeAddr }}@if ($officePhone)
+
+<span style="font-weight: normal;">Phone: {{ $officePhone }}</span>@endif</td>
             </tr>
 
-            <!-- Row 4 -->
             <tr>
-                <td class="sno-col">4</td>
-                <td class="part-col">
-                    For Self Employed:<br><br>
-                    A &nbsp; Type of Organization<br><br><br>
-                    B &nbsp; Nature of Business<br><br><br><br>
-                    C &nbsp; Whether own office / rented / leased
-                </td>
-                <td class="obs-col">
-                    <!-- 4A -->
-                    <div class="checkbox-container">
-                        @foreach($allOrgs as $opt)
-                            @php $ch = in_array($opt, $selectedOrgs); @endphp
-                            <span style="margin-right: 10px; display: inline-block;">
-                                <span class="chk-box">@if($ch)<svg width="7" height="7" viewBox="0 0 12 12" style="vertical-align: top; margin-top: 1px;"><path d="M1.5 6l3 3 6-6" stroke="#000" stroke-width="2.2" fill="none"/></svg>@endif</span><strong>{{ $opt }}</strong>
-                            </span>
-                        @endforeach
-                    </div>
-                    <hr style="border: 0; border-top: 1px solid #000; margin: 4px 0;">
-
-                    <!-- 4B -->
-                    <div class="checkbox-container">
-                        @foreach($allNature as $opt)
-                            @php $ch = in_array($opt, $selectedNature); @endphp
-                            <span style="margin-right: 8px; display: inline-block;">
-                                <span class="chk-box">@if($ch)<svg width="7" height="7" viewBox="0 0 12 12" style="vertical-align: top; margin-top: 1px;"><path d="M1.5 6l3 3 6-6" stroke="#000" stroke-width="2.2" fill="none"/></svg>@endif</span><strong>{{ $opt }}</strong>
-                            </span>
-                        @endforeach
-                    </div>
-                    <hr style="border: 0; border-top: 1px solid #000; margin: 4px 0;">
-
-                    <!-- 4C -->
-                    <div class="text-center font-bold" style="font-size: 11px; margin-top: 3px;">
-                        @foreach($allOwnership as $opt)
-                            @php $ch = in_array($opt, $selectedOwnership); @endphp
-                            <span style="margin: 0 15px;">
-                                <span class="chk-box">@if($ch)<svg width="7" height="7" viewBox="0 0 12 12" style="vertical-align: top; margin-top: 1px;"><path d="M1.5 6l3 3 6-6" stroke="#000" stroke-width="2.2" fill="none"/></svg>@endif</span>{{ $opt }}
-                            </span>
-                        @endforeach
-                    </div>
-                </td>
+                <td class="c-sno" rowspan="4" style="vertical-align: top; padding-top: 6px;">4</td>
+                <td colspan="3" style="padding: 4px 8px;">For Self Employed:</td>
+            </tr>
+            <tr class="r-mid">
+                <td class="c-letter">A</td>
+                <td>Type of Organization</td>
+                <td class="c-obs" style="text-align: left;">@foreach ($allOrgs as $opt)<span class="opt"><span class="chk">{!! in_array($opt, $selectedOrgs) ? '&#9745;' : '&#9744;' !!}</span> {{ $opt }}</span> @endforeach</td>
+            </tr>
+            <tr class="r-mid">
+                <td class="c-letter">B</td>
+                <td>Nature of Business</td>
+                <td class="c-obs" style="text-align: left;">@foreach ($allNature as $opt)<span class="opt"><span class="chk">{!! in_array($opt, $selectedNature) ? '&#9745;' : '&#9744;' !!}</span> {{ $opt }}</span> @endforeach</td>
+            </tr>
+            <tr class="r-mid">
+                <td class="c-letter">C</td>
+                <td>Whether own office / rented / leased</td>
+                <td class="c-obs">@foreach ($allOwnership as $opt)<span class="opt" style="margin: 0 8px;"><span class="chk">{!! in_array($opt, $selectedOwnership) ? '&#9745;' : '&#9744;' !!}</span> {{ $opt }}</span> @endforeach</td>
             </tr>
 
-            <!-- Row 5 -->
-            <tr>
-                <td class="sno-col">5</td>
-                <td class="part-col">Land mark for Place of work</td>
-                <td class="obs-col text-center font-bold">{{ $landmark }}</td>
+            <tr class="r-mid">
+                <td class="c-sno">5</td>
+                <td colspan="2">Land mark for Place of work</td>
+                <td class="c-obs">{{ $landmark }}</td>
             </tr>
 
-            <!-- Row 6 -->
-            <tr>
-                <td class="sno-col">6</td>
-                <td class="part-col">Number of year Service/ Business</td>
-                <td class="obs-col text-center font-bold">{{ $yearsBiz }}</td>
+            <tr class="r-mid">
+                <td class="c-sno">6</td>
+                <td colspan="2">Number of year Service/ Business</td>
+                <td class="c-obs bold">{{ $yearsBiz }}</td>
             </tr>
 
-            <!-- Row 7 -->
-            <tr>
-                <td class="sno-col">7</td>
-                <td class="part-col">Designation of the APPLICANT / GUARANTOR:</td>
-                <td class="obs-col text-center font-bold">{{ $designation }}</td>
+            <tr class="r-mid">
+                <td class="c-sno">7</td>
+                <td colspan="2">Designation of the APPLICANT / GUARANTOR:</td>
+                <td class="c-obs">{{ $designation }}</td>
             </tr>
 
-            <!-- Row 8 -->
-            <tr>
-                <td class="sno-col">8</td>
-                <td class="part-col">
-                    Whom met (Name of the Person contacted &<br>designation)<br>
-                    <div style="text-align: right; font-weight: bold; margin-top: 2px;">Pl give</div>
-                    telephone nos.
-                </td>
-                <td class="obs-col text-center font-bold" style="vertical-align: middle;">
-                    {!! $whomMet !!}
-                </td>
+            <tr class="r-tall">
+                <td class="c-sno">8</td>
+                <td colspan="2">Whom met (Name of the Person contacted & designation)<br><span style="float: right; margin-right: 8px;">Pl give</span><br>telephone nos.</td>
+                <td class="c-obs" style="white-space: pre-line;">{{ $whomMet }}</td>
             </tr>
 
-            <!-- Row 9 -->
-            <tr>
-                <td class="sno-col">9</td>
-                <td class="part-col">Office TVR Result (Positive/ Negative)</td>
-                <td class="obs-col text-center font-bold" style="font-size: 11.5px; vertical-align: middle;">
-                    {{ $tvrResult }}
-                </td>
+            <tr class="r-mid">
+                <td class="c-sno">9</td>
+                <td colspan="2">Office TVR Result (Positive/ Negative)</td>
+                <td class="c-obs bold" style="vertical-align: top;">{{ $tvrResult }}</td>
             </tr>
         </tbody>
     </table>
 
-    <!-- Main Bottom Paragraph (Constructed dynamically ONLY from filled database fields) -->
-    <div class="main-paragraph">
-        @if ($bizName || $visitDate || $officeAddr || $lead->name)
-            <p>Visited the firm <strong>{{ $bizName }}</strong>{{ $visitDate ? " on {$visitDate}" : "" }}.{{ $officeAddr ? " The unit is located at " . str_replace("\n", ", ", $officeAddr) : "" }}{{ $lead->name ? " and met proprietor Mr " . $lead->name . ($bizName ? " of {$bizName}" : "") : "" }}.</p>
-        @endif
+    <div class="remarks">{!! nl2br(e($remarks)) !!}</div>
 
-        @if ($yearsBiz || $selectedNature)
-            <p>The firm is engaged in {{ !empty($selectedNature) ? implode(', ', $selectedNature) : 'business' }} work. {{ $yearsBiz ? "He has approximately {$yearsBiz} of experience in this business line." : "" }} The unit was found to be operational and procures its raw materials from local suppliers/parties.</p>
-        @endif
-
-        @if ($lead->notes)
-            <p>{{ $lead->notes }}</p>
-        @endif
-
-        @if ($cityName || $tvrResult)
-            <p>{{ $cityName ? "The proprietor has been residing in {$cityName}." : "" }} There is board of firm sighted and checked light bill and old sales bill. {{ $tvrResult ? "Overall visit result: {$tvrResult}." : "" }}</p>
-        @endif
-    </div>
-
-    <!-- Footer Signatures -->
-    <table class="footer-table">
+    <table class="footer">
         <tr>
-            <td style="width: 55%;">
-                <div><strong>Place: {{ $branchName }}</strong></div>
-                <div style="margin-top: 4px;"><strong>Date: - {{ $visitDate }}</strong></div>
+            <td style="width: 64%;">
+                @if ($branchName)<div>Place: {{ $branchName }}</div>@endif
+                <div style="margin-top: 3px;">Date: - {{ $footerDate }}</div>
             </td>
-            <td style="width: 45%; text-align: right;">
-                <div>signature &nbsp; ____________________</div>
-                <div style="margin-top: 3px;"><strong>NAME: PRASHANT POL</strong></div>
-                <div style="margin-top: 2px;"><strong>S.S. No. P11937</strong></div>
-                <div style="margin-top: 2px;"><strong>Manager</strong></div>
-                <div style="margin-top: 2px;"><strong>{{ $branchName }}</strong></div>
+            <td style="width: 36%;">
+                <div>signature</div>
+                @if ($managerName)<div style="margin-top: 4px;">NAME: {{ $managerName }}</div>@endif
+                @if ($managerSsNo)<div>S.S. No. {{ $managerSsNo }}</div>@endif
+                @if ($managerName || $managerSsNo)<div>Manager</div>@endif
+                @if ($branchWithCode)<div>{{ $branchWithCode }}</div>@endif
             </td>
         </tr>
     </table>

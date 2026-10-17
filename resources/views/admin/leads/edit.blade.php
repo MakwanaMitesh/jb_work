@@ -27,4 +27,6 @@
             </a>
         </div>
     </form>
+
+    @include('admin.leads.partials.application-form-forms', ['lead' => $lead])
 </x-admin-bootstrap-layout>

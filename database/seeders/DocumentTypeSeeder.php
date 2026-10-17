@@ -214,6 +214,30 @@ class DocumentTypeSeeder extends Seeder
                 'sort_order' => 17,
                 'status' => 'active',
             ],
+            [
+                'name' => 'DPR - Machinery Photos',
+                'code' => 'machinery_photos',
+                'description' => 'Photographs of the new machinery, placed in the DPR.',
+                'is_required' => false,
+                'has_front_back' => false,
+                'allow_multiple' => true,
+                'allowed_file_types' => ['jpg', 'jpeg', 'png'],
+                'max_file_size_kb' => 10240,
+                'sort_order' => 18,
+                'status' => 'active',
+            ],
+            [
+                'name' => 'DPR - Final Product Photos',
+                'code' => 'final_product_photos',
+                'description' => 'Photographs of the final products, placed in the DPR.',
+                'is_required' => false,
+                'has_front_back' => false,
+                'allow_multiple' => true,
+                'allowed_file_types' => ['jpg', 'jpeg', 'png'],
+                'max_file_size_kb' => 10240,
+                'sort_order' => 19,
+                'status' => 'active',
+            ],
         ];
 
         foreach ($types as $type) {

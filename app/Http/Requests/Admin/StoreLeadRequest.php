@@ -18,7 +18,7 @@ class StoreLeadRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        return array_merge(\App\Support\ApplicationFormData::rules(), \App\Support\StockStatementData::rules(), \App\Support\OpinionReportData::rules(), \App\Support\CmaProfileData::rules(), \App\Support\DprData::rules(), [
             'name' => ['required', 'string', 'max:150'],
             'email' => ['nullable', 'email', 'max:255'],
             'mobile_number' => ['required', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
@@ -26,7 +26,7 @@ class StoreLeadRequest extends FormRequest
             'agent_id' => ['nullable', 'exists:agents,id'],
             'bank_id' => ['nullable', 'exists:banks,id'],
             'loan_product_id' => ['required', 'exists:loan_products,id'],
-            'constitution_id' => ['required', 'exists:customer_constitutions,id'],
+            'constitution_id' => ['nullable', 'exists:customer_constitutions,id'],
             'city_id' => ['nullable', 'exists:cities,id'],
             'source' => ['nullable', 'string', 'max:100'],
             'status' => ['required', 'string', 'in:new,contacted,in_progress,converted,lost,visit_pending,visit_completed,documentation_pending,documentation_in_progress,documentation_completed,under_process,approved,rejected,completed,cancelled'],
@@ -34,6 +34,8 @@ class StoreLeadRequest extends FormRequest
             
             // New KYC Fields
             'date_of_birth' => ['nullable', 'date'],
+            'place_of_birth' => ['nullable', 'string', 'max:150'],
+            'occupation' => ['nullable', 'string', 'max:150'],
             'gender' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string'],
             'aadhar_card' => ['nullable', 'string', 'max:30'],
@@ -42,7 +44,9 @@ class StoreLeadRequest extends FormRequest
             'fssai_license' => ['nullable', 'string', 'max:100'],
             'education' => ['nullable', 'string', 'max:100'],
             'mother_name' => ['nullable', 'string', 'max:150'],
-            
+            'father_full_name' => ['nullable', 'string', 'max:150'],
+            'relationship' => ['nullable', 'string', 'in:Son,Daughter,Wife'],
+
             // ITR
             'itr_id' => ['nullable', 'string', 'max:100'],
             'itr_password' => ['nullable', 'string', 'max:100'],
@@ -102,7 +106,7 @@ class StoreLeadRequest extends FormRequest
             'current_loans.*.emi' => ['nullable', 'string', 'max:50'],
             'current_loans.*.outstanding_amount' => ['nullable', 'string', 'max:50'],
             'current_loans.*.tenure' => ['nullable', 'string', 'max:50'],
-        ];
+        ]);
     }
 
     public function messages(): array

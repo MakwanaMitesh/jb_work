@@ -26,11 +26,27 @@
                 </div>
             </div>
 
-            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                <a href="{{ route('admin.leads.inspection-sheet.pdf', $lead) }}" target="_blank" class="btn btn-sm d-inline-flex align-items-center gap-2" style="background:var(--amber-600);color:#fff">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Inspection Sheet (PDF)
-                </a>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                @can('leads.edit')
+                    <a href="{{ route('admin.leads.edit', $lead) }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        <span>Edit Lead</span>
+                    </a>
+                @endcan
+
+                @can('documents.download_all')
+                    <a href="{{ route('admin.leads.uploaded-documents.download-all', $lead) }}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
+                        <span>Download All Uploaded Documents</span>
+                    </a>
+                @endcan
+
+                @canany(['cma.download', 'dpr.download', 'or.download', 'sbi_stock_statement.download', 'inspection_sheet.download', 'documents.download'])
+                    <a href="{{ route('admin.leads.download-all', $lead) }}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span>Download Generated Reports</span>
+                    </a>
+                @endcanany
             </div>
         </div>
     </div>
@@ -481,10 +497,25 @@
                 <div id="bank-loan-panel" class="tab-panel jb-hidden">
                     <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
                         <h3 class="jb-section-title m-0">Bank Loan Verification Report (Annexure V-A)</h3>
-                        <a href="{{ route('admin.leads.inspection-sheet.pdf', $lead) }}" target="_blank" class="jb-chip-link" style="background:var(--amber-50);color:var(--amber-700);border-color:color-mix(in oklab, var(--amber-200) 60%, transparent)">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            Download Inspection Sheet (PDF)
-                        </a>
+                        @if ($lead->isInspectionSheetApplicable())
+                            <div class="d-flex align-items-center gap-2">
+                                @can('inspection_sheet.generate')
+                                    <form method="POST" action="{{ route('admin.leads.inspection-sheet.generate', $lead) }}" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="jb-chip-link" style="background:var(--amber-50);color:var(--amber-700);border-color:color-mix(in oklab, var(--amber-200) 60%, transparent);cursor:pointer">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                            Generate Inspection Sheet
+                                        </button>
+                                    </form>
+                                @endcan
+                                @can('inspection_sheet.download')
+                                    <a href="{{ route('admin.leads.inspection-sheet.pdf', $lead) }}" target="_blank" class="jb-chip-link" style="background:var(--amber-50);color:var(--amber-700);border-color:color-mix(in oklab, var(--amber-200) 60%, transparent)">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        Download Inspection Sheet (PDF)
+                                    </a>
+                                @endcan
+                            </div>
+                        @endif
                     </div>
                     <div class="table-responsive rounded-3" style="border:1px solid var(--slate-200)">
                         <table class="jb-report-table">
@@ -778,7 +809,115 @@
                 $totalDocTypes = $docTypesShowList->count();
             @endphp
             <div id="documents-panel" class="tab-panel jb-hidden">
-                <p class="mb-3" style="font-size:var(--text-xs);color:var(--slate-400)">{{ $uploadedDocCount }} of {{ $totalDocTypes }} uploaded</p>
+                <div class="mb-4 p-3 rounded-3" style="background:var(--slate-50);border:1px solid var(--slate-200)">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+                        <div>
+                            <h3 class="jb-section-title m-0" style="font-size:var(--text-sm)">Generated Reports & Documents</h3>
+                            <p class="mb-0" style="font-size:var(--text-xs);color:var(--slate-500)">Directly generate or download compiled packages for this lead.</p>
+                        </div>
+                        @canany(['cma.download', 'dpr.download', 'or.download', 'sbi_stock_statement.download', 'inspection_sheet.download', 'documents.download'])
+                            <a href="{{ route('admin.leads.download-all', $lead) }}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                <span>Download All (ZIP)</span>
+                            </a>
+                        @endcanany
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        @can('cma.generate')
+                            <form method="POST" action="{{ route('admin.leads.cma.generate', $lead) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="jb-chip-link" style="cursor:pointer">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Generate CMA (.xlsx)
+                                </button>
+                            </form>
+                        @endcan
+                        @can('cma.download')
+                            <a href="{{ route('admin.leads.cma.download', $lead) }}" class="jb-chip-link">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                Download CMA (.xlsx)
+                            </a>
+                        @endcan
+
+                        @can('dpr.generate')
+                            <form method="POST" action="{{ route('admin.leads.dpr.generate', $lead) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="jb-chip-link" style="cursor:pointer">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Generate DPR (.docx)
+                                </button>
+                            </form>
+                        @endcan
+                        @can('dpr.download')
+                            <a href="{{ route('admin.leads.dpr.download', $lead) }}" class="jb-chip-link">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                Download DPR (.docx)
+                            </a>
+                        @endcan
+
+                        @can('or.generate')
+                            <form method="POST" action="{{ route('admin.leads.or.generate', $lead) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="jb-chip-link" style="cursor:pointer">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Generate OR (.docx)
+                                </button>
+                            </form>
+                        @endcan
+                        @can('or.download')
+                            <a href="{{ route('admin.leads.or.download', $lead) }}" class="jb-chip-link">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                Download OR (.docx)
+                            </a>
+                        @endcan
+
+                        @can('sbi_stock_statement.generate')
+                            <form method="POST" action="{{ route('admin.leads.sbi-stock-statement.generate', $lead) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="jb-chip-link" style="cursor:pointer">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Generate SBI Stock Statement (.xlsx)
+                                </button>
+                            </form>
+                        @endcan
+                        @can('sbi_stock_statement.download')
+                            <a href="{{ route('admin.leads.sbi-stock-statement.download', $lead) }}" class="jb-chip-link">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                Download SBI Stock Statement (.xlsx)
+                            </a>
+                        @endcan
+
+                        @if ($lead->isInspectionSheetApplicable())
+                            @can('inspection_sheet.generate')
+                                <form method="POST" action="{{ route('admin.leads.inspection-sheet.generate', $lead) }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="jb-chip-link" style="background:var(--amber-50);color:var(--amber-700);border-color:color-mix(in oklab, var(--amber-200) 60%, transparent);cursor:pointer">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                        Generate Inspection Sheet
+                                    </button>
+                                </form>
+                            @endcan
+                            @can('inspection_sheet.download')
+                                <a href="{{ route('admin.leads.inspection-sheet.pdf', $lead) }}" target="_blank" class="jb-chip-link" style="background:var(--amber-50);color:var(--amber-700);border-color:color-mix(in oklab, var(--amber-200) 60%, transparent)">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    Download Inspection Sheet (PDF)
+                                </a>
+                            @endcan
+                        @endif
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <p class="mb-0" style="font-size:var(--text-xs);color:var(--slate-400)">{{ $uploadedDocCount }} of {{ $totalDocTypes }} uploaded</p>
+                    @can('documents.download_all')
+                        @if ($uploadedDocCount > 0)
+                            <a href="{{ route('admin.leads.uploaded-documents.download-all', $lead) }}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
+                                <span>Download All Uploaded Documents</span>
+                            </a>
+                        @endif
+                    @endcan
+                </div>
 
                 <div class="rounded-3" style="border:1px solid var(--slate-200);overflow:hidden">
                     @foreach ($docTypesShowList as $type)
@@ -807,10 +946,12 @@
                                             </div>
 
                                             <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                                                <a href="{{ route('admin.leads.documents.download', [$lead, $docItem]) }}" download title="Download" class="jb-icon-btn" style="width:1.75rem;height:1.75rem">
-                                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                                </a>
-                                                @can('leads.edit')
+                                                @can('documents.download')
+                                                    <a href="{{ route('admin.leads.documents.download', [$lead, $docItem]) }}" download title="Download" class="jb-icon-btn" style="width:1.75rem;height:1.75rem">
+                                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                                    </a>
+                                                @endcan
+                                                @can('documents.delete')
                                                     <form action="{{ route('admin.leads.documents.destroy', [$lead, $docItem]) }}" method="POST" onsubmit="return confirm('Remove this document?')" class="d-inline-block">
                                                         @csrf
                                                         @method('DELETE')
