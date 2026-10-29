@@ -4,15 +4,19 @@
 <div class="jb-card" style="overflow:hidden">
 
     <div class="jb-tabs">
-        <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" id="kyc-tab" class="jb-tab-btn active">
+        @can('details_sheet.view')
+        <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" id="kyc-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             <span>Details Sheet</span>
         </button>
+        @endcan
 
+        @can('bank_loan.view')
         <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" id="bank-loan-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             <span>Bank Loan</span>
         </button>
+        @endcan
 
         @can('application_form.view')
                 <button type="button" onclick="switchTab('application-form-tab', 'application-form-panel')" id="application-form-tab" class="jb-tab-btn">
@@ -21,10 +25,12 @@
                 </button>
         @endcan
 
+        @can('documents.view')
         <button type="button" onclick="switchTab('documents-tab', 'documents-panel')" id="documents-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span>Documents</span>
         </button>
+        @endcan
 
         @can('sbi_stock_statement.view')
         <button type="button" onclick="switchTab('stock-statement-tab', 'stock-statement-panel')" id="stock-statement-tab" class="jb-tab-btn">
@@ -54,26 +60,33 @@
         </button>
         @endcan
 
+        @can('bank_details.view')
         <button type="button" onclick="switchTab('bank-tab', 'bank-panel')" id="bank-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             <span>Bank Details</span>
         </button>
+        @endcan
 
+        @can('business_details.view')
         <button type="button" onclick="switchTab('business-tab', 'business-panel')" id="business-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             <span>Business Details</span>
         </button>
+        @endcan
 
+        @can('loan_details.view')
         <button type="button" onclick="switchTab('loan-tab', 'loan-panel')" id="loan-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>Loan Details</span>
         </button>
+        @endcan
 
     </div>
 
     <div class="p-4 p-sm-5">
 
         <!-- 1. KYC Details Panel -->
+        @can('details_sheet.view')
         <div id="kyc-panel" class="tab-panel d-flex flex-column gap-4">
             <div class="row g-4">
                 <div class="col-12 col-md-6">
@@ -395,8 +408,10 @@
                 </button>
             </div>
         </div>
+        @endcan
 
         <!-- 1.5 Bank Loan Verification Details Panel -->
+        @can('bank_loan.view')
         @php
             $bld = old('bank_loan_details', $lead?->bank_loan_details ?? []);
             $orgTypes = $bld['type_of_organization'] ?? [];
@@ -615,8 +630,10 @@
                 </div>
             </div>
         </div>
+        @endcan
 
         <!-- 2. Bank Details Panel -->
+        @can('bank_details.view')
         <div id="bank-panel" class="tab-panel jb-hidden">
             <div>
                 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -709,8 +726,10 @@
                 </button>
             </div>
         </div>
+        @endcan
 
         <!-- 3. Business Details Panel -->
+        @can('business_details.view')
         <div id="business-panel" class="tab-panel jb-hidden">
             <div class="row g-4 mb-4">
                 <div class="col-12 col-md-6">
@@ -833,8 +852,10 @@
                 </button>
             </div>
         </div>
+        @endcan
 
         <!-- 4. Loan Details Panel -->
+        @can('loan_details.view')
         <div id="loan-panel" class="tab-panel jb-hidden">
             <div class="mb-4">
                 <x-input-label-bs for="required_loan_amount" value="Required Loan Amount" />
@@ -937,8 +958,10 @@
                 </button>
             </div>
         </div>
+        @endcan
 
         <!-- 5. Documents Panel -->
+        @can('documents.view')
         @php
             $docTypesList = $documentTypes ?? \App\Models\DocumentType::where('status', 'active')->ordered()->get();
             $existingLeadDocs = $lead ? $lead->leadDocuments->groupBy('document_type_id') : collect();
@@ -1054,6 +1077,7 @@
                 @endcan
             </div>
         </div>
+        @endcan
 
         @can('application_form.view')
             @include('admin.leads.partials.application-form', ['lead' => $lead])
@@ -1078,7 +1102,7 @@
 </div>
 
 <script>
-let itrCardIndex = {{ count($itrs) }};
+let itrCardIndex = {{ count($itrs ?? []) }};
 
 function addItrCard() {
     const container = document.getElementById('itr-cards-container');
@@ -1187,7 +1211,7 @@ function toggleItrFiles(selectElement) {
 function addItrRow() { addItrCard(); }
 function removeItrRow(btn) { removeItrCard(btn); }
 
-let bankRowIndex = {{ count($banks) }};
+let bankRowIndex = {{ count($banks ?? []) }};
 
 function addBankRow() {
     const container = document.getElementById('bank-rows-container');
@@ -1244,6 +1268,25 @@ function switchTab(tabId, panelId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Details Sheet is normally the first, already-open tab. A role without the details_sheet view
+    // permission never receives that tab or its panel at all (see the Blade gate above it) — not
+    // just hidden, absent from the page — so whichever tab the user does have becomes the open one.
+    if (!document.getElementById('kyc-tab')) {
+        const firstTab = document.querySelector('.jb-tab-btn');
+        if (firstTab) firstTab.click();
+    }
+
+    // A link into this page with a "#some-tab" fragment (e.g. from the Pendency dashboard) opens
+    // that tab directly, the same way switchTab() always has — plain anchor scrolling alone would
+    // only scroll to the (possibly hidden) tab button, not reveal its panel.
+    if (location.hash) {
+        const tabId = location.hash.slice(1);
+        const panelId = tabId.replace(/-tab$/, '-panel');
+        if (document.getElementById(tabId) && document.getElementById(panelId)) {
+            switchTab(tabId, panelId);
+        }
+    }
+
     @if (session('open_tab') === 'dpr' || collect($errors->keys())->contains(fn ($k) => str_starts_with($k, 'dpr.')))
         if (document.getElementById('dpr-tab')) switchTab('dpr-tab', 'dpr-panel');
     @endif

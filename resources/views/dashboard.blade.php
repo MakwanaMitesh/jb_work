@@ -521,46 +521,110 @@
     {{-- EMPLOYEE DASHBOARD WIDGETS (Strictly scoped to logged-in employee)         --}}
     {{-- ========================================================================= --}}
     @else
-        {{-- 1. Employee Overall Summary Cards --}}
+        @php
+            $currentFilter = request('filter', 'all');
+        @endphp
+
+        {{-- 1. Dashboard Summary Cards --}}
         <div class="row g-3 mb-3">
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="jb-stat-tile h-100 p-3">
-                    <span class="jb-stat-label">Total Assigned Leads</span>
-                    <div class="d-flex align-items-baseline justify-content-between mt-2">
-                        <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--primary-600)">{{ $leadStats['total_assigned_leads'] }}</span>
-                        <span class="jb-badge jb-badge-xs jb-badge-primary">Assigned</span>
+            {{-- Total Assigned Leads --}}
+            <div class="col-12 col-sm-6 col-xl-2">
+                <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'all'])) }}#my-leads-table-section"
+                   class="text-decoration-none">
+                    <div class="jb-stat-tile h-100 p-3"
+                         style="cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;{{ in_array($currentFilter, ['all', '']) ? 'border:2px solid var(--primary-500);background:color-mix(in oklab, var(--primary-50) 40%, #fff);' : '' }}">
+                        <span class="jb-stat-label">Total Assigned Leads</span>
+                        <div class="d-flex align-items-baseline justify-content-between mt-2">
+                            <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--primary-600)">{{ $leadStats['total_assigned_leads'] }}</span>
+                            <span class="jb-badge jb-badge-xs jb-badge-primary">All</span>
+                        </div>
+                        <span class="d-block mt-1" style="font-size:.6875rem;color:var(--slate-400)">All assigned leads</span>
                     </div>
-                </div>
+                </a>
             </div>
 
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="jb-stat-tile h-100 p-3">
-                    <span class="jb-stat-label">Pending / Active Leads</span>
-                    <div class="d-flex align-items-baseline justify-content-between mt-2">
-                        <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--blue-600)">{{ $leadStats['pending_active_leads'] }}</span>
-                        <span class="jb-badge jb-badge-xs jb-badge-blue">In Pipeline</span>
+            {{-- Active Leads --}}
+            <div class="col-12 col-sm-6 col-xl-2">
+                <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'active'])) }}#my-leads-table-section"
+                   class="text-decoration-none">
+                    <div class="jb-stat-tile h-100 p-3"
+                         style="cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;{{ $currentFilter === 'active' ? 'border:2px solid var(--blue-500);background:color-mix(in oklab, var(--blue-50) 40%, #fff);' : '' }}">
+                        <span class="jb-stat-label">Active Leads</span>
+                        <div class="d-flex align-items-baseline justify-content-between mt-2">
+                            <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--blue-600)">{{ $leadStats['active_leads'] }}</span>
+                            <span class="jb-badge jb-badge-xs jb-badge-blue">In Pipeline</span>
+                        </div>
+                        <span class="d-block mt-1" style="font-size:.6875rem;color:var(--slate-400)">Active workflow</span>
                     </div>
-                </div>
+                </a>
             </div>
 
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="jb-stat-tile h-100 p-3">
-                    <span class="jb-stat-label">Approved / Converted Leads</span>
-                    <div class="d-flex align-items-baseline justify-content-between mt-2">
-                        <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--emerald-600)">{{ $leadStats['approved_converted_leads'] }}</span>
-                        <span class="jb-badge jb-badge-xs jb-badge-emerald">Won / Converted</span>
+            {{-- Pending Work --}}
+            <div class="col-12 col-sm-6 col-xl-2">
+                <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'pending_work'])) }}#my-leads-table-section"
+                   class="text-decoration-none">
+                    <div class="jb-stat-tile h-100 p-3"
+                         style="cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;{{ $currentFilter === 'pending_work' ? 'border:2px solid var(--purple-500);background:color-mix(in oklab, var(--purple-50) 40%, #fff);' : '' }}">
+                        <span class="jb-stat-label">Pending Work</span>
+                        <div class="d-flex align-items-baseline justify-content-between mt-2">
+                            <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--purple-600)">{{ $leadStats['pending_work_count'] }}</span>
+                            <span class="jb-badge jb-badge-xs jb-badge-purple">Tasks</span>
+                        </div>
+                        <span class="d-block mt-1" style="font-size:.6875rem;color:var(--slate-400)">Tasks & documents</span>
                     </div>
-                </div>
+                </a>
             </div>
 
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="jb-stat-tile h-100 p-3">
-                    <span class="jb-stat-label">Rejected / Closed Leads</span>
-                    <div class="d-flex align-items-baseline justify-content-between mt-2">
-                        <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--rose-600)">{{ $leadStats['rejected_closed_leads'] }}</span>
-                        <span class="jb-badge jb-badge-xs jb-badge-rose">Closed / Lost</span>
+            {{-- Overdue Leads --}}
+            <div class="col-12 col-sm-6 col-xl-2">
+                <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'overdue'])) }}#my-leads-table-section"
+                   class="text-decoration-none">
+                    <div class="jb-stat-tile h-100 p-3"
+                         style="cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;{{ $currentFilter === 'overdue' ? 'border:2px solid var(--rose-500);background:color-mix(in oklab, var(--rose-50) 40%, #fff);' : '' }}">
+                        <span class="jb-stat-label">Overdue Leads</span>
+                        <div class="d-flex align-items-baseline justify-content-between mt-2">
+                            <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--rose-600)">{{ $leadStats['overdue_leads'] }}</span>
+                            <span class="jb-badge jb-badge-xs jb-badge-rose">Overdue</span>
+                        </div>
+                        <span class="d-block mt-1" style="font-size:.6875rem;color:var(--slate-400)">
+                            @if ($hasDeadlineColumn) Past deadline @else No deadline field @endif
+                        </span>
                     </div>
-                </div>
+                </a>
+            </div>
+
+            {{-- Due Today --}}
+            <div class="col-12 col-sm-6 col-xl-2">
+                <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'due_today'])) }}#my-leads-table-section"
+                   class="text-decoration-none">
+                    <div class="jb-stat-tile h-100 p-3"
+                         style="cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;{{ $currentFilter === 'due_today' ? 'border:2px solid var(--amber-500);background:color-mix(in oklab, var(--amber-50) 40%, #fff);' : '' }}">
+                        <span class="jb-stat-label">Due Today</span>
+                        <div class="d-flex align-items-baseline justify-content-between mt-2">
+                            <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--amber-600)">{{ $leadStats['due_today_leads'] }}</span>
+                            <span class="jb-badge jb-badge-xs jb-badge-amber">Today</span>
+                        </div>
+                        <span class="d-block mt-1" style="font-size:.6875rem;color:var(--slate-400)">
+                            @if ($hasDeadlineColumn) Incomplete work @else No deadline field @endif
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            {{-- Completed Leads --}}
+            <div class="col-12 col-sm-6 col-xl-2">
+                <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'completed'])) }}#my-leads-table-section"
+                   class="text-decoration-none">
+                    <div class="jb-stat-tile h-100 p-3"
+                         style="cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;{{ $currentFilter === 'completed' ? 'border:2px solid var(--emerald-500);background:color-mix(in oklab, var(--emerald-50) 40%, #fff);' : '' }}">
+                        <span class="jb-stat-label">Completed Leads</span>
+                        <div class="d-flex align-items-baseline justify-content-between mt-2">
+                            <span class="d-block fw-bold" style="font-size:var(--text-2xl);color:var(--emerald-600)">{{ $leadStats['completed_leads'] }}</span>
+                            <span class="jb-badge jb-badge-xs jb-badge-emerald">Completed</span>
+                        </div>
+                        <span class="d-block mt-1" style="font-size:.6875rem;color:var(--slate-400)">{{ $leadStats['completed_this_month'] }} this month</span>
+                    </div>
+                </a>
             </div>
         </div>
 
@@ -627,7 +691,674 @@
             </div>
         </div>
 
-        {{-- 2. City-wise Lead Status Dashboard Matrix (Assigned Leads Only) --}}
+        {{-- 2. My Assigned Leads Table --}}
+        <div id="my-leads-table-section" class="jb-card p-4 mb-4">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <h3 class="jb-section-title m-0">My Assigned Leads</h3>
+                        <span class="jb-badge jb-badge-xs jb-badge-primary">{{ $tableLeads->total() }} Leads</span>
+                    </div>
+                    <p class="mb-0 mt-1" style="font-size:var(--text-xs);color:var(--slate-500)">
+                        Search, filter, and monitor all Leads assigned to your queue. Nearest deadlines are shown first.
+                    </p>
+                </div>
+                @can('leads.view')
+                    <a href="{{ route('admin.leads.index', ['assigned_employee_id' => auth()->id()]) }}"
+                       class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
+                       style="font-size:var(--text-xs)">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        <span>Open in All Leads</span>
+                    </a>
+                @endcan
+            </div>
+
+            {{-- Filter & Search Form --}}
+            <form method="GET" action="{{ route('dashboard') }}#my-leads-table-section" class="mb-3">
+                <div class="p-3 rounded-3" style="background:var(--slate-50);border:1px solid var(--slate-200)">
+                    {{-- Quick Filter Pills --}}
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 pb-3 border-bottom" style="border-color:var(--slate-200)!important">
+                        <span class="fw-semibold text-muted me-1" style="font-size:var(--text-xs)">Quick Filter:</span>
+                        <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'all'])) }}#my-leads-table-section"
+                           class="btn btn-sm py-1 px-2 {{ in_array($currentFilter, ['all', '']) ? 'btn-primary' : 'btn-outline-secondary' }}"
+                           style="font-size:var(--text-xs)">
+                            All ({{ $leadStats['total_assigned_leads'] }})
+                        </a>
+                        <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'active'])) }}#my-leads-table-section"
+                           class="btn btn-sm py-1 px-2 {{ $currentFilter === 'active' ? 'btn-primary' : 'btn-outline-secondary' }}"
+                           style="font-size:var(--text-xs)">
+                            Active ({{ $leadStats['active_leads'] }})
+                        </a>
+                        <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'pending_work'])) }}#my-leads-table-section"
+                           class="btn btn-sm py-1 px-2 {{ $currentFilter === 'pending_work' ? 'btn-primary' : 'btn-outline-secondary' }}"
+                           style="font-size:var(--text-xs)">
+                            With Pending Work ({{ count(array_filter($leadPendencyMap, fn($p) => ($p['pending'] ?? 0) > 0)) }})
+                        </a>
+                        <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'overdue'])) }}#my-leads-table-section"
+                           class="btn btn-sm py-1 px-2 {{ $currentFilter === 'overdue' ? 'btn-danger' : 'btn-outline-secondary' }}"
+                           style="font-size:var(--text-xs)">
+                            Overdue ({{ $leadStats['overdue_leads'] }})
+                        </a>
+                        <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'due_today'])) }}#my-leads-table-section"
+                           class="btn btn-sm py-1 px-2 {{ $currentFilter === 'due_today' ? 'btn-warning text-dark' : 'btn-outline-secondary' }}"
+                           style="font-size:var(--text-xs)">
+                            Due Today ({{ $leadStats['due_today_leads'] }})
+                        </a>
+                        <a href="{{ route('dashboard', array_merge(request()->except(['page', 'filter']), ['filter' => 'completed'])) }}#my-leads-table-section"
+                           class="btn btn-sm py-1 px-2 {{ $currentFilter === 'completed' ? 'btn-success' : 'btn-outline-secondary' }}"
+                           style="font-size:var(--text-xs)">
+                            Completed ({{ $leadStats['completed_leads'] }})
+                        </a>
+                    </div>
+
+                    {{-- Form Inputs --}}
+                    <div class="row g-2 align-items-center">
+                        <input type="hidden" name="filter" value="{{ $currentFilter }}">
+                        <input type="hidden" name="sort" value="{{ $currentSort }}">
+                        <input type="hidden" name="direction" value="{{ $currentDirection }}">
+
+                        {{-- Search Input --}}
+                        <div class="col-12 col-md-4 col-xl-3">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white" style="border-color:var(--slate-300)">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </span>
+                                <input type="text"
+                                       name="search"
+                                       value="{{ request('search') }}"
+                                       placeholder="Search Name, ID (#LD-...) or Mobile"
+                                       class="form-control"
+                                       style="font-size:var(--text-xs)">
+                            </div>
+                        </div>
+
+                        {{-- Status Filter --}}
+                        <div class="col-6 col-md-2 col-xl-2">
+                            <select name="status" class="form-select form-select-sm" style="font-size:var(--text-xs)">
+                                <option value="">All Statuses</option>
+                                @foreach (\App\Models\Lead::STATUSES as $sKey => $sLabel)
+                                    <option value="{{ $sKey }}" {{ request('status') === $sKey ? 'selected' : '' }}>
+                                        {{ $sLabel }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- City Filter --}}
+                        <div class="col-6 col-md-2 col-xl-2">
+                            <select name="city_id" class="form-select form-select-sm" style="font-size:var(--text-xs)">
+                                <option value="">All Cities</option>
+                                @foreach ($assignedCities as $ct)
+                                    <option value="{{ $ct->id }}" {{ request('city_id') == $ct->id ? 'selected' : '' }}>
+                                        {{ $ct->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Loan Product Filter --}}
+                        <div class="col-6 col-md-2 col-xl-2">
+                            <select name="loan_product_id" class="form-select form-select-sm" style="font-size:var(--text-xs)">
+                                <option value="">All Loan Products</option>
+                                @foreach ($allLoanProducts as $lp)
+                                    <option value="{{ $lp->id }}" {{ request('loan_product_id') == $lp->id ? 'selected' : '' }}>
+                                        {{ $lp->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Deadline Filter --}}
+                        <div class="col-6 col-md-2 col-xl-2">
+                            <select name="deadline_filter" class="form-select form-select-sm" style="font-size:var(--text-xs)">
+                                <option value="">All Deadlines</option>
+                                <option value="overdue" {{ request('deadline_filter') === 'overdue' ? 'selected' : '' }}>Overdue</option>
+                                <option value="due_today" {{ request('deadline_filter') === 'due_today' ? 'selected' : '' }}>Due Today</option>
+                                <option value="upcoming_7" {{ request('deadline_filter') === 'upcoming_7' ? 'selected' : '' }}>Next 7 Days</option>
+                                <option value="no_deadline" {{ request('deadline_filter') === 'no_deadline' ? 'selected' : '' }}>No Deadline Set</option>
+                            </select>
+                        </div>
+
+                        {{-- Buttons --}}
+                        <div class="col-12 col-xl-1 d-flex gap-1 justify-content-end">
+                            <button type="submit" class="btn btn-primary btn-sm px-3 flex-grow-1 flex-xl-grow-0" style="font-size:var(--text-xs)">
+                                Filter
+                            </button>
+                            @if (request()->hasAny(['search', 'status', 'city_id', 'loan_product_id', 'deadline_filter', 'filter']))
+                                <a href="{{ route('dashboard') }}#my-leads-table-section" class="btn btn-outline-secondary btn-sm px-2" title="Reset Filters" style="font-size:var(--text-xs)">
+                                    Reset
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            {{-- Leads Table --}}
+            @if ($tableLeads->isEmpty())
+                <div class="text-center py-5 text-muted" style="font-size:var(--text-sm)">
+                    @if ($leadStats['total_assigned_leads'] === 0)
+                        No assigned leads found. Leads assigned to you by administrators will appear here.
+                    @else
+                        No assigned leads match your current search/filter criteria.
+                        <div class="mt-2">
+                            <a href="{{ route('dashboard') }}#my-leads-table-section" class="jb-file-link" style="font-size:var(--text-xs)">Reset all filters &rarr;</a>
+                        </div>
+                    @endif
+                </div>
+            @else
+                @php
+                    $sortToggle = fn($col) => route('dashboard', array_merge(request()->all(), [
+                        'sort' => $col,
+                        'direction' => ($currentSort === $col && $currentDirection === 'asc') ? 'desc' : 'asc'
+                    ])) . '#my-leads-table-section';
+                @endphp
+                <div class="table-responsive rounded-3" style="border:1px solid var(--slate-200)">
+                    <table class="table align-middle m-0" style="font-size:var(--text-xs)">
+                        <thead style="background:var(--slate-50);color:var(--slate-600)">
+                            <tr>
+                                <th class="py-2 px-3">
+                                    <a href="{{ $sortToggle('name') }}" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1">
+                                        <span>Lead Name & ID</span>
+                                        @if ($currentSort === 'name')
+                                            <span>{{ $currentDirection === 'asc' ? '↑' : '↓' }}</span>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th class="py-2 px-3">City</th>
+                                <th class="py-2 px-3">Loan Product</th>
+                                <th class="py-2 px-3">
+                                    <a href="{{ $sortToggle('status') }}" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1">
+                                        <span>Current Status</span>
+                                        @if ($currentSort === 'status')
+                                            <span>{{ $currentDirection === 'asc' ? '↑' : '↓' }}</span>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th class="py-2 px-3">
+                                    <a href="{{ $sortToggle('assigned_at') }}" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1">
+                                        <span>Assigned Date</span>
+                                        @if ($currentSort === 'assigned_at' || $currentSort === 'assigned_date')
+                                            <span>{{ $currentDirection === 'asc' ? '↑' : '↓' }}</span>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th class="py-2 px-3">
+                                    <a href="{{ $sortToggle('deadline') }}" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1">
+                                        <span>Deadline</span>
+                                        @if ($currentSort === 'deadline')
+                                            <span>{{ $currentDirection === 'asc' ? '↑' : '↓' }}</span>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th class="py-2 px-3">
+                                    <a href="{{ $sortToggle('pending_count') }}" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1">
+                                        <span>Pending Items</span>
+                                        @if ($currentSort === 'pending_count')
+                                            <span>{{ $currentDirection === 'asc' ? '↑' : '↓' }}</span>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th class="py-2 px-3">Last Activity</th>
+                                <th class="py-2 px-3 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($tableLeads as $lead)
+                                @php
+                                    $cfg = $statusConfig[$lead->status] ?? ['label' => ucfirst(str_replace('_', ' ', $lead->status)), 'badge' => 'jb-badge-slate'];
+                                    $latestAct = $lead->activities->first();
+                                    $pendingCount = $leadPendencyMap[$lead->id]['pending'] ?? 0;
+
+                                    $hasLeadDeadline = $hasDeadlineColumn && !empty($lead->deadline);
+                                    $isOverdue = false;
+                                    $isDueToday = false;
+                                    if ($hasLeadDeadline) {
+                                        $dObj = \Illuminate\Support\Carbon::parse($lead->deadline);
+                                        $isOverdue = $dObj->isPast() && !in_array($lead->status, ['completed', 'rejected', 'cancelled', 'lost']);
+                                        $isDueToday = $dObj->isToday() && !in_array($lead->status, ['completed', 'rejected', 'cancelled', 'lost']);
+                                    }
+
+                                    $rowStyle = '';
+                                    if ($isOverdue) {
+                                        $rowStyle = 'background:rgba(244, 63, 94, 0.04);border-left:3px solid var(--rose-500);';
+                                    } elseif ($isDueToday) {
+                                        $rowStyle = 'background:rgba(245, 158, 11, 0.04);border-left:3px solid var(--amber-500);';
+                                    }
+                                @endphp
+                                <tr style="border-top:1px solid var(--slate-100);{{ $rowStyle }}">
+                                    {{-- Lead Name & ID --}}
+                                    <td class="py-2 px-3">
+                                        <div class="d-flex flex-column">
+                                            <a href="{{ route('admin.leads.show', $lead) }}"
+                                               class="fw-bold text-decoration-none text-truncate"
+                                               style="color:var(--slate-900);max-width:200px"
+                                               title="View {{ $lead->name }} details">
+                                                {{ $lead->name }}
+                                            </a>
+                                            <span style="font-size:.6875rem;color:var(--slate-400)">#LD-{{ str_pad($lead->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                        </div>
+                                    </td>
+
+                                    {{-- City --}}
+                                    <td class="py-2 px-3 fw-medium" style="color:var(--slate-700)">
+                                        {{ $lead->city?->name ?: '—' }}
+                                    </td>
+
+                                    {{-- Loan Product --}}
+                                    <td class="py-2 px-3">
+                                        <span class="jb-badge jb-badge-xs jb-badge-slate">{{ $lead->loanProduct?->name ?: '—' }}</span>
+                                    </td>
+
+                                    {{-- Current Status --}}
+                                    <td class="py-2 px-3">
+                                        <span class="jb-badge jb-badge-xs {{ $cfg['badge'] }}">{{ $cfg['label'] }}</span>
+                                    </td>
+
+                                    {{-- Assigned Date --}}
+                                    <td class="py-2 px-3" style="color:var(--slate-600)">
+                                        {{ $lead->assigned_at ? $lead->assigned_at->format('d M Y') : ($lead->created_at ? $lead->created_at->format('d M Y') : '—') }}
+                                    </td>
+
+                                    {{-- Deadline --}}
+                                    <td class="py-2 px-3">
+                                        @if ($hasLeadDeadline)
+                                            @php $dlParsed = \Illuminate\Support\Carbon::parse($lead->deadline); @endphp
+                                            @if ($isOverdue)
+                                                <span class="jb-badge jb-badge-xs jb-badge-rose d-inline-flex align-items-center gap-1" title="Overdue deadline">
+                                                    <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    {{ $dlParsed->format('d M Y') }}
+                                                </span>
+                                                <span class="d-block text-danger fw-bold" style="font-size:.625rem">Overdue</span>
+                                            @elseif ($isDueToday)
+                                                <span class="jb-badge jb-badge-xs jb-badge-amber d-inline-flex align-items-center gap-1" title="Due today">
+                                                    <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    {{ $dlParsed->format('d M Y') }}
+                                                </span>
+                                                <span class="d-block text-warning fw-bold" style="font-size:.625rem">Due Today</span>
+                                            @else
+                                                <span style="color:var(--slate-700)">{{ $dlParsed->format('d M Y') }}</span>
+                                            @endif
+                                        @else
+                                            <span style="color:var(--slate-400)">—</span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Pending Items Count --}}
+                                    <td class="py-2 px-3">
+                                        @if ($pendingCount > 0)
+                                            <span class="jb-badge jb-badge-xs jb-badge-rose">{{ $pendingCount }} pending</span>
+                                        @else
+                                            <span class="jb-badge jb-badge-xs jb-badge-emerald">All Complete</span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Last Activity --}}
+                                    <td class="py-2 px-3" style="color:var(--slate-500)">
+                                        @if ($latestAct)
+                                            <span class="d-block text-truncate" style="max-width:160px;font-size:.6875rem" title="{{ $latestAct->description }}">
+                                                {{ $latestAct->description }}
+                                            </span>
+                                            <span style="font-size:.625rem;color:var(--slate-400)">{{ $latestAct->created_at->diffForHumans() }}</span>
+                                        @else
+                                            <span style="color:var(--slate-400);font-size:.6875rem">{{ $lead->updated_at ? $lead->updated_at->diffForHumans() : '—' }}</span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Action --}}
+                                    <td class="py-2 px-3 text-end">
+                                        <a href="{{ route('admin.leads.show', $lead) }}"
+                                           class="btn btn-outline-primary btn-sm py-1 px-2"
+                                           style="font-size:var(--text-xs)"
+                                           title="Open Lead Details">
+                                            View Lead
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Pagination Links --}}
+                @if ($tableLeads->hasPages())
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+                        <span style="font-size:var(--text-xs);color:var(--slate-500)">
+                            Showing {{ $tableLeads->firstItem() }} to {{ $tableLeads->lastItem() }} of {{ $tableLeads->total() }} leads
+                        </span>
+                        <div>
+                            {{ $tableLeads->fragment('my-leads-table-section')->links() }}
+                        </div>
+                    </div>
+                @endif
+            @endif
+        </div>
+
+        {{-- 3. Upcoming Deadlines & 4. My Pending Work Widgets --}}
+        <div class="row g-4 mb-4">
+            {{-- 3. Upcoming Deadlines Widget --}}
+            <div class="col-12 col-xl-6">
+                <div class="jb-card p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div>
+                                <h3 class="jb-section-title m-0">Upcoming Deadlines</h3>
+                                <p class="mb-0 mt-1" style="font-size:var(--text-xs);color:var(--slate-500)">
+                                    Overdue, today, and next 7 days deadline tracking.
+                                </p>
+                            </div>
+                            <div class="d-flex gap-1">
+                                @if ($overdueLeads->isNotEmpty())
+                                    <span class="jb-badge jb-badge-xs jb-badge-rose">{{ $overdueLeads->count() }} Overdue</span>
+                                @endif
+                                @if ($dueTodayLeads->isNotEmpty())
+                                    <span class="jb-badge jb-badge-xs jb-badge-amber">{{ $dueTodayLeads->count() }} Today</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- If no deadline field exists on leads table, report gap --}}
+                        @if (! $hasDeadlineField)
+                            <div class="p-3 rounded-3 mb-3" style="background:var(--amber-50);border:1px solid var(--amber-200);color:var(--amber-900)">
+                                <div class="d-flex align-items-center gap-2">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--amber-700);flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <strong style="font-size:var(--text-xs)">Deadline Field Gap Notice</strong>
+                                </div>
+                                <p class="mt-1 mb-0" style="font-size:var(--text-xs);color:var(--amber-800)">
+                                    The <code>leads</code> table in this database has no <code>deadline</code> column. Deadlines will automatically appear here once authorized and added to the schema.
+                                </p>
+                            </div>
+                            <div class="text-center py-4 text-muted" style="font-size:var(--text-sm)">
+                                No overdue or upcoming deadlines.
+                            </div>
+                        @else
+                            @php
+                                $hasDeadlines = $overdueLeads->isNotEmpty() || $dueTodayLeads->isNotEmpty() || $upcoming7DaysLeads->isNotEmpty();
+                            @endphp
+
+                            @if (! $hasDeadlines)
+                                <div class="text-center py-5 text-muted" style="font-size:var(--text-sm)">
+                                    No overdue or upcoming deadlines.
+                                </div>
+                            @else
+                                <div class="d-flex flex-column gap-2" style="max-height:360px;overflow-y:auto">
+                                    {{-- Overdue Leads --}}
+                                    @foreach ($overdueLeads as $l)
+                                        @php
+                                            $cfg = $statusConfig[$l->status] ?? ['label' => ucfirst(str_replace('_', ' ', $l->status)), 'badge' => 'jb-badge-slate'];
+                                            $pCount = $leadPendencyMap[$l->id]['pending'] ?? 0;
+                                        @endphp
+                                        <div class="d-flex align-items-center justify-content-between p-2 px-3 rounded-2"
+                                             style="border:1px solid var(--rose-200);background:var(--rose-50);font-size:var(--text-xs)">
+                                            <div>
+                                                <a href="{{ route('admin.leads.show', $l) }}" class="fw-bold text-decoration-none text-danger d-block">
+                                                    {{ $l->name }}
+                                                </a>
+                                                <span class="text-muted" style="font-size:.6875rem">
+                                                    Deadline: <strong>{{ \Illuminate\Support\Carbon::parse($l->deadline)->format('d M Y') }}</strong>
+                                                    &middot; <span class="text-danger fw-semibold">Overdue</span>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="jb-badge jb-badge-xs {{ $cfg['badge'] }}">{{ $cfg['label'] }}</span>
+                                                <span class="jb-badge jb-badge-xs jb-badge-rose">{{ $pCount }} pending</span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    {{-- Due Today Leads --}}
+                                    @foreach ($dueTodayLeads as $l)
+                                        @php
+                                            $cfg = $statusConfig[$l->status] ?? ['label' => ucfirst(str_replace('_', ' ', $l->status)), 'badge' => 'jb-badge-slate'];
+                                            $pCount = $leadPendencyMap[$l->id]['pending'] ?? 0;
+                                        @endphp
+                                        <div class="d-flex align-items-center justify-content-between p-2 px-3 rounded-2"
+                                             style="border:1px solid var(--amber-200);background:var(--amber-50);font-size:var(--text-xs)">
+                                            <div>
+                                                <a href="{{ route('admin.leads.show', $l) }}" class="fw-bold text-decoration-none text-dark d-block">
+                                                    {{ $l->name }}
+                                                </a>
+                                                <span class="text-muted" style="font-size:.6875rem">
+                                                    Deadline: <strong>Today ({{ \Illuminate\Support\Carbon::parse($l->deadline)->format('d M Y') }})</strong>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="jb-badge jb-badge-xs {{ $cfg['badge'] }}">{{ $cfg['label'] }}</span>
+                                                <span class="jb-badge jb-badge-xs jb-badge-amber">{{ $pCount }} pending</span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    {{-- Next 7 Days Leads --}}
+                                    @foreach ($upcoming7DaysLeads as $l)
+                                        @php
+                                            $cfg = $statusConfig[$l->status] ?? ['label' => ucfirst(str_replace('_', ' ', $l->status)), 'badge' => 'jb-badge-slate'];
+                                            $pCount = $leadPendencyMap[$l->id]['pending'] ?? 0;
+                                        @endphp
+                                        <div class="d-flex align-items-center justify-content-between p-2 px-3 rounded-2"
+                                             style="border:1px solid var(--slate-200);background:var(--slate-50);font-size:var(--text-xs)">
+                                            <div>
+                                                <a href="{{ route('admin.leads.show', $l) }}" class="fw-bold text-decoration-none text-dark d-block">
+                                                    {{ $l->name }}
+                                                </a>
+                                                <span class="text-muted" style="font-size:.6875rem">
+                                                    Due: {{ \Illuminate\Support\Carbon::parse($l->deadline)->format('d M Y') }} (in {{ \Illuminate\Support\Carbon::parse($l->deadline)->diffForHumans() }})
+                                                </span>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="jb-badge jb-badge-xs {{ $cfg['badge'] }}">{{ $cfg['label'] }}</span>
+                                                <span class="jb-badge jb-badge-xs jb-badge-slate">{{ $pCount }} pending</span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- 4. My Pending Work Widget (Grouped by Lead and Module) --}}
+            <div class="col-12 col-xl-6">
+                <div class="jb-card p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h3 class="jb-section-title m-0">My Pending Work</h3>
+                            <p class="mb-0 mt-1" style="font-size:var(--text-xs);color:var(--slate-500)">
+                                Pending tasks and required documents grouped by Lead & module.
+                            </p>
+                        </div>
+                        <span class="jb-badge jb-badge-xs jb-badge-rose">{{ $leadStats['pending_work_count'] }} Pending Items</span>
+                    </div>
+
+                    @if (empty($myPendingWorkByLead))
+                        <div class="text-center py-5 text-muted" style="font-size:var(--text-sm)">
+                            <div class="mb-2">
+                                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--emerald-500)"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            All caught up! No pending work items for your assigned leads.
+                        </div>
+                    @else
+                        <div class="d-flex flex-column gap-2" style="max-height:380px;overflow-y:auto">
+                            @foreach ($myPendingWorkByLead as $item)
+                                @php
+                                    $pLead = $item['lead'];
+                                @endphp
+                                <details class="p-2 px-3 rounded-2 border" style="background:var(--slate-50);border-color:var(--slate-200)!important" open>
+                                    <summary class="d-flex align-items-center justify-content-between cursor-pointer" style="font-size:var(--text-xs);cursor:pointer;list-style:none">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-bold" style="color:var(--slate-900)">{{ $pLead->name }}</span>
+                                            <span style="font-size:.6875rem;color:var(--slate-400)">#LD-{{ str_pad($pLead->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                            @if ($pLead->city)
+                                                <span class="jb-badge jb-badge-xs jb-badge-slate">{{ $pLead->city->name }}</span>
+                                            @endif
+                                        </div>
+                                        <span class="jb-badge jb-badge-xs jb-badge-rose">{{ $item['total_pending'] }} pending</span>
+                                    </summary>
+
+                                    <div class="mt-2 pt-2 border-top d-flex flex-column gap-2" style="font-size:var(--text-xs)">
+                                        @foreach ($item['modules'] as $mod)
+                                            <div class="p-2 rounded bg-white" style="border:1px solid var(--slate-200)">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <span class="fw-semibold" style="color:var(--slate-800)">{{ $mod['label'] }}</span>
+                                                    <span class="text-danger fw-semibold" style="font-size:.6875rem">{{ $mod['pending_count'] }} pending</span>
+                                                </div>
+
+                                                <ul class="list-unstyled m-0 d-flex flex-column gap-1">
+                                                    @foreach ($mod['subsections'] as $sub)
+                                                        @if ($sub['status'] === 'pending')
+                                                            @php
+                                                                $targetUrl = route('admin.leads.show', $pLead) . ($sub['anchor'] ?? '');
+                                                                if (auth()->user()->can('leads.edit')) {
+                                                                    $targetUrl = route('admin.leads.edit', $pLead) . ($sub['anchor'] ?? '');
+                                                                }
+                                                            @endphp
+                                                            <li class="d-flex align-items-center justify-content-between ps-2 py-1 rounded" style="background:var(--slate-50)">
+                                                                <span class="d-flex align-items-center gap-2">
+                                                                    <span class="d-inline-block rounded-circle" style="width:6px;height:6px;background:var(--rose-500)"></span>
+                                                                    <span>{{ $sub['label'] }}</span>
+                                                                    @if (!empty($sub['note']))
+                                                                        <span class="text-muted" style="font-size:.625rem">({{ $sub['note'] }})</span>
+                                                                    @endif
+                                                                </span>
+                                                                <a href="{{ $targetUrl }}"
+                                                                   class="btn btn-outline-secondary btn-sm py-0 px-2"
+                                                                   style="font-size:.625rem">
+                                                                    Complete &rarr;
+                                                                </a>
+                                                            </li>
+                                                        @endif
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </details>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- 6. Workload and Performance Widgets --}}
+        <div class="row g-4 mb-4">
+            {{-- Leads by Status --}}
+            <div class="col-12 col-lg-5">
+                <div class="jb-card p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h3 class="jb-section-title m-0">Assigned Leads by Status</h3>
+                        <span class="jb-badge jb-badge-xs jb-badge-slate">{{ $leadsByStatus->count() }} Statuses</span>
+                    </div>
+
+                    @if ($leadsByStatus->isEmpty())
+                        <div class="text-center py-5 text-muted" style="font-size:var(--text-sm)">No assigned leads yet.</div>
+                    @else
+                        <div class="row align-items-center g-3">
+                            <div class="col-12 col-sm-5 d-flex justify-content-center">
+                                <div style="position:relative;width:160px;height:160px">
+                                    <canvas id="leadsByStatusChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-7">
+                                <div class="d-flex flex-column gap-2" style="max-height:220px;overflow-y:auto">
+                                    @foreach ($leadsByStatus as $st)
+                                        @php
+                                            $cfg = $statusConfig[$st->status] ?? ['label' => ucfirst(str_replace('_', ' ', $st->status)), 'badge' => 'jb-badge-slate', 'hex' => '#64748b'];
+                                            $pct = $leadStats['total_assigned_leads'] > 0 ? round(($st->total / $leadStats['total_assigned_leads']) * 100) : 0;
+                                        @endphp
+                                        <div>
+                                            <div class="d-flex justify-content-between align-items-center mb-1" style="font-size:var(--text-xs)">
+                                                <span class="fw-semibold text-truncate" style="color:var(--slate-700)">
+                                                    <span class="d-inline-block rounded-circle me-1" style="width:8px;height:8px;background:{{ $cfg['hex'] }}"></span>
+                                                    {{ $cfg['label'] }}
+                                                </span>
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <span class="jb-badge jb-badge-xs {{ $cfg['badge'] }}">{{ $st->total }}</span>
+                                                    <span style="color:var(--slate-400);min-width:32px;text-align:right">{{ $pct }}%</span>
+                                                </div>
+                                            </div>
+                                            <div class="jb-progress-track" style="height:4px">
+                                                <div class="jb-progress-fill" style="width:{{ $pct }}%;background:{{ $cfg['hex'] }}"></div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Pending Work by Module --}}
+            <div class="col-12 col-lg-4">
+                <div class="jb-card p-4 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h3 class="jb-section-title m-0">Pending Work by Module</h3>
+                        <span class="jb-badge jb-badge-xs jb-badge-purple">{{ count($pendingByModule) }} Modules</span>
+                    </div>
+
+                    @if (empty($pendingByModule))
+                        <div class="text-center py-5 text-muted" style="font-size:var(--text-sm)">
+                            No pending tasks across all modules!
+                        </div>
+                    @else
+                        @php
+                            $maxPending = max(1, max($pendingByModule));
+                        @endphp
+                        <div class="d-flex flex-column gap-3" style="max-height:220px;overflow-y:auto">
+                            @foreach ($pendingByModule as $modName => $count)
+                                @php
+                                    $modPct = round(($count / $maxPending) * 100);
+                                @endphp
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1" style="font-size:var(--text-xs)">
+                                        <span class="fw-semibold text-truncate" style="color:var(--slate-700)">{{ $modName }}</span>
+                                        <span class="jb-badge jb-badge-xs jb-badge-purple">{{ $count }} pending</span>
+                                    </div>
+                                    <div class="jb-progress-track" style="height:5px">
+                                        <div class="jb-progress-fill" style="width:{{ $modPct }}%;background:var(--purple-600)"></div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Performance & Completion Tracking --}}
+            <div class="col-12 col-lg-3">
+                <div class="jb-card p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h3 class="jb-section-title mb-3">Performance</h3>
+                        <div class="p-3 rounded-3 mb-3" style="background:var(--slate-50);border:1px solid var(--slate-200)">
+                            <span class="d-block text-muted" style="font-size:var(--text-xs)">Completed This Month</span>
+                            <div class="d-flex align-items-baseline justify-content-between mt-1">
+                                <span class="fw-bold" style="font-size:var(--text-2xl);color:var(--emerald-600)">{{ $leadStats['completed_this_month'] }}</span>
+                                <span class="jb-badge jb-badge-xs jb-badge-emerald">This Month</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-3" style="background:var(--slate-50);border:1px solid var(--slate-200)">
+                            <span class="d-block text-muted" style="font-size:var(--text-xs)">Total Completed</span>
+                            <div class="d-flex align-items-baseline justify-content-between mt-1">
+                                <span class="fw-bold" style="font-size:var(--text-xl);color:var(--slate-700)">{{ $leadStats['completed_leads'] }}</span>
+                                <span class="jb-badge jb-badge-xs jb-badge-slate">Lifetime</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-2 border-top" style="font-size:.6875rem;color:var(--slate-500)">
+                        <strong>Historical On-Time vs Overdue:</strong>
+                        <p class="mb-0 mt-1" style="font-size:.625rem;color:var(--slate-400)">
+                            Not tracked because the database does not have a historical deadline field.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Preserved: City-wise Lead Status Dashboard Matrix (Assigned Leads Only) --}}
         <div class="jb-card p-4 mb-4">
             <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-3">
                 <div>
@@ -682,7 +1413,7 @@
 
                                     <hr class="my-2" style="border-color:var(--slate-200);opacity:0.8">
 
-                                    {{-- Status Breakdown List (Only statuses having count > 0) --}}
+                                    {{-- Status Breakdown List --}}
                                     <div class="d-flex flex-column gap-1">
                                         @php
                                             $hasStatuses = false;
@@ -722,54 +1453,8 @@
             @endif
         </div>
 
-        {{-- 3. Assigned Leads by Status & City Breakdown --}}
+        {{-- Preserved: Assigned Leads by City Chart Card --}}
         <div class="row g-4 mb-4">
-            <div class="col-12 col-lg-6">
-                <div class="jb-card p-4 h-100">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h3 class="jb-section-title m-0">Assigned Leads by Status</h3>
-                        <span class="jb-badge jb-badge-xs jb-badge-slate">{{ $leadsByStatus->count() }} Statuses</span>
-                    </div>
-
-                    @if ($leadsByStatus->isEmpty())
-                        <div class="text-center py-5 text-muted" style="font-size:var(--text-sm)">No assigned leads yet.</div>
-                    @else
-                        <div class="row align-items-center g-3">
-                            <div class="col-12 col-sm-5 d-flex justify-content-center">
-                                <div style="position:relative;width:180px;height:180px">
-                                    <canvas id="leadsByStatusChart"></canvas>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-7">
-                                <div class="d-flex flex-column gap-2" style="max-height:220px;overflow-y:auto">
-                                    @foreach ($leadsByStatus as $st)
-                                        @php
-                                            $cfg = $statusConfig[$st->status] ?? ['label' => ucfirst(str_replace('_', ' ', $st->status)), 'badge' => 'jb-badge-slate', 'hex' => '#64748b'];
-                                            $pct = $leadStats['total_assigned_leads'] > 0 ? round(($st->total / $leadStats['total_assigned_leads']) * 100) : 0;
-                                        @endphp
-                                        <div>
-                                            <div class="d-flex justify-content-between align-items-center mb-1" style="font-size:var(--text-xs)">
-                                                <span class="fw-semibold text-truncate" style="color:var(--slate-700)">
-                                                    <span class="d-inline-block rounded-circle me-1" style="width:8px;height:8px;background:{{ $cfg['hex'] }}"></span>
-                                                    {{ $cfg['label'] }}
-                                                </span>
-                                                <div class="d-flex align-items-center gap-1">
-                                                    <span class="jb-badge jb-badge-xs {{ $cfg['badge'] }}">{{ $st->total }}</span>
-                                                    <span style="color:var(--slate-400);min-width:32px;text-align:right">{{ $pct }}%</span>
-                                                </div>
-                                            </div>
-                                            <div class="jb-progress-track" style="height:4px">
-                                                <div class="jb-progress-fill" style="width:{{ $pct }}%;background:{{ $cfg['hex'] }}"></div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            </div>
-
             <div class="col-12 col-lg-6">
                 <div class="jb-card p-4 h-100">
                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -782,7 +1467,7 @@
                     @else
                         <div class="row align-items-center g-3">
                             <div class="col-12 col-sm-5 d-flex justify-content-center">
-                                <div style="position:relative;width:180px;height:180px">
+                                <div style="position:relative;width:160px;height:160px">
                                     <canvas id="leadsByCityChart"></canvas>
                                 </div>
                             </div>
@@ -813,85 +1498,9 @@
                     @endif
                 </div>
             </div>
-        </div>
 
-        {{-- 3. Recent Assigned Leads & Upcoming Follow-ups --}}
-        <div class="row g-4 mb-4">
-            {{-- Recent Assigned Leads --}}
-            <div class="col-12 col-xl-7">
-                <div class="jb-card p-4 h-100">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h3 class="jb-section-title m-0">Recent Assigned Leads</h3>
-                        <span class="jb-badge jb-badge-xs jb-badge-slate">{{ $recentAssignedLeads->count() }} Leads</span>
-                    </div>
-
-                    @if ($recentAssignedLeads->isEmpty())
-                        <div class="text-center py-5 text-muted" style="font-size:var(--text-sm)">No assigned leads found.</div>
-                    @else
-                        <div class="table-responsive rounded-3" style="border:1px solid var(--slate-100)">
-                            <table class="table align-middle m-0" style="font-size:var(--text-xs)">
-                                <thead style="background:var(--slate-50);color:var(--slate-500)">
-                                    <tr>
-                                        <th class="py-2 px-3">Lead</th>
-                                        <th class="py-2 px-3">City & Product</th>
-                                        <th class="py-2 px-3">Status</th>
-                                        <th class="py-2 px-3">Next Follow-up</th>
-                                        <th class="py-2 px-3 text-end">Last Activity</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($recentAssignedLeads as $lead)
-                                        @php
-                                            $cfg = $statusConfig[$lead->status] ?? ['label' => ucfirst(str_replace('_', ' ', $lead->status)), 'badge' => 'jb-badge-slate'];
-                                            $latestVisit = $lead->visits->first();
-                                            $nextFollowUp = $latestVisit?->next_follow_up_date ?: ($latestVisit?->visit_date ?: null);
-                                            $latestActivity = $lead->activities->first();
-                                        @endphp
-                                        <tr style="border-top:1px solid var(--slate-100)">
-                                            <td class="py-2 px-3">
-                                                <a href="{{ route('admin.leads.show', $lead) }}" class="fw-bold text-decoration-none d-block text-truncate" style="color:var(--slate-900);max-width:180px">
-                                                    {{ $lead->name }}
-                                                </a>
-                                                <span style="font-size:.6875rem;color:var(--slate-400)">#LD-{{ str_pad($lead->id, 5, '0', STR_PAD_LEFT) }}</span>
-                                            </td>
-                                            <td class="py-2 px-3">
-                                                <span class="d-block fw-medium" style="color:var(--slate-700)">{{ $lead->city?->name ?: '—' }}</span>
-                                                <span style="font-size:.6875rem;color:var(--slate-400)">{{ $lead->loanProduct?->name ?: '—' }}</span>
-                                            </td>
-                                            <td class="py-2 px-3">
-                                                <span class="jb-badge jb-badge-xs {{ $cfg['badge'] }}">{{ $cfg['label'] }}</span>
-                                            </td>
-                                            <td class="py-2 px-3" style="color:var(--slate-600)">
-                                                @if ($nextFollowUp)
-                                                    <span class="d-inline-flex align-items-center gap-1">
-                                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                        {{ $nextFollowUp->format('d M Y') }}
-                                                    </span>
-                                                @else
-                                                    <span style="color:var(--slate-400)">—</span>
-                                                @endif
-                                            </td>
-                                            <td class="py-2 px-3 text-end" style="color:var(--slate-500)">
-                                                @if ($latestActivity)
-                                                    <span class="d-block text-truncate" style="max-width:140px;font-size:.6875rem" title="{{ $latestActivity->description }}">
-                                                        {{ $latestActivity->description }}
-                                                    </span>
-                                                    <span style="font-size:.625rem;color:var(--slate-400)">{{ $latestActivity->created_at->diffForHumans() }}</span>
-                                                @else
-                                                    <span style="color:var(--slate-400)">{{ $lead->updated_at->diffForHumans() }}</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            {{-- Upcoming Follow-ups --}}
-            <div class="col-12 col-xl-5">
+            {{-- Preserved: Upcoming Follow-ups --}}
+            <div class="col-12 col-lg-6">
                 <div class="jb-card p-4 h-100">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <h3 class="jb-section-title m-0">Upcoming Follow-ups</h3>
@@ -901,7 +1510,7 @@
                     @if ($upcomingFollowUps->isEmpty())
                         <div class="text-center py-5 text-muted" style="font-size:var(--text-sm)">No upcoming follow-ups scheduled.</div>
                     @else
-                        <div class="d-flex flex-column gap-2">
+                        <div class="d-flex flex-column gap-2" style="max-height:220px;overflow-y:auto">
                             @foreach ($upcomingFollowUps as $visit)
                                 @php
                                     $followUpDate = $visit->next_follow_up_date ?: $visit->visit_date;
@@ -931,23 +1540,6 @@
                                         </div>
                                         <span class="jb-badge jb-badge-xs {{ $visitCfg }}">{{ ucfirst($visit->status) }}</span>
                                     </div>
-
-                                    @if ($leadItem && ($leadItem->mobile_number || $leadItem->email))
-                                        <div class="d-flex flex-wrap align-items-center gap-3 mt-2 pt-2 border-top" style="font-size:.6875rem;color:var(--slate-600)">
-                                            @if ($leadItem->mobile_number)
-                                                <span class="d-inline-flex align-items-center gap-1">
-                                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                                                    {{ $leadItem->mobile_number }}
-                                                </span>
-                                            @endif
-                                            @if ($leadItem->email)
-                                                <span class="d-inline-flex align-items-center gap-1">
-                                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                                                    {{ $leadItem->email }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -956,10 +1548,13 @@
             </div>
         </div>
 
-        {{-- 4. Recent Lead Activities Stream --}}
+        {{-- 5. Recent Activity Stream --}}
         <div class="jb-card p-4">
             <div class="d-flex align-items-center justify-content-between mb-3">
-                <h3 class="jb-section-title m-0">Recent Activity</h3>
+                <div>
+                    <h3 class="jb-section-title m-0">Recent Activity</h3>
+                    <p class="mb-0 mt-1" style="font-size:var(--text-xs);color:var(--slate-500)">Latest updates logged across your assigned Leads.</p>
+                </div>
                 <span class="jb-badge jb-badge-xs jb-badge-slate">Activities</span>
             </div>
 
@@ -997,6 +1592,7 @@
                                     @if ($act->user)
                                         <span>By: <strong style="color:var(--slate-700)">{{ $act->user->name }}</strong></span>
                                     @endif
+                                    <span>Date: {{ $act->created_at->format('d M Y, h:i A') }}</span>
                                 </div>
                             </div>
                         </div>

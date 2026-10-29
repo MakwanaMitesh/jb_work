@@ -12,8 +12,13 @@ class RoleSeeder extends Seeder
      * Run the database seeds.
      *
      * Initial roles: Admin, Employee, Agent.
-     * Admin receives every permission. Employee and Agent start with none —
-     * the Admin assigns permissions to them afterwards via Role Management.
+     * Admin receives every permission. Employee and Agent otherwise start with
+     * none — the Admin assigns further permissions to them via Role Management.
+     *
+     * Employee is the exception: it always gets dashboard.view, since that's
+     * the page every logged-in user lands on. Without it, a freshly created
+     * Employee would be locked out with a 403 immediately after logging in,
+     * before an Admin ever gets a chance to grant them anything else.
      *
      * Note: Agent is not a login-enabled role at this stage (no auth flow
      * exists for it), it is only kept ready for future use.
@@ -25,7 +30,7 @@ class RoleSeeder extends Seeder
             ['description' => 'Full system access', 'is_active' => true],
         );
 
-        Role::firstOrCreate(
+        $employee = Role::firstOrCreate(
             ['name' => 'Employee', 'guard_name' => 'web'],
             ['description' => 'Staff member with permissions assigned by Admin', 'is_active' => true],
         );
@@ -36,5 +41,9 @@ class RoleSeeder extends Seeder
         );
 
         $admin->syncPermissions(Permission::all());
+
+        if ($dashboardView = Permission::where('name', 'dashboard.view')->first()) {
+            $employee->givePermissionTo($dashboardView);
+        }
     }
 }

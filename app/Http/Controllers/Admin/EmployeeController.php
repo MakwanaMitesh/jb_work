@@ -9,9 +9,7 @@ use App\Http\Requests\Admin\UpdateEmployeeRequest;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class EmployeeController extends Controller
@@ -50,13 +48,13 @@ class EmployeeController extends Controller
             $query->where('city_id', $cityId);
         }
 
-        $sort = in_array(request('sort'), ['name', 'email', 'city', 'status', 'joining_date', 'created_at']) ? request('sort') : 'name';
-        $direction = request('direction') === 'desc' ? 'desc' : 'asc';
+        $sort = in_array(request('sort'), ['name', 'email', 'city', 'status', 'joining_date', 'created_at']) ? request('sort') : 'created_at';
+        $direction = request('direction') === 'asc' ? 'asc' : 'desc';
 
         if (app()->environment('testing')) {
-            $employees = $query->orderBy($sort, $direction)->paginate($this->perPage(10));
+            $employees = $query->orderBy($sort, $direction)->orderBy('id', 'desc')->paginate($this->perPage(10));
         } else {
-            $allEmployees = $query->orderBy($sort, $direction)->get();
+            $allEmployees = $query->orderBy($sort, $direction)->orderBy('id', 'desc')->get();
             $employees = new \Illuminate\Pagination\LengthAwarePaginator(
                 $allEmployees,
                 $allEmployees->count(),
@@ -86,12 +84,10 @@ class EmployeeController extends Controller
         $data = $request->validated();
         unset($data['profile_photo'], $data['insurance_policy_pdf'], $data['resume'], $data['aadhaar_photo'], $data['pan_photo'], $data['bank_cheque_photo']);
 
+        // $data['password'] is the plaintext the admin typed; User's 'password' => 'hashed'
+        // cast hashes it automatically on save, so it's never stored or logged in the clear.
         $employee = new User($data);
         $employee->syncDisplayName();
-
-        // Never store/display a plaintext password — generate a random one,
-        // hash it, and let the employee set their own via Forgot Password.
-        $employee->password = Str::password(16);
 
         if ($request->hasFile('profile_photo')) {
             $employee->profile_photo_path = $request->file('profile_photo')->store('employees', 'public');
@@ -116,10 +112,8 @@ class EmployeeController extends Controller
 
         $employee->syncRoles($this->resolveAssignableRole($request));
 
-        Password::sendResetLink(['email' => $employee->email]);
-
         return redirect()->route('admin.employees.index')
-            ->with('success', "Employee \"{$employee->name}\" created. A password setup link has been emailed to them.");
+            ->with('success', "Employee \"{$employee->name}\" created.");
     }
 
     public function show(User $employee): View
@@ -145,6 +139,12 @@ class EmployeeController extends Controller
     {
         $data = $request->validated();
         unset($data['profile_photo'], $data['insurance_policy_pdf'], $data['resume'], $data['aadhaar_photo'], $data['pan_photo'], $data['bank_cheque_photo']);
+
+        // Left blank, the admin keeps the current (hashed) password — fill() would otherwise
+        // overwrite it with an empty string. When filled, the cast on User hashes it on save.
+        if (! filled($data['password'] ?? null)) {
+            unset($data['password']);
+        }
 
         $employee->fill($data);
         $employee->syncDisplayName();

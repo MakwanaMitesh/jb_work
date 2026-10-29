@@ -22,6 +22,7 @@ class StoreEmployeeRequest extends FormRequest
             'middle_name' => ['nullable', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
             'mobile_number' => ['required', 'string', 'regex:/^\+?[1-9]\d{1,14}$/'],
             'city_id' => ['nullable', 'exists:cities,id'],
             'address' => ['nullable', 'string', 'max:500'],

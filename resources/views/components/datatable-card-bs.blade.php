@@ -61,6 +61,7 @@
                 pageLength: 10,
                 lengthMenu: [10, 25, 50, 100],
                 ordering: true,
+                order: [],
                 columnDefs: [
                     { orderable: false, targets: [-1] }
                 ],

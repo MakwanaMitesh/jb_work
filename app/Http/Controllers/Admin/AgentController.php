@@ -41,13 +41,13 @@ class AgentController extends Controller
             $query->where('city_id', $cityId);
         }
 
-        $sort = in_array(request('sort'), ['first_name', 'last_name', 'email', 'city', 'status', 'created_at']) ? request('sort') : 'first_name';
-        $direction = request('direction') === 'desc' ? 'desc' : 'asc';
+        $sort = in_array(request('sort'), ['first_name', 'last_name', 'email', 'city', 'status', 'created_at']) ? request('sort') : 'created_at';
+        $direction = request('direction') === 'asc' ? 'asc' : 'desc';
 
         if (app()->environment('testing')) {
-            $agents = $query->orderBy($sort, $direction)->paginate($this->perPage(10));
+            $agents = $query->orderBy($sort, $direction)->orderBy('id', 'desc')->paginate($this->perPage(10));
         } else {
-            $allAgents = $query->orderBy($sort, $direction)->get();
+            $allAgents = $query->orderBy($sort, $direction)->orderBy('id', 'desc')->get();
             $agents = new \Illuminate\Pagination\LengthAwarePaginator(
                 $allAgents,
                 $allAgents->count(),

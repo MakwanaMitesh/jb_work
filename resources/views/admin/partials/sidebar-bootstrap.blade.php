@@ -48,6 +48,13 @@
             </a>
         @endcan
 
+        @can('pendency.view')
+            <a href="{{ route('admin.pendency.index') }}" class="jb-nav-link {{ request()->routeIs('admin.pendency.*') ? 'active' : '' }}">
+                {!! $navIcon('<path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />') !!}
+                <span>Pendency</span>
+            </a>
+        @endcan
+
         @can('rough_leads.view')
             <a href="{{ route('admin.rough-leads.index') }}" class="jb-nav-link {{ request()->routeIs('admin.rough-leads.*') ? 'active' : '' }}">
                 {!! $navIcon('<path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />') !!}

@@ -298,7 +298,9 @@ class Lead extends Model
 
     public function hasGeneratedSbiStockStatement(): bool
     {
-        return \Illuminate\Support\Facades\Storage::disk('public')->exists('sbi_stock_statement/' . $this->id . '/SBI_Stock_statement.xlsx');
+        // Matches SbiStockStatementGenerator's own path exactly (hyphenated directory, capitalised
+        // filename) — this previously pointed at a path the generator never writes to.
+        return \Illuminate\Support\Facades\Storage::disk('public')->exists('sbi-stock-statement/' . $this->id . '/SBI_Stock_Statement.xlsx');
     }
 
     public function hasGeneratedInspectionSheet(): bool
@@ -400,7 +402,7 @@ class Lead extends Model
      */
     public function assignments(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(LeadAssignment::class);
+        return $this->hasMany(LeadAssignment::class)->latest('assigned_at')->latest('id');
     }
 
     /**
@@ -408,7 +410,7 @@ class Lead extends Model
      */
     public function visits(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(Visit::class);
+        return $this->hasMany(Visit::class)->latest('visit_date')->latest('id');
     }
 
     /**

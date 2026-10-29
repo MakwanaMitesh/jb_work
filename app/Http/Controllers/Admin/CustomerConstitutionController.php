@@ -26,7 +26,7 @@ class CustomerConstitutionController extends Controller
             });
         }
 
-        $constitutions = $query->orderBy('sort_order')->orderBy('name')->paginate(15);
+        $constitutions = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(15);
 
         return view('admin.constitutions.index', compact('constitutions'));
     }

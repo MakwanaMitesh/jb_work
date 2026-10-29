@@ -28,7 +28,7 @@ class AssessmentYearController extends Controller
             });
         }
 
-        $assessmentYears = $query->orderBy('sort_order')->orderBy('name')->paginate(15);
+        $assessmentYears = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(15);
 
         return view('admin.assessment_years.index', compact('assessmentYears'));
     }

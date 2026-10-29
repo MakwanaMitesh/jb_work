@@ -36,6 +36,7 @@ class EmployeeManagementTest extends TestCase
             'middle_name' => '',
             'last_name' => 'Doe',
             'email' => 'jane.doe@example.com',
+            'password' => 'correct-horse-battery',
             'mobile_number' => '9876543210',
             'city_id' => $this->city->id,
             'address' => '123 Street',
@@ -58,8 +59,6 @@ class EmployeeManagementTest extends TestCase
 
     public function test_admin_can_create_an_employee_which_also_creates_a_login_account(): void
     {
-        Notification::fake();
-
         $response = $this->actingAs($this->admin)
             ->post(route('admin.employees.store'), $this->validPayload());
 
@@ -70,9 +69,6 @@ class EmployeeManagementTest extends TestCase
         $this->assertSame('Jane Doe', $employee->name);
         $this->assertTrue($employee->hasRole('Employee'));
         $this->assertTrue($employee->isActive());
-
-        // A password reset link is sent instead of ever exposing a plaintext password.
-        Notification::assertSentTo($employee, ResetPassword::class);
 
         // Assert additional fields are stored correctly
         $this->assertSame('POL-99999', $employee->insurance_policy_number);
@@ -86,16 +82,82 @@ class EmployeeManagementTest extends TestCase
         $this->assertSame('Jane Doe', $employee->bank_account_holder_name);
     }
 
-    public function test_employee_creation_never_stores_a_guessable_or_visible_password(): void
+    public function test_the_admin_set_password_is_hashed_never_stored_in_the_clear(): void
     {
-        Notification::fake();
-
         $this->actingAs($this->admin)->post(route('admin.employees.store'), $this->validPayload());
 
         $employee = User::where('email', 'jane.doe@example.com')->first();
 
-        // The stored value is a bcrypt hash, never plaintext.
+        // The stored value is a bcrypt hash of what the admin typed, never the plaintext itself.
         $this->assertStringStartsWith('$2y$', $employee->password);
+        $this->assertNotSame('correct-horse-battery', $employee->password);
+    }
+
+    public function test_the_employee_can_log_in_with_the_password_the_admin_set(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.employees.store'), $this->validPayload());
+
+        $this->post(route('logout'));
+
+        $this->post('/login', ['email' => 'jane.doe@example.com', 'password' => 'correct-horse-battery']);
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_password_is_required_to_create_an_employee(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.employees.store'), $this->validPayload(['password' => '']));
+
+        $response->assertSessionHasErrors('password');
+        $this->assertNull(User::where('email', 'jane.doe@example.com')->first());
+    }
+
+    public function test_admin_can_change_an_employees_password_on_edit(): void
+    {
+        $employee = User::factory()->create(['email' => 'change-me@example.com']);
+        $employee->assignRole('Employee');
+        $originalHash = $employee->password;
+
+        $this->actingAs($this->admin)->put(route('admin.employees.update', $employee), $this->validPayload([
+            'email' => 'change-me@example.com', 'password' => 'brand-new-password',
+        ]))->assertRedirect();
+
+        $employee->refresh();
+        $this->assertNotSame($originalHash, $employee->password);
+
+        $this->post(route('logout'));
+        $this->post('/login', ['email' => 'change-me@example.com', 'password' => 'brand-new-password']);
+        $this->assertAuthenticated();
+    }
+
+    public function test_leaving_password_blank_on_edit_keeps_the_existing_one_unchanged(): void
+    {
+        $employee = User::factory()->create(['email' => 'keep-me@example.com']);
+        $employee->assignRole('Employee');
+        $originalHash = $employee->password;
+
+        $this->actingAs($this->admin)->put(route('admin.employees.update', $employee), $this->validPayload([
+            'email' => 'keep-me@example.com', 'password' => '',
+        ]))->assertRedirect();
+
+        $this->assertSame($originalHash, $employee->fresh()->password);
+    }
+
+    public function test_the_create_and_edit_pages_render_a_password_field_with_a_show_hide_toggle(): void
+    {
+        $create = $this->actingAs($this->admin)->get(route('admin.employees.create'))->assertOk()->getContent();
+        $this->assertStringContainsString('name="password"', $create);
+        $this->assertStringContainsString('jb-password-toggle', $create);
+        $this->assertStringContainsString('type="password"', $create);
+
+        $employee = User::factory()->create();
+        $employee->assignRole('Employee');
+        $edit = $this->actingAs($this->admin)->get(route('admin.employees.edit', $employee))->assertOk()->getContent();
+        $this->assertStringContainsString('name="password"', $edit);
+        $this->assertStringContainsString('jb-password-toggle', $edit);
+        // Never pre-filled with (or able to display) the existing hash.
+        $this->assertStringNotContainsString($employee->password, $edit);
     }
 
     public function test_duplicate_email_is_rejected(): void
@@ -113,7 +175,22 @@ class EmployeeManagementTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('admin.employees.store'), []);
 
-        $response->assertSessionHasErrors(['first_name', 'last_name', 'email', 'role', 'status']);
+        $response->assertSessionHasErrors(['first_name', 'last_name', 'email', 'password', 'role', 'status']);
+    }
+
+    /**
+     * The Create Employee page must actually submit every field StoreEmployeeRequest requires.
+     * "status" previously had no input at all on the page — every real submission failed
+     * validation (silently, since no error was shown next to a field that didn't exist), while
+     * tests kept passing because validPayload() above sent it directly, bypassing the page itself.
+     */
+    public function test_the_create_page_has_an_input_for_every_required_field(): void
+    {
+        $html = $this->actingAs($this->admin)->get(route('admin.employees.create'))->assertOk()->getContent();
+
+        foreach (['first_name', 'last_name', 'email', 'password', 'mobile_number', 'role', 'status'] as $field) {
+            $this->assertStringContainsString('name="' . $field . '"', $html, "Create Employee page has no input named \"{$field}\"");
+        }
     }
 
     public function test_user_without_create_permission_cannot_create_employee(): void
@@ -258,7 +335,12 @@ class EmployeeManagementTest extends TestCase
         $this->assertSoftDeleted($secondAdmin);
     }
 
-    public function test_employee_can_log_in_after_setting_password_via_forgot_password(): void
+    /**
+     * Employee creation itself no longer sends a reset-link email (the admin sets the password
+     * directly) — but the general Forgot Password flow still works for an employee's account,
+     * same as for any other user, independent of how that account was created.
+     */
+    public function test_employee_can_still_use_forgot_password_independent_of_creation(): void
     {
         Notification::fake();
 
@@ -269,6 +351,8 @@ class EmployeeManagementTest extends TestCase
         // guest-only route and would otherwise redirect an authenticated
         // session away instead of processing the reset.
         $this->post(route('logout'));
+
+        $this->post(route('password.email'), ['email' => $employee->email]);
 
         Notification::assertSentTo($employee, ResetPassword::class, function ($notification) use ($employee) {
             $token = $notification->token;

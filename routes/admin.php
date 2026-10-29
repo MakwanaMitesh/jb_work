@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\AssessmentYearController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\ContactEnquiryController;
 use App\Http\Controllers\Admin\DocumentTypeController;
+use App\Http\Controllers\Admin\PendencyController;
 use Illuminate\Support\Facades\Route;
 
 // Role & Permission management, and per-user direct permissions.
@@ -66,6 +67,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     Route::resource('leads', LeadController::class)
         ->parameters(['leads' => 'lead']);
+
+    // Pendency: a read-only, computed-on-request view over existing Lead data (see
+    // PendencyService) — no new tables, no data entered here.
+    Route::get('pendency', [PendencyController::class, 'index'])->name('pendency.index');
+    Route::get('pendency/{lead}', [PendencyController::class, 'show'])->name('pendency.show');
 
     Route::get('leads/{lead}/documents/{document}/download', [LeadController::class, 'downloadDocument'])->name('leads.documents.download');
     Route::delete('leads/{lead}/documents/{document}', [LeadController::class, 'deleteDocument'])->name('leads.documents.destroy');

@@ -28,13 +28,13 @@ class CityController extends Controller
             $query->where('status', $status);
         }
 
-        $sort = in_array(request('sort'), ['name', 'status', 'created_at']) ? request('sort') : 'name';
-        $direction = request('direction') === 'desc' ? 'desc' : 'asc';
+        $sort = in_array(request('sort'), ['name', 'status', 'created_at']) ? request('sort') : 'created_at';
+        $direction = request('direction') === 'asc' ? 'asc' : 'desc';
 
         if (app()->environment('testing')) {
-            $cities = $query->orderBy($sort, $direction)->paginate($this->perPage(10));
+            $cities = $query->orderBy($sort, $direction)->orderBy('id', 'desc')->paginate($this->perPage(10));
         } else {
-            $allCities = $query->orderBy($sort, $direction)->get();
+            $allCities = $query->orderBy($sort, $direction)->orderBy('id', 'desc')->get();
             $cities = new \Illuminate\Pagination\LengthAwarePaginator(
                 $allCities,
                 $allCities->count(),

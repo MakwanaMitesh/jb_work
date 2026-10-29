@@ -605,6 +605,11 @@ class UiSmokeTest extends TestCase
         $jsHooks = [
             'jb-permission-checkbox',  // permission-checkboxes.blade.php script
             'jb-module-toggle',        // permission-checkboxes.blade.php script
+            'jb-subsection-checkbox',  // permission-checkboxes.blade.php script
+            'jb-subsection-toggle',    // permission-checkboxes.blade.php script
+            'jb-password-toggle',      // employees/_form.blade.php show/hide password script
+            'jb-eye-open',             // employees/_form.blade.php show/hide password script
+            'jb-eye-closed',           // employees/_form.blade.php show/hide password script
         ];
 
         $knownUnstyled = [

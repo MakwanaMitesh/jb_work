@@ -25,6 +25,11 @@ class LeadController extends Controller
 
         $query = Lead::with(['agent', 'city', 'bank', 'loanProduct']);
 
+        $user = auth()->user();
+        if (! $user->can('leads.view_all') && $user->can('leads.view_own')) {
+            $query->where('assigned_employee_id', $user->id);
+        }
+
         if ($search = request('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -71,9 +76,9 @@ class LeadController extends Controller
         $direction = request('direction') === 'asc' ? 'asc' : 'desc';
 
         if (app()->environment('testing')) {
-            $leads = $query->orderBy($sort, $direction)->paginate($this->perPage(10));
+            $leads = $query->orderBy($sort, $direction)->orderBy('id', 'desc')->paginate($this->perPage(10));
         } else {
-            $allLeads = $query->orderBy($sort, $direction)->get();
+            $allLeads = $query->orderBy($sort, $direction)->orderBy('id', 'desc')->get();
             $leads = new \Illuminate\Pagination\LengthAwarePaginator(
                 $allLeads,
                 $allLeads->count(),
@@ -121,6 +126,7 @@ class LeadController extends Controller
         $dprReport = $validated['dpr'] ?? null;
         unset($validated['af'], $validated['ss'], $validated['opr'], $validated['cma'], $validated['dpr']);
         $validated['itr_details'] = $this->processItrDetailsFiles($request);
+        $validated = \App\Support\LeadModuleAccess::filterFieldsForUser($request->user(), $validated);
 
         // Lead and Application Form are one submission: both save or neither.
         $lead = \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $applicationForm, $stockStatement, $opinionReport, $cmaProfile, $dprReport, $request) {
@@ -145,6 +151,11 @@ class LeadController extends Controller
     public function show(Lead $lead): View
     {
         $this->authorize('leads.view');
+
+        $user = auth()->user();
+        if (! $user->can('leads.view_all') && $user->can('leads.view_own') && $lead->assigned_employee_id !== $user->id) {
+            abort(403, 'You do not have permission to view this lead.');
+        }
 
         $employees = \App\Models\User::where('status', 'active')
             ->whereHas('roles', fn ($q) => $q->where('name', '!=', 'Agent'))
@@ -263,6 +274,7 @@ class LeadController extends Controller
         $dprReport = $validated['dpr'] ?? null;
         unset($validated['af'], $validated['ss'], $validated['opr'], $validated['cma'], $validated['dpr']);
         $validated['itr_details'] = $this->processItrDetailsFiles($request, $lead->itr_details);
+        $validated = \App\Support\LeadModuleAccess::filterFieldsForUser($request->user(), $validated);
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($lead, $validated, $applicationForm, $stockStatement, $opinionReport, $cmaProfile, $dprReport, $request) {
             $lead->update($validated);

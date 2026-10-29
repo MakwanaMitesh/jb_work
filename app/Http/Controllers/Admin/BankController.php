@@ -25,7 +25,7 @@ class BankController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
-        $banks = $query->orderBy('sort_order')->orderBy('name')->paginate(15);
+        $banks = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(15);
 
         return view('admin.banks.index', compact('banks'));
     }

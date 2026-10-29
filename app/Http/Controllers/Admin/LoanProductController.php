@@ -28,7 +28,7 @@ class LoanProductController extends Controller
             });
         }
 
-        $products = $query->orderBy('sort_order')->orderBy('name')->paginate(15);
+        $products = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(15);
 
         return view('admin.loan_products.index', compact('products'));
     }

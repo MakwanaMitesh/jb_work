@@ -19,6 +19,9 @@ class PermissionSeeder extends Seeder
         'dashboard' => [
             'view' => 'View dashboard',
         ],
+        'pendency' => [
+            'view' => 'View Pendency dashboard',
+        ],
         'employees' => [
             'view' => 'View employees',
             'create' => 'Create employees',
@@ -71,6 +74,29 @@ class PermissionSeeder extends Seeder
             'download_all' => 'Download all uploaded documents',
             'delete' => 'Delete documents',
         ],
+        // The five Lead tabs that previously had no permission of their own — every field on them
+        // saved as part of the Lead itself, visible to anyone who could open the Lead form. See
+        // LeadModuleAccess, which both these actions and the "view" ones below are enforced through.
+        'details_sheet' => [
+            'view' => 'View Lead Details Sheet tab',
+            'update' => 'Edit Lead Details Sheet fields',
+        ],
+        'bank_loan' => [
+            'view' => 'View Lead Bank Loan tab',
+            'update' => 'Edit Lead Bank Loan fields',
+        ],
+        'bank_details' => [
+            'view' => 'View Lead Bank Details tab',
+            'update' => 'Edit Lead Bank Details fields',
+        ],
+        'business_details' => [
+            'view' => 'View Lead Business Details tab',
+            'update' => 'Edit Lead Business Details fields',
+        ],
+        'loan_details' => [
+            'view' => 'View Lead Loan Details tab',
+            'update' => 'Edit Lead Loan Details fields',
+        ],
         'cma' => [
             'view' => 'View CMA profile form',
             'create' => 'Create CMA profile form',
@@ -119,6 +145,8 @@ class PermissionSeeder extends Seeder
         ],
         'leads' => [
             'view' => 'View leads',
+            'view_own' => 'View only own assigned leads',
+            'view_all' => 'View all leads',
             'create' => 'Create leads',
             'edit' => 'Edit leads',
             'delete' => 'Delete leads',
@@ -181,6 +209,92 @@ class PermissionSeeder extends Seeder
     ];
 
     /**
+     * Module => its subsections, where the module's own UI already has a fixed, named set of them
+     * (see each module's data class / view for the source). Only "view" exists at this level —
+     * subsections are about which parts of an already-visible, already-authorized module a role
+     * can see, not a separate action matrix. Keyed exactly like each module's own code: DPR's keys
+     * match DprData's sub-tabs (dpr-s-{key}), OR's match OpinionReportData's fields, and so on — see
+     * App\Support\LeadModuleAccess, the single place this list is read from for enforcement.
+     *
+     * Two modules are deliberately absent: Documents has no fixed subsection list (its "sections"
+     * are whichever Document Master types exist, which is admin-configured data, not code), and
+     * Application Form's own sub-tabs are literally labelled "Table 1/2/3" in its current UI — kept
+     * as-is rather than invented into something more descriptive.
+     *
+     * @var array<string, array<string, string>>
+     */
+    public const LEAD_MODULE_SUBSECTIONS = [
+        'details_sheet' => [
+            'basic_details' => 'Basic Details',
+            'itr_details' => 'ITR Details',
+            'bank_details' => 'Bank Details',
+        ],
+        'bank_loan' => [
+            'visit_applicant_details' => 'Visit & Applicant Details',
+            'branch_signoff_details' => 'Branch & Sign-off Details',
+        ],
+        'application_form' => [
+            't1' => 'Table 1',
+            't2' => 'Table 2',
+            't3' => 'Table 3',
+        ],
+        'bank_details' => [
+            'bank_account_details' => 'Bank Account Details',
+        ],
+        'business_details' => [
+            'business_profile' => 'Business Profile',
+            'business_address_location' => 'Business Address and Location',
+            'business_activity' => 'Business Activity',
+            'registration_business_information' => 'Registration and Business Information',
+            'infrastructure_manpower' => 'Infrastructure and Manpower',
+        ],
+        'loan_details' => [
+            'requested_loan_amount' => 'Requested Loan Amount',
+            'cash_credit_requirement' => 'Cash Credit (CC) Requirement',
+            'term_loan_requirement' => 'Term Loan Requirement',
+            'existing_loan_facility_details' => 'Existing Loan / Facility Details',
+        ],
+        'sbi_stock_statement' => [
+            'inventories' => 'INVENTORIES',
+            'book_debts' => 'BOOK DEBTS',
+            'other_information' => 'OTHER INFORMATION',
+        ],
+        'or' => [
+            'affidavit_personal_details' => 'Affidavit / Personal Details',
+            'bank_borrower_details' => 'Bank and Borrower Details',
+            'properties_india' => 'Immovable Properties in India',
+            'properties_outside_india' => 'Immovable Properties Outside India',
+            'liquid_assets' => 'Liquid Assets',
+            'government_securities' => 'Government Securities',
+            'shares' => 'Shares',
+            'life_insurance_policies' => 'Life Insurance Policies',
+            'jewellery' => 'Jewellery',
+            'associate_investments' => 'Investments in Associate Firms',
+            'intangible_assets' => 'Intangible Assets',
+            'monthly_income' => 'Monthly Income',
+            'liabilities' => 'Liabilities',
+            'other_assets_liabilities' => 'Other Assets and Liabilities',
+            'declaration_family_members' => 'Declaration and Family Members',
+            'deponent_details' => 'Deponent Details',
+        ],
+        'cma' => [
+            'business_applicant_profile' => 'Business / Applicant Profile',
+            'profile_infrastructure' => 'Business Profile & Infrastructure',
+        ],
+        'dpr' => [
+            'basic' => 'Basic Information',
+            'business' => 'Business Profile',
+            'loans' => 'Current Loan Details',
+            'required' => 'Required Loan Amount',
+            'cost' => 'Project Cost',
+            'finance' => 'Means of Finance',
+            'quotation' => 'Quotation Summary for New Machinery',
+            'collateral' => 'Details of Collateral Property / CGTMSE',
+            'financials' => 'Financial Details in Brief',
+        ],
+    ];
+
+    /**
      * Run the database seeds.
      */
     public function run(): void
@@ -190,6 +304,15 @@ class PermissionSeeder extends Seeder
                 Permission::firstOrCreate(
                     ['name' => "{$module}.{$action}", 'guard_name' => 'web'],
                     ['module' => $module, 'description' => $description],
+                );
+            }
+        }
+
+        foreach (self::LEAD_MODULE_SUBSECTIONS as $module => $subsections) {
+            foreach ($subsections as $key => $label) {
+                Permission::firstOrCreate(
+                    ['name' => "{$module}.{$key}.view", 'guard_name' => 'web'],
+                    ['module' => $module, 'description' => "View {$label}"],
                 );
             }
         }

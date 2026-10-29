@@ -40,6 +40,49 @@
 
     <div class="row g-4 mt-1">
         <div class="col-12 col-md-6">
+            <x-input-label-bs for="password" :value="$employee ? 'New Password' : 'Password'" :required="! $employee" />
+            <div class="input-group">
+                <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    class="form-control jb-input"
+                    autocomplete="new-password"
+                    @if (! $employee) required @endif
+                >
+                <button type="button" class="btn btn-outline-secondary jb-password-toggle" data-target="password" aria-label="Show password" aria-pressed="false">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="jb-eye-open"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="jb-eye-closed jb-hidden"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                </button>
+            </div>
+            @if ($employee)
+                <div class="jb-muted mt-1">Leave blank to keep the current password. Existing passwords are stored encrypted and can't be displayed — only replaced.</div>
+            @endif
+            <x-input-error-bs :messages="$errors->get('password')" />
+        </div>
+    </div>
+
+    @once
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.jb-password-toggle').forEach(function (btn) {
+                    const input = document.getElementById(btn.dataset.target);
+                    if (!input) return;
+                    btn.addEventListener('click', function () {
+                        const show = input.type === 'password';
+                        input.type = show ? 'text' : 'password';
+                        btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+                        btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+                        btn.querySelector('.jb-eye-open').classList.toggle('jb-hidden', show);
+                        btn.querySelector('.jb-eye-closed').classList.toggle('jb-hidden', !show);
+                    });
+                });
+            });
+        </script>
+    @endonce
+
+    <div class="row g-4 mt-1">
+        <div class="col-12 col-md-6">
             <x-input-label-bs for="city_id" value="City" />
             <select id="city_id" name="city_id" class="form-select jb-input select2">
                 <option value="">Select City</option>
@@ -79,6 +122,15 @@
                 <input type="hidden" name="role" value="{{ $currentRole }}">
             @endif
             <x-input-error-bs :messages="$errors->get('role')" />
+        </div>
+        <div class="col-12 col-md-6">
+            <x-input-label-bs for="status" value="Status" :required="true" />
+            <select id="status" name="status" class="form-select jb-input">
+                @foreach (['active' => 'Active', 'inactive' => 'Inactive'] as $value => $label)
+                    <option value="{{ $value }}" @selected(old('status', $employee?->status ?? 'active') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            <x-input-error-bs :messages="$errors->get('status')" />
         </div>
     </div>
 

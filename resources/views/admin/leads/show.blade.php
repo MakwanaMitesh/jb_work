@@ -1096,6 +1096,16 @@
             document.getElementById(tabId).classList.add('active');
         }
 
+        document.addEventListener('DOMContentLoaded', function() {
+            if (location.hash) {
+                const tabId = location.hash.slice(1);
+                const panelId = tabId.replace(/-tab$/, '-panel');
+                if (document.getElementById(tabId) && document.getElementById(panelId)) {
+                    switchTab(tabId, panelId);
+                }
+            }
+        });
+
         function openEditVisitModal(visit) {
             const form = document.getElementById('updateVisitForm');
             form.action = `/admin/leads/${visit.lead_id}/visits/${visit.id}`;

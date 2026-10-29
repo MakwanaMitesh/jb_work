@@ -38,7 +38,7 @@ class UserPermissionController extends Controller
             $query->whereHas('roles', fn ($q) => $q->where('name', $role));
         }
 
-        $users = $query->orderBy('name')->paginate($this->perPage())->withQueryString();
+        $users = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate($this->perPage())->withQueryString();
         $roles = \App\Models\Role::orderBy('name')->pluck('name');
 
         return view('admin.users.index', compact('users', 'roles'));

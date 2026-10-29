@@ -35,7 +35,7 @@ class ContactEnquiryController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $enquiries = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $enquiries = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(15)->withQueryString();
 
         $stats = [
             'total' => ContactEnquiry::count(),

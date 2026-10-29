@@ -34,7 +34,7 @@ class RoughLeadController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $roughLeads = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $roughLeads = $query->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(15)->withQueryString();
 
         return view('admin.rough_leads.index', compact('roughLeads'));
     }

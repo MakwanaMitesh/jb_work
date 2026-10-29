@@ -34,11 +34,11 @@ class RolesPermissionsTest extends TestCase
         $this->assertSame(['Admin', 'Agent', 'Employee'], Role::orderBy('name')->pluck('name')->all());
     }
 
-    public function test_employee_starts_with_no_permissions(): void
+    public function test_employee_starts_with_only_dashboard_access(): void
     {
         $employee = Role::where('name', 'Employee')->firstOrFail();
 
-        $this->assertSame(0, $employee->permissions()->count());
+        $this->assertSame(['dashboard.view'], $employee->permissions()->pluck('name')->all());
     }
 
     public function test_admin_user_can_access_role_management(): void
@@ -57,10 +57,10 @@ class RolesPermissionsTest extends TestCase
         $this->actingAs($employee)->get(route('admin.roles.index'))->assertForbidden();
     }
 
-    public function test_user_without_permission_is_denied_dashboard_access(): void
+    public function test_user_without_any_role_is_denied_dashboard_access(): void
     {
         $employee = User::factory()->create();
-        $employee->assignRole('Employee');
+        $employee->assignRole('Agent');
 
         $this->actingAs($employee)->get('/dashboard')->assertForbidden();
     }
