@@ -26,9 +26,7 @@ class PendencyController extends Controller
         $query = Lead::query()->with(['city', 'assignedEmployee']);
 
         $user = request()->user();
-        if (! $user->can('leads.view_all') && $user->can('leads.view_own')) {
-            $query->where('assigned_employee_id', $user->id);
-        }
+        \App\Support\LeadModuleAccess::scopeVisibleTo($query, $user);
 
         if ($search = request('search')) {
             $query->where(function ($q) use ($search) {
@@ -75,7 +73,7 @@ class PendencyController extends Controller
         $this->authorize('pendency.view');
 
         $user = request()->user();
-        if (! $user->can('leads.view_all') && $user->can('leads.view_own') && $lead->assigned_employee_id !== $user->id) {
+        if (! \App\Support\LeadModuleAccess::canAccessLead($user, $lead)) {
             abort(403, 'You do not have permission to view this lead.');
         }
 

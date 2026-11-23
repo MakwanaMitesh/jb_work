@@ -49,6 +49,7 @@ class RoleController extends Controller
             'guard_name' => 'web',
             'description' => $request->validated('description'),
             'is_active' => true,
+            'sla_days' => $request->validated('sla_days'),
         ]);
 
         $role->syncPermissions($this->permissionIds($request));
@@ -76,6 +77,7 @@ class RoleController extends Controller
         $role->update([
             'name' => $role->isProtected() ? $role->name : $request->validated('name'),
             'description' => $request->validated('description'),
+            'sla_days' => $request->validated('sla_days'),
         ]);
 
         $role->syncPermissions($this->permissionIds($request));

@@ -296,7 +296,7 @@ class EmployeeDashboardTest extends TestCase
         });
     }
 
-    public function test_upcoming_deadlines_reports_gap_when_no_deadline_field_exists(): void
+    public function test_upcoming_deadlines_shows_no_deadlines_message_when_none_are_set(): void
     {
         $this->createLeadFor($this->employeeA, ['name' => 'Lead Without Deadline']);
 
@@ -304,8 +304,6 @@ class EmployeeDashboardTest extends TestCase
         $response->assertOk();
 
         $response->assertSee('Upcoming Deadlines');
-        // Notice indicating the deadline gap
-        $response->assertSee('Deadline Field Gap Notice');
         $response->assertSee('No overdue or upcoming deadlines.');
     }
 

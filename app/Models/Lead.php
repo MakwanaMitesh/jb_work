@@ -83,6 +83,8 @@ class Lead extends Model
         'assigned_employee_id',
         'assigned_by',
         'assigned_at',
+        'current_stage',
+        'deadline',
         'loan_product_id',
         'constitution_id',
         'city_id',
@@ -150,6 +152,7 @@ class Lead extends Model
         'itr_ay_2024_25' => 'boolean',
         'date_of_birth' => 'date',
         'assigned_at' => 'datetime',
+        'deadline' => 'datetime',
     ];
 
     public function getFormattedItrDetailsAttribute(): array
@@ -199,6 +202,13 @@ class Lead extends Model
                 $lead->itr_ay_2026_27 = !empty($first['itr_ay_2026_27']) || str_contains($ay, '2026-27');
                 $lead->itr_ay_2025_26 = !empty($first['itr_ay_2025_26']) || str_contains($ay, '2025-26');
                 $lead->itr_ay_2024_25 = !empty($first['itr_ay_2024_25']) || str_contains($ay, '2024-25');
+            }
+        });
+
+        static::creating(function ($lead) {
+            if (empty($lead->current_stage)) {
+                $lead->current_stage = \App\Support\LeadStage::first()['key'];
+                $lead->deadline = \App\Support\LeadStage::deadlineFromNow($lead->current_stage);
             }
         });
 

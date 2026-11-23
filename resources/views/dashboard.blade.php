@@ -391,7 +391,7 @@
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div>
                     <h3 class="jb-section-title m-0">Recent Leads</h3>
-                    <p class="mb-0" style="font-size:var(--text-xs);color:var(--slate-500)">Latest main leads created across all locations.</p>
+                    <p class="mb-0" style="font-size:var(--text-xs);color:var(--slate-500)">Latest 5 main leads created across all locations.</p>
                 </div>
                 @can('leads.view')
                     <a href="{{ route('admin.leads.index') }}" class="jb-file-link">View All Leads &rarr;</a>
@@ -441,6 +441,80 @@
                                     </td>
                                     <td class="py-2 px-3 text-end" style="color:var(--slate-500)">
                                         {{ $lead->created_at ? $lead->created_at->format('d M Y') : '—' }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+
+        {{-- 4b. Recent Rough Leads List --}}
+        <div class="jb-card p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h3 class="jb-section-title m-0">Recent Rough Leads</h3>
+                    <p class="mb-0" style="font-size:var(--text-xs);color:var(--slate-500)">Latest 5 rough leads, not yet converted into main leads.</p>
+                </div>
+                @can('rough_leads.view')
+                    <a href="{{ route('admin.rough-leads.index') }}" class="jb-file-link">View All Rough Leads &rarr;</a>
+                @endcan
+            </div>
+
+            @if ($recentRoughLeads->isEmpty())
+                <div class="text-center py-4 text-muted" style="font-size:var(--text-sm)">No rough leads found.</div>
+            @else
+                <div class="table-responsive rounded-3" style="border:1px solid var(--slate-100)">
+                    <table class="table align-middle m-0" style="font-size:var(--text-xs)">
+                        <thead style="background:var(--slate-50);color:var(--slate-500)">
+                            <tr>
+                                <th class="py-2 px-3">Full Name</th>
+                                <th class="py-2 px-3">City</th>
+                                <th class="py-2 px-3">Mobile Number</th>
+                                <th class="py-2 px-3">Assigned Representative</th>
+                                <th class="py-2 px-3">Current Status</th>
+                                <th class="py-2 px-3 text-end">Created Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($recentRoughLeads as $roughLead)
+                                @php
+                                    $rlBadge = match ($roughLead->status) {
+                                        'new' => 'jb-badge-blue',
+                                        'contacted' => 'jb-badge-amber',
+                                        'interested' => 'jb-badge-indigo',
+                                        'follow_up' => 'jb-badge-purple',
+                                        'qualified' => 'jb-badge-teal',
+                                        'not_interested' => 'jb-badge-rose',
+                                        'converted' => 'jb-badge-emerald',
+                                        'closed' => 'jb-badge-slate',
+                                        default => 'jb-badge-slate',
+                                    };
+                                @endphp
+                                <tr style="border-top:1px solid var(--slate-100)">
+                                    <td class="py-2 px-3">
+                                        <div class="d-flex flex-column">
+                                            <a href="{{ route('admin.rough-leads.show', $roughLead) }}" class="fw-bold text-decoration-none" style="color:var(--slate-900)">
+                                                {{ $roughLead->full_name }}
+                                            </a>
+                                            <span style="font-size:.6875rem;color:var(--slate-400)">#RL-{{ str_pad($roughLead->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-2 px-3 fw-medium" style="color:var(--slate-700)">
+                                        {{ $roughLead->city?->name ?: '—' }}
+                                    </td>
+                                    <td class="py-2 px-3" style="color:var(--slate-600)">
+                                        {{ $roughLead->mobile_number }}
+                                    </td>
+                                    <td class="py-2 px-3" style="color:var(--slate-600)">
+                                        {{ $roughLead->assignedEmployee?->name ?: 'Unassigned' }}
+                                    </td>
+                                    <td class="py-2 px-3">
+                                        <span class="jb-badge jb-badge-xs {{ $rlBadge }}">{{ \App\Models\RoughLead::STATUSES[$roughLead->status] ?? ucfirst($roughLead->status) }}</span>
+                                    </td>
+                                    <td class="py-2 px-3 text-end" style="color:var(--slate-500)">
+                                        {{ $roughLead->created_at ? $roughLead->created_at->format('d M Y') : '—' }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -1057,24 +1131,9 @@
                             </div>
                         </div>
 
-                        {{-- If no deadline field exists on leads table, report gap --}}
-                        @if (! $hasDeadlineField)
-                            <div class="p-3 rounded-3 mb-3" style="background:var(--amber-50);border:1px solid var(--amber-200);color:var(--amber-900)">
-                                <div class="d-flex align-items-center gap-2">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--amber-700);flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    <strong style="font-size:var(--text-xs)">Deadline Field Gap Notice</strong>
-                                </div>
-                                <p class="mt-1 mb-0" style="font-size:var(--text-xs);color:var(--amber-800)">
-                                    The <code>leads</code> table in this database has no <code>deadline</code> column. Deadlines will automatically appear here once authorized and added to the schema.
-                                </p>
-                            </div>
-                            <div class="text-center py-4 text-muted" style="font-size:var(--text-sm)">
-                                No overdue or upcoming deadlines.
-                            </div>
-                        @else
-                            @php
-                                $hasDeadlines = $overdueLeads->isNotEmpty() || $dueTodayLeads->isNotEmpty() || $upcoming7DaysLeads->isNotEmpty();
-                            @endphp
+                        @php
+                            $hasDeadlines = $overdueLeads->isNotEmpty() || $dueTodayLeads->isNotEmpty() || $upcoming7DaysLeads->isNotEmpty();
+                        @endphp
 
                             @if (! $hasDeadlines)
                                 <div class="text-center py-5 text-muted" style="font-size:var(--text-sm)">
@@ -1153,7 +1212,6 @@
                                     @endforeach
                                 </div>
                             @endif
-                        @endif
                     </div>
                 </div>
             </div>

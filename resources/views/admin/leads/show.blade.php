@@ -11,6 +11,24 @@
                 <div class="d-flex align-items-center gap-3">
                     <h1 class="jb-page-title" style="line-height:1">{{ $lead->name }}</h1>
                     <span class="jb-badge jb-badge-slate">#LD-{{ str_pad($lead->id, 5, '0', STR_PAD_LEFT) }}</span>
+                    @if ($currentStage)
+                        <span class="jb-badge jb-badge-indigo" title="Role: {{ $currentStage['role'] }}">
+                            Stage: {{ $currentStage['label'] }}
+                        </span>
+                        @if ($lead->deadline)
+                            @if ($lead->deadline->isPast())
+                                <span class="jb-badge jb-badge-rose" title="Deadline was {{ $lead->deadline->format('d M Y, h:i A') }}">
+                                    Overdue
+                                </span>
+                            @else
+                                <span class="jb-badge jb-badge-amber" title="Deadline">
+                                    Due {{ $lead->deadline->format('d M Y') }}
+                                </span>
+                            @endif
+                        @endif
+                    @else
+                        <span class="jb-badge jb-badge-emerald">Workflow Complete</span>
+                    @endif
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-3 mt-1" style="font-size:var(--text-sm);color:var(--slate-500)">
                     <span class="d-inline-flex align-items-center gap-2">
@@ -27,6 +45,17 @@
             </div>
 
             <div class="d-flex flex-wrap align-items-center gap-2">
+                @if ($canAccessLead && $currentStage)
+                    <form action="{{ route('admin.leads.stage.submit', $lead) }}" method="POST" class="d-inline" onsubmit="return confirm('Complete this stage and forward the lead to the next one?')">
+                        @csrf
+                        <button type="submit" class="btn btn-success btn-sm d-inline-flex align-items-center gap-1" @disabled(! $canSubmitStage)
+                            title="{{ $canSubmitStage ? 'Forward to next stage' : $stagePendingCount . ' field(s) still pending in this stage' }}">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            <span>Submit Stage & Forward</span>
+                        </button>
+                    </form>
+                @endif
+
                 @can('leads.edit')
                     <a href="{{ route('admin.leads.edit', $lead) }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
@@ -124,7 +153,7 @@
             </button>
             @if (!empty($lead->bank_loan_details))
                 <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" id="bank-loan-tab" class="jb-tab-btn">
-                    Bank Loan Report
+                    Pre Sanction
                 </button>
             @endif
             <button type="button" onclick="switchTab('business-tab', 'business-panel')" id="business-tab" class="jb-tab-btn">
@@ -209,9 +238,9 @@
                                                 <div class="jb-muted mt-1" style="font-size:var(--text-xs)">
                                                     <p class="mb-0">
                                                         <span class="fw-medium">Rep:</span>
-                                                        <strong style="color:var(--slate-800)">{{ $visit->employee->name }}</strong>
+                                                        <strong style="color:var(--slate-800)">{{ $visit->employee->name ?? '—' }}</strong>
                                                         <span class="mx-1" style="color:var(--slate-300)">|</span>
-                                                        <span class="fw-medium">By:</span> {{ $visit->creator->name }}
+                                                        <span class="fw-medium">By:</span> {{ $visit->creator->name ?? '—' }}
                                                     </p>
                                                     <p class="mb-0"><span class="fw-medium">Purpose:</span> {{ $visit->purpose }}</p>
                                                     @if ($visit->outcome)

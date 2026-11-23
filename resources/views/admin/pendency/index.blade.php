@@ -118,7 +118,11 @@
                     @forelse ($summaries as $row)
                         @php $lead = $row['lead']; @endphp
                         <tr>
-                            <td class="fw-semibold">{{ $lead->name }}</td>
+                            <td class="fw-semibold">
+                                <a href="{{ route('admin.leads.show', $lead) }}" class="jb-lead-link" title="View {{ $lead->name }} details">
+                                    {{ $lead->name }}
+                                </a>
+                            </td>
                             <td class="text-muted">#{{ $lead->id }}</td>
                             <td>{{ $lead->city?->name ?? '—' }}</td>
                             <td>{{ $lead->assignedEmployee?->name ?? '—' }}</td>

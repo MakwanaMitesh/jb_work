@@ -35,6 +35,14 @@
                     <x-text-input-bs id="description" type="text" name="description" :value="old('description', $role->description)" />
                     <x-input-error-bs :messages="$errors->get('description')" />
                 </div>
+                <div class="col-12 col-md-6">
+                    <x-input-label-bs for="sla_days" value="Days to Complete This Stage" />
+                    <x-text-input-bs id="sla_days" type="number" min="1" name="sla_days" :value="old('sla_days', $role->sla_days)" placeholder="e.g. 2 (leave blank for no deadline)" />
+                    <x-input-error-bs :messages="$errors->get('sla_days')" />
+                    <p class="m-0 mt-1" style="font-size:var(--text-xs);color:var(--slate-500)">
+                        If this role owns a Lead Stage, a Lead gets this many days to complete that stage before it shows as overdue.
+                    </p>
+                </div>
             </div>
         </div>
 

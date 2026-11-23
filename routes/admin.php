@@ -63,6 +63,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Lead Management
     Route::post('leads/{lead}/assign', [LeadController::class, 'assign'])->name('leads.assign');
     Route::post('leads/{lead}/status', [LeadController::class, 'updateStatus'])->name('leads.status');
+    Route::post('leads/{lead}/stage/submit', [LeadController::class, 'submitStage'])->name('leads.stage.submit');
     Route::post('leads/inspection-remarks/preview', [LeadController::class, 'previewInspectionRemarks'])->name('leads.inspection-remarks.preview');
 
     Route::resource('leads', LeadController::class)

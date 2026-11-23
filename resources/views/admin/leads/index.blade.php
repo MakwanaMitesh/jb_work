@@ -124,8 +124,12 @@
             <tr>
                 <td class="jb-cell-strong">
                     <div class="d-flex align-items-center gap-3">
-                        <span class="jb-avatar">LD</span>
-                        <span>{{ $lead->name }}</span>
+                        <a href="{{ route('admin.leads.show', $lead) }}" class="text-decoration-none flex-shrink-0">
+                            <span class="jb-avatar">LD</span>
+                        </a>
+                        <a href="{{ route('admin.leads.show', $lead) }}" class="jb-lead-link fw-semibold" title="View {{ $lead->name }} details">
+                            {{ $lead->name }}
+                        </a>
                     </div>
                 </td>
                 <td>{{ $lead->mobile_number }}</td>

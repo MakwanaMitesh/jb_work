@@ -49,7 +49,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom pb-2 mb-3">
         <div>
             <h3 class="jb-section-title m-0">Opinion Report</h3>
-            <p class="jb-muted mb-0" style="font-size:var(--text-xs)">Only the highlighted (dynamic) values of the affidavit are asked for here; the wording itself is fixed. Fields already in the Details Sheet or Bank Loan tab fill in automatically. Saved together with the lead.</p>
+            <p class="jb-muted mb-0" style="font-size:var(--text-xs)">Only the highlighted (dynamic) values of the affidavit are asked for here; the wording itself is fixed. Fields already in the Details Sheet or Pre Sanction tab fill in automatically. Saved together with the lead.</p>
         </div>
         @if ($exists)
             <div class="d-flex flex-wrap align-items-center gap-2">

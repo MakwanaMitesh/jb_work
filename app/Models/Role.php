@@ -16,6 +16,7 @@ class Role extends SpatieRole
         'guard_name',
         'description',
         'is_active',
+        'sla_days',
     ];
 
     /**

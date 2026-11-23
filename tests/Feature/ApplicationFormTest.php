@@ -180,7 +180,7 @@ class ApplicationFormTest extends TestCase
         $this->assertNotContains(false, $order);
         $sorted = $order;
         sort($sorted);
-        $this->assertSame($sorted, $order, 'Tabs must run: Details Sheet, Bank Loan, Application Form, Documents, Bank Details, Business Details, Loan Details');
+        $this->assertSame($sorted, $order, 'Tabs must run: Details Sheet, Pre Sanction, Application Form, Documents, Bank Details, Business Details, Loan Details');
     }
 
     public function test_application_form_tab_is_blocked_without_permission(): void

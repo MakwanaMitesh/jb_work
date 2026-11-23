@@ -82,8 +82,8 @@ class PermissionSeeder extends Seeder
             'update' => 'Edit Lead Details Sheet fields',
         ],
         'bank_loan' => [
-            'view' => 'View Lead Bank Loan tab',
-            'update' => 'Edit Lead Bank Loan fields',
+            'view' => 'View Lead Pre Sanction tab',
+            'update' => 'Edit Lead Pre Sanction fields',
         ],
         'bank_details' => [
             'view' => 'View Lead Bank Details tab',

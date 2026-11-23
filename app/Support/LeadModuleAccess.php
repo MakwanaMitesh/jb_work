@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Lead;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 
@@ -46,6 +47,85 @@ class LeadModuleAccess
         return (bool) $user?->can("{$module}.view");
     }
 
+    /**
+     * Whether $user may see/edit this Lead at all, under the Lead Stage workflow:
+     *  - `leads.view_all` (or Admin) always can.
+     *  - Specifically assigned (Lead::assigned_employee_id === $user->id) always can.
+     *  - Otherwise, while the Lead is unassigned ("role-pool"), any `leads.view_own` holder whose
+     *    Role matches the Lead's current stage's Role can — until an Admin assigns it to one
+     *    specific person via the existing leads.assign flow, after which only that person can.
+     */
+    public static function canAccessLead(?User $user, Lead $lead): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->can('leads.view_all')) {
+            return true;
+        }
+
+        // Neither scoping permission granted: unrestricted, same as before this feature existed —
+        // the stage/own-lead restriction is opt-in via leads.view_own.
+        if (! $user->can('leads.view_own')) {
+            return true;
+        }
+
+        if ($lead->assigned_employee_id !== null) {
+            return $lead->assigned_employee_id === $user->id;
+        }
+
+        $role = LeadStage::roleFor($lead->current_stage);
+
+        return $role !== null && $user->hasRole($role);
+    }
+
+    /**
+     * Applies the same visibility rule as canAccessLead() to a Lead query — used by every index
+     * listing (Leads, Pendency) so the two can never drift apart the way they once did. No-op
+     * (shows everything) for leads.view_all holders or anyone without leads.view_own.
+     */
+    public static function scopeVisibleTo(\Illuminate\Database\Eloquent\Builder $query, ?User $user): \Illuminate\Database\Eloquent\Builder
+    {
+        if (! $user || $user->can('leads.view_all') || ! $user->can('leads.view_own')) {
+            return $query;
+        }
+
+        $userRoles = $user->getRoleNames();
+        $rolePoolStages = array_keys(array_filter(
+            array_column(LeadStage::STAGES, 'role', 'key'),
+            fn ($role) => $userRoles->contains($role)
+        ));
+
+        return $query->where(function ($q) use ($user, $rolePoolStages) {
+            $q->where('assigned_employee_id', $user->id)
+                ->orWhere(function ($q2) use ($rolePoolStages) {
+                    $q2->whereNull('assigned_employee_id')->whereIn('current_stage', $rolePoolStages);
+                });
+        });
+    }
+
+    /**
+     * Whether $user may actually write to $module's fields on this Lead right now: they need
+     * canAccessLead() for the Lead, the module's own `{module}.update` permission (unchanged),
+     * and the module has to belong to the Lead's *current* stage.
+     */
+    public static function isModuleEditable(?User $user, Lead $lead, string $module): bool
+    {
+        if (! self::canAccessLead($user, $lead) || ! $user?->can("{$module}.update")) {
+            return false;
+        }
+
+        // The stage restriction only applies to users who opted into the Lead Stage workflow via
+        // leads.view_own — leads.view_all (Admin) and users with neither scoping permission (the
+        // pre-workflow default) are unaffected, same as canAccessLead() above.
+        if ($user->can('leads.view_all') || ! $user->can('leads.view_own')) {
+            return true;
+        }
+
+        return in_array($module, LeadStage::modulesFor($lead->current_stage), true);
+    }
+
     public static function canViewSubsection(?User $user, string $module, string $key): bool
     {
         return (bool) $user?->can("{$module}.{$key}.view");
@@ -69,10 +149,16 @@ class LeadModuleAccess
      * @param array<string, mixed> $data
      * @return array<string, mixed>
      */
-    public static function filterFieldsForUser(?User $user, array $data): array
+    public static function filterFieldsForUser(?User $user, array $data, ?Lead $lead = null): array
     {
         foreach (self::FIELD_MODULES as $module => $fields) {
-            if ($user?->can("{$module}.update")) {
+            // $lead is null on creation (no stage to check yet) — stage gating only applies once a
+            // Lead, and therefore a current_stage, exists.
+            $allowed = $lead
+                ? self::isModuleEditable($user, $lead, $module)
+                : (bool) $user?->can("{$module}.update");
+
+            if ($allowed) {
                 continue;
             }
             foreach ($fields as $field) {

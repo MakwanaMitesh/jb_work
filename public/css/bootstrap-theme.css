@@ -1816,3 +1816,14 @@ textarea.jb-input {
     background: var(--primary-600) !important;
     color: #fff !important;
 }
+
+.jb-lead-link {
+    color: var(--slate-900);
+    text-decoration: none;
+    transition: color 150ms ease;
+}
+
+.jb-lead-link:hover {
+    color: var(--primary-600) !important;
+}
+

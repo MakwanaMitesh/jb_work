@@ -168,18 +168,18 @@ class PendencyService
         ]);
     }
 
-    // ---- B. Bank Loan (the SBI Business Loan Inspection Sheet) -----------
+    // ---- B. Pre Sanction (the SBI Business Loan Inspection Sheet) -----------
 
     private function bankLoan(Lead $lead): array
     {
         if (! $lead->isInspectionSheetApplicable()) {
-            return $this->module('bank_loan', 'Bank Loan', 'bank-loan-panel', [], false,
+            return $this->module('bank_loan', 'Pre Sanction', 'bank-loan-panel', [], false,
                 'Applies only when the Bank is SBI and the Loan Product is Business Loan (Lead::isInspectionSheetApplicable).');
         }
 
         $bld = (array) ($lead->bank_loan_details ?? []);
 
-        return $this->module('bank_loan', 'Bank Loan', 'bank-loan-panel', [
+        return $this->module('bank_loan', 'Pre Sanction', 'bank-loan-panel', [
             $this->sub('visit_applicant_details', 'Visit & Applicant Details',
                 $this->filled($bld['applicant_coapplicant_guarantor_name'] ?? null, $bld['office_organization_address'] ?? null, $bld['years_in_business'] ?? null), '#bank-loan-tab'),
             $this->sub('branch_signoff_details', 'Branch & Sign-off Details',

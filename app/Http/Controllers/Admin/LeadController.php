@@ -26,9 +26,7 @@ class LeadController extends Controller
         $query = Lead::with(['agent', 'city', 'bank', 'loanProduct']);
 
         $user = auth()->user();
-        if (! $user->can('leads.view_all') && $user->can('leads.view_own')) {
-            $query->where('assigned_employee_id', $user->id);
-        }
+        \App\Support\LeadModuleAccess::scopeVisibleTo($query, $user);
 
         if ($search = request('search')) {
             $query->where(function ($q) use ($search) {
@@ -148,17 +146,22 @@ class LeadController extends Controller
     /**
      * Display the specified lead.
      */
-    public function show(Lead $lead): View
+    public function show(Lead $lead, \App\Services\PendencyService $pendencyService): View
     {
         $this->authorize('leads.view');
 
         $user = auth()->user();
-        if (! $user->can('leads.view_all') && $user->can('leads.view_own') && $lead->assigned_employee_id !== $user->id) {
+        if (! \App\Support\LeadModuleAccess::canAccessLead($user, $lead)) {
             abort(403, 'You do not have permission to view this lead.');
         }
 
+        // Once a Lead is in the role-pool (unassigned), the "Assign" dropdown only offers the
+        // employees who actually hold the current stage's Role — assigning it to anyone else
+        // would immediately lock everyone else out of a Lead they can't act on anyway.
+        $stageRole = \App\Support\LeadStage::roleFor($lead->current_stage);
         $employees = \App\Models\User::where('status', 'active')
-            ->whereHas('roles', fn ($q) => $q->where('name', '!=', 'Agent'))
+            ->when($stageRole, fn ($q) => $q->whereHas('roles', fn ($q2) => $q2->where('name', $stageRole)),
+                fn ($q) => $q->whereHas('roles', fn ($q2) => $q2->where('name', '!=', 'Agent')))
             ->orderBy('name')
             ->get();
 
@@ -176,7 +179,20 @@ class LeadController extends Controller
 
         $documentTypes = \App\Models\DocumentType::where('status', 'active')->ordered()->get();
 
-        return view('admin.leads.show', compact('lead', 'employees', 'documentTypes'));
+        $currentStage = \App\Support\LeadStage::find($lead->current_stage);
+        $canAccessLead = \App\Support\LeadModuleAccess::canAccessLead($user, $lead);
+        $stagePendingCount = 0;
+        if ($currentStage) {
+            $result = $pendencyService->forLead($lead);
+            $stagePendingCount = collect($result['modules'])
+                ->whereIn('key', \App\Support\LeadStage::pendencyModulesFor($lead->current_stage))
+                ->sum('pending_count');
+        }
+        $canSubmitStage = $canAccessLead && $currentStage && $stagePendingCount === 0;
+
+        return view('admin.leads.show', compact(
+            'lead', 'employees', 'documentTypes', 'currentStage', 'canAccessLead', 'canSubmitStage', 'stagePendingCount'
+        ));
     }
 
     /**
@@ -185,6 +201,10 @@ class LeadController extends Controller
     public function edit(Lead $lead): View
     {
         $this->authorize('leads.edit');
+
+        if (! \App\Support\LeadModuleAccess::canAccessLead(auth()->user(), $lead)) {
+            abort(403, 'You do not have permission to edit this lead.');
+        }
 
         $cities = City::where('status', 'active')->orderBy('name')->get();
         $agents = Agent::where('status', 'active')->orderBy('first_name')->get();
@@ -266,6 +286,10 @@ class LeadController extends Controller
      */
     public function update(UpdateLeadRequest $request, Lead $lead): RedirectResponse
     {
+        if (! \App\Support\LeadModuleAccess::canAccessLead($request->user(), $lead)) {
+            abort(403, 'You do not have permission to edit this lead.');
+        }
+
         $validated = $request->validated();
         $applicationForm = $validated['af'] ?? null;
         $stockStatement = $validated['ss'] ?? null;
@@ -274,7 +298,7 @@ class LeadController extends Controller
         $dprReport = $validated['dpr'] ?? null;
         unset($validated['af'], $validated['ss'], $validated['opr'], $validated['cma'], $validated['dpr']);
         $validated['itr_details'] = $this->processItrDetailsFiles($request, $lead->itr_details);
-        $validated = \App\Support\LeadModuleAccess::filterFieldsForUser($request->user(), $validated);
+        $validated = \App\Support\LeadModuleAccess::filterFieldsForUser($request->user(), $validated, $lead);
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($lead, $validated, $applicationForm, $stockStatement, $opinionReport, $cmaProfile, $dprReport, $request) {
             $lead->update($validated);
@@ -499,6 +523,60 @@ class LeadController extends Controller
 
         return redirect()->route('admin.leads.show', $lead)
             ->with('success', 'Lead assigned successfully.');
+    }
+
+    /**
+     * Completes the lead's current workflow Stage and forwards it to the next one.
+     *
+     * The caller must currently be able to act on the Lead (LeadModuleAccess::canAccessLead — the
+     * specifically assigned employee, or anyone in the current stage's Role pool when unassigned),
+     * and every module in the current stage must already be complete per PendencyService. On
+     * success the Lead's assigned_employee_id is reset to null (back to a role-pool) so the next
+     * stage's Role can pick it up, exactly like a freshly created Lead starts out.
+     */
+    public function submitStage(Lead $lead, \App\Services\PendencyService $pendencyService): RedirectResponse
+    {
+        $user = auth()->user();
+
+        if (! \App\Support\LeadModuleAccess::canAccessLead($user, $lead)) {
+            abort(403, 'You do not have permission to act on this lead.');
+        }
+
+        $currentStage = \App\Support\LeadStage::find($lead->current_stage);
+        if (! $currentStage) {
+            return redirect()->route('admin.leads.show', $lead)
+                ->with('error', 'This lead has no active stage to submit.');
+        }
+
+        $result = $pendencyService->forLead($lead);
+        $pending = collect($result['modules'])
+            ->whereIn('key', \App\Support\LeadStage::pendencyModulesFor($lead->current_stage))
+            ->sum('pending_count');
+        if ($pending > 0) {
+            return redirect()->route('admin.leads.show', $lead)
+                ->with('error', 'આ સ્ટેજના ફિલ્ડ્સ હજુ પૂરા નથી — બધા ફિલ્ડ ભરીને ફરી પ્રયત્ન કરો.');
+        }
+
+        $next = \App\Support\LeadStage::next($lead->current_stage);
+
+        $lead->update([
+            'current_stage' => $next['key'] ?? null,
+            'deadline' => \App\Support\LeadStage::deadlineFromNow($next['key'] ?? null),
+            'assigned_employee_id' => null,
+            'assigned_by' => null,
+            'assigned_at' => null,
+        ]);
+
+        $lead->logActivity(
+            $user->id,
+            'stage_forwarded',
+            $next
+                ? "Stage '{$currentStage['label']}' complete — forwarded to '{$next['label']}' ({$next['role']})"
+                : "Stage '{$currentStage['label']}' complete — workflow finished"
+        );
+
+        return redirect()->route('admin.leads.show', $lead)
+            ->with('success', $next ? "Stage complete. Lead forwarded to {$next['label']}." : 'Stage complete. Workflow finished for this lead.');
     }
 
     /**

@@ -20,6 +20,7 @@ class UpdateRoleRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:100', Rule::unique('roles', 'name')->ignore($this->route('role'))],
             'description' => ['nullable', 'string', 'max:255'],
+            'sla_days' => ['nullable', 'integer', 'min:1'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ];

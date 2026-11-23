@@ -1,7 +1,21 @@
 {{-- Expects: $lead (nullable, for edit), $cities, $agents --}}
 @php $lead = $lead ?? null; @endphp
 
+@php
+    $leadStageInfo = $lead ? \App\Support\LeadStage::find($lead->current_stage) : null;
+@endphp
+
 <div class="jb-card" style="overflow:hidden">
+
+    @if ($leadStageInfo)
+        <div class="alert alert-info d-flex align-items-center gap-2 mb-0 rounded-0 border-0" style="font-size:var(--text-sm)">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>
+                Current Stage: <strong>{{ $leadStageInfo['label'] }}</strong> (Role: {{ $leadStageInfo['role'] }}) —
+                tabs outside this stage are view-only until it's submitted and forwarded.
+            </span>
+        </div>
+    @endif
 
     <div class="jb-tabs">
         @can('details_sheet.view')
@@ -14,7 +28,7 @@
         @can('bank_loan.view')
         <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" id="bank-loan-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-            <span>Bank Loan</span>
+            <span>Pre Sanction</span>
         </button>
         @endcan
 
@@ -404,13 +418,12 @@
 
             <div class="d-flex justify-content-end pt-3 border-top">
                 <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" class="btn btn-secondary jb-btn-tall">
-                    Next: Bank Loan
+                    Next: Pre Sanction
                 </button>
             </div>
         </div>
         @endcan
 
-        <!-- 1.5 Bank Loan Verification Details Panel -->
         @can('bank_loan.view')
         @php
             $bld = old('bank_loan_details', $lead?->bank_loan_details ?? []);
@@ -449,9 +462,9 @@
                 <div class="border-bottom pb-3 mb-3">
                     <h3 class="d-flex align-items-center gap-2 fw-bold m-0" style="font-size:var(--text-base);color:var(--slate-900)">
                         <span style="width:.5rem;height:1rem;background:var(--amber-500);border-radius:var(--radius-full)"></span>
-                        Bank Loan Verification Report Form
+                        Pre Sanction Verification Report Form
                     </h3>
-                    <p class="mt-1 mb-0" style="font-size:var(--text-xs);color:var(--slate-500)">Verification and workplace report details for Bank Loan processing.</p>
+                    <p class="mt-1 mb-0" style="font-size:var(--text-xs);color:var(--slate-500)">Verification and workplace report details for Pre Sanction processing.</p>
                 </div>
 
                 <div class="table-responsive rounded-3" style="border:1px solid var(--slate-200)">
@@ -1303,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (document.getElementById('application-form-tab')) switchTab('application-form-tab', 'application-form-panel');
     @endif
 
-    // Track manual edits in Bank Loan fields
+    // Track manual edits in Pre Sanction fields
     ['bld_applicant', 'bld_office_address', 'bld_years'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -1311,33 +1324,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function syncBankLoanLive() {
-        const kycName = document.getElementById('name')?.value || '';
-        const bizName = document.getElementById('business_name')?.value || document.getElementById('firm_name')?.value || '';
-        const bizAddress = document.getElementById('business_address')?.value || '';
-        const bizExp = document.getElementById('business_experience')?.value || '';
+    // Pre Sanction fields follow the Details Sheet until the user edits them by hand.
+    function bankLoanDerived() {
+        const val = id => (document.getElementById(id)?.value || '').trim();
+        const kycName = val('name');
+        const bizName = val('business_name') || val('firm_name');
+        const bizAddress = val('business_address');
 
-        const bldApplicant = document.getElementById('bld_applicant');
-        const bldAddress = document.getElementById('bld_office_address');
-        const bldYears = document.getElementById('bld_years');
+        let applicant = kycName;
+        if (bizName) applicant += (applicant ? ' - Prop. Of ' : '') + bizName;
 
-        if (bldApplicant && !bldApplicant.dataset.manuallyEdited && !bldApplicant.value) {
-            let text = kycName;
-            if (bizName) text += (text ? ' - Prop. Of ' : '') + bizName;
-            bldApplicant.value = text;
-        }
-
-        if (bldAddress && !bldAddress.dataset.manuallyEdited && !bldAddress.value) {
-            let text = '';
-            if (bizName) text += bizName + '\n';
-            if (bizAddress) text += bizAddress;
-            bldAddress.value = text.trim();
-        }
-
-        if (bldYears && !bldYears.dataset.manuallyEdited && !bldYears.value) {
-            bldYears.value = bizExp;
-        }
+        return {
+            bld_applicant: applicant,
+            bld_office_address: ((bizName ? bizName + '\n' : '') + bizAddress).trim(),
+            bld_years: val('business_experience'),
+        };
     }
+
+    function syncBankLoanLive() {
+        Object.entries(bankLoanDerived()).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (!el || el.dataset.manuallyEdited) return;
+            // Only overwrite an empty field or one that still holds our last auto-filled value.
+            if (el.value !== '' && el.value !== el.dataset.autoValue) return;
+            el.value = value;
+            el.dataset.autoValue = value;
+        });
+    }
+
+    // On load, a saved value that matches the Details Sheet keeps following it.
+    Object.entries(bankLoanDerived()).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el && el.value.trim() === value) el.dataset.autoValue = el.value;
+    });
 
     ['name', 'business_name', 'firm_name', 'business_address', 'business_experience'].forEach(id => {
         const el = document.getElementById(id);

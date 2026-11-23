@@ -7,6 +7,7 @@ use App\Models\Lead;
 use App\Models\LeadActivity;
 use App\Models\LoanProduct;
 use App\Models\Role;
+use App\Models\RoughLead;
 use App\Models\User;
 use App\Models\Visit;
 use App\Services\PendencyService;
@@ -106,10 +107,15 @@ class DashboardController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        // 5. Recent Leads
+        // 5. Recent Leads (actual) + Recent Rough Leads — latest 5 of each
         $recentLeads = Lead::with(['city', 'loanProduct', 'assignedEmployee'])
             ->latest()
-            ->take(6)
+            ->take(5)
+            ->get();
+
+        $recentRoughLeads = RoughLead::with(['city', 'assignedEmployee'])
+            ->latest()
+            ->take(5)
             ->get();
 
         // 6. Employee / System stats
@@ -135,6 +141,7 @@ class DashboardController extends Controller
             'leadsByCity',
             'leadsByStatus',
             'recentLeads',
+            'recentRoughLeads',
             'stats',
             'roleBreakdown',
             'recentEmployees',
