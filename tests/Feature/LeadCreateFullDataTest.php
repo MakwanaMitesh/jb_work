@@ -303,7 +303,9 @@ class LeadCreateFullDataTest extends TestCase
         $lead = Lead::where('email', 'vikram.sharma.test@example.com')->first();
         $this->assertNotNull($lead, 'Lead was not saved to database');
         $this->assertSame('Vikram Sharma', $lead->name);
-        $this->assertSame('details_entry', $lead->current_stage);
+        // No workflow stages are configured in this test, so the lead is in progress with no stage.
+        $this->assertSame(Lead::WORKFLOW_IN_PROGRESS, $lead->workflow_status);
+        $this->assertNull($lead->workflow_stage_id);
 
         // Assert documents stored
         $this->assertCount(6, $lead->leadDocuments);

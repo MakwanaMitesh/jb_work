@@ -63,7 +63,7 @@
     $dprErrorKeys = collect($errors->keys())->filter(fn ($k) => str_starts_with($k, 'dpr.'))->values();
 @endphp
 
-<div id="dpr-panel" class="tab-panel jb-hidden">
+<div id="dpr-panel" class="tab-panel jb-hidden" @if ((($leadTabs ?? [])['dpr'] ?? null) === 'view') data-readonly @endif>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom pb-2 mb-3">
         <div>
             <h3 class="jb-section-title m-0">DPR</h3>

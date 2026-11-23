@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Lead;
 use App\Models\User;
+use App\Services\LeadWorkflow;
 use Database\Seeders\PermissionSeeder;
 
 /**
@@ -15,9 +16,9 @@ use Database\Seeders\PermissionSeeder;
  * not repeated here.
  *
  * Used in two places that must agree: LeadController strips a field here before it ever reaches
- * Lead::create()/update() when the submitting user lacks that module's update permission (so a
- * crafted request can't write a field the UI never showed them), and the Lead tab buttons in
- * _form.blade.php hide the whole module when the user lacks its view permission.
+ * Lead::create()/update() when the tab isn't editable for the submitting user (so a crafted request
+ * can't write a field the UI never showed them), and _form.blade.php hides / locks each tab from
+ * tabAccess(). Which tabs a user gets is decided by the lead workflow — see App\Services\LeadWorkflow.
  */
 class LeadModuleAccess
 {
@@ -42,88 +43,79 @@ class LeadModuleAccess
         ],
     ];
 
+    /**
+     * Lead columns that sit at the top of the Details Sheet tab but are not part of FIELD_MODULES'
+     * details_sheet list, because creating a lead needs them regardless of tab permissions. On an
+     * existing lead they are as much the Details Sheet's as any other field on it, so a user who
+     * can't edit that tab can't change them either (see filterFieldsForUser()).
+     *
+     * @var array<int, string>
+     */
+    public const BASE_FIELDS = [
+        'name', 'email', 'mobile_number', 'alternate_mobile_number', 'agent_id', 'bank_id',
+        'loan_product_id', 'constitution_id', 'city_id', 'source', 'status', 'notes',
+    ];
+
     public static function canViewModule(?User $user, string $module): bool
     {
         return (bool) $user?->can("{$module}.view");
     }
 
+    private static function workflow(): LeadWorkflow
+    {
+        return app(LeadWorkflow::class);
+    }
+
     /**
-     * Whether $user may see/edit this Lead at all, under the Lead Stage workflow:
-     *  - `leads.view_all` (or Admin) always can.
-     *  - Specifically assigned (Lead::assigned_employee_id === $user->id) always can.
-     *  - Otherwise, while the Lead is unassigned ("role-pool"), any `leads.view_own` holder whose
-     *    Role matches the Lead's current stage's Role can — until an Admin assigns it to one
-     *    specific person via the existing leads.assign flow, after which only that person can.
+     * Whether $user may see this Lead at all — see LeadWorkflow::canAccessLead().
      */
     public static function canAccessLead(?User $user, Lead $lead): bool
     {
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->can('leads.view_all')) {
-            return true;
-        }
-
-        // Neither scoping permission granted: unrestricted, same as before this feature existed —
-        // the stage/own-lead restriction is opt-in via leads.view_own.
-        if (! $user->can('leads.view_own')) {
-            return true;
-        }
-
-        if ($lead->assigned_employee_id !== null) {
-            return $lead->assigned_employee_id === $user->id;
-        }
-
-        $role = LeadStage::roleFor($lead->current_stage);
-
-        return $role !== null && $user->hasRole($role);
+        return self::workflow()->canAccessLead($user, $lead);
     }
 
     /**
-     * Applies the same visibility rule as canAccessLead() to a Lead query — used by every index
-     * listing (Leads, Pendency) so the two can never drift apart the way they once did. No-op
-     * (shows everything) for leads.view_all holders or anyone without leads.view_own.
+     * Whether $user may change this Lead right now — see LeadWorkflow::canWorkOnLead().
+     */
+    public static function canWorkOnLead(?User $user, Lead $lead): bool
+    {
+        return self::workflow()->canWorkOnLead($user, $lead);
+    }
+
+    /**
+     * Applies canAccessLead()'s rule to a Lead query — used by every listing (Leads, Pendency,
+     * dashboards) so they can never drift apart.
      */
     public static function scopeVisibleTo(\Illuminate\Database\Eloquent\Builder $query, ?User $user): \Illuminate\Database\Eloquent\Builder
     {
-        if (! $user || $user->can('leads.view_all') || ! $user->can('leads.view_own')) {
-            return $query;
-        }
-
-        $userRoles = $user->getRoleNames();
-        $rolePoolStages = array_keys(array_filter(
-            array_column(LeadStage::STAGES, 'role', 'key'),
-            fn ($role) => $userRoles->contains($role)
-        ));
-
-        return $query->where(function ($q) use ($user, $rolePoolStages) {
-            $q->where('assigned_employee_id', $user->id)
-                ->orWhere(function ($q2) use ($rolePoolStages) {
-                    $q2->whereNull('assigned_employee_id')->whereIn('current_stage', $rolePoolStages);
-                });
-        });
+        return self::workflow()->scopeVisibleTo($query, $user);
     }
 
     /**
-     * Whether $user may actually write to $module's fields on this Lead right now: they need
-     * canAccessLead() for the Lead, the module's own `{module}.update` permission (unchanged),
-     * and the module has to belong to the Lead's *current* stage.
+     * @return array<string, 'edit'|'view'|null>
      */
-    public static function isModuleEditable(?User $user, Lead $lead, string $module): bool
+    public static function tabAccess(?User $user, ?Lead $lead = null): array
     {
-        if (! self::canAccessLead($user, $lead) || ! $user?->can("{$module}.update")) {
-            return false;
-        }
+        return self::workflow()->tabAccess($user, $lead);
+    }
 
-        // The stage restriction only applies to users who opted into the Lead Stage workflow via
-        // leads.view_own — leads.view_all (Admin) and users with neither scoping permission (the
-        // pre-workflow default) are unaffected, same as canAccessLead() above.
-        if ($user->can('leads.view_all') || ! $user->can('leads.view_own')) {
-            return true;
-        }
+    public static function tabAllows(?User $user, ?Lead $lead, string $module, bool $edit = false): bool
+    {
+        return self::workflow()->tabAllows($user, $lead, $module, $edit);
+    }
 
-        return in_array($module, LeadStage::modulesFor($lead->current_stage), true);
+    public static function canViewTab(?User $user, ?Lead $lead, string $module): bool
+    {
+        return (self::tabAccess($user, $lead)[$module] ?? null) !== null;
+    }
+
+    /**
+     * Whether $user may write to $module on this Lead right now ($lead null = on creation): the
+     * workflow must give them the tab as editable, and they need the module's own update permission.
+     */
+    public static function isModuleEditable(?User $user, ?Lead $lead, string $module): bool
+    {
+        return self::tabAllows($user, $lead, $module, true) && (bool) $user?->can("{$module}.update");
     }
 
     public static function canViewSubsection(?User $user, string $module, string $key): bool
@@ -142,9 +134,9 @@ class LeadModuleAccess
     }
 
     /**
-     * Removes any field the user may not write to from $data — name/mobile/status/loan_product_id
-     * and the other six Lead-tab modules' own fields are untouched, since those are governed by
-     * `leads.edit`/`leads.create` or their own Saver as they always were.
+     * Removes any field the user may not write to from $data: a FIELD_MODULES tab's fields unless the
+     * tab is editable for them (see isModuleEditable()), and on an existing lead the BASE_FIELDS unless
+     * the Details Sheet is. The other six tabs' payloads are gated separately in LeadController.
      *
      * @param array<string, mixed> $data
      * @return array<string, mixed>
@@ -152,16 +144,16 @@ class LeadModuleAccess
     public static function filterFieldsForUser(?User $user, array $data, ?Lead $lead = null): array
     {
         foreach (self::FIELD_MODULES as $module => $fields) {
-            // $lead is null on creation (no stage to check yet) — stage gating only applies once a
-            // Lead, and therefore a current_stage, exists.
-            $allowed = $lead
-                ? self::isModuleEditable($user, $lead, $module)
-                : (bool) $user?->can("{$module}.update");
-
-            if ($allowed) {
+            if (self::isModuleEditable($user, $lead, $module)) {
                 continue;
             }
             foreach ($fields as $field) {
+                unset($data[$field]);
+            }
+        }
+
+        if ($lead && ! self::tabAllows($user, $lead, 'details_sheet', true)) {
+            foreach (self::BASE_FIELDS as $field) {
                 unset($data[$field]);
             }
         }

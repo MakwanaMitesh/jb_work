@@ -2,106 +2,130 @@
 @php $lead = $lead ?? null; @endphp
 
 @php
-    $leadStageInfo = $lead ? \App\Support\LeadStage::find($lead->current_stage) : null;
+    // Which tabs this user gets on this lead: 'edit', 'view' (read-only) or null (not rendered at
+    // all) — decided by the lead workflow, see App\Services\LeadWorkflow::tabAccess(). Every save is
+    // re-checked server-side; this only decides what is shown.
+    $leadTabs = \App\Support\LeadModuleAccess::tabAccess(auth()->user(), $lead);
+    // Completion dots only mean something once the lead exists (not on the Create page).
+    $tabProgress = empty($transferPanel['creating']) ? collect($transferPanel['progress'] ?? [])->keyBy('key') : collect();
+    $formStage = $transferPanel['stage'] ?? null;
 @endphp
 
 <div class="jb-card" style="overflow:hidden">
 
-    @if ($leadStageInfo)
-        <div class="alert alert-info d-flex align-items-center gap-2 mb-0 rounded-0 border-0" style="font-size:var(--text-sm)">
+    @if ($lead && ! empty($transferPanel['configured']))
+        <div class="alert alert-info d-flex flex-wrap align-items-center gap-2 mb-0 rounded-0 border-0" style="font-size:var(--text-sm)">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span>
-                Current Stage: <strong>{{ $leadStageInfo['label'] }}</strong> (Role: {{ $leadStageInfo['role'] }}) —
-                tabs outside this stage are view-only until it's submitted and forwarded.
-            </span>
+            @if ($formStage)
+                <span>
+                    Current Stage: <strong>{{ $formStage->name }}</strong> (Role: {{ $formStage->role?->name }})
+                    · Assigned to: <strong>{{ $lead->assignedEmployee?->name ?? 'Unassigned' }}</strong>
+                    @if (! in_array('edit', $leadTabs, true))
+                        — you can view this lead but not change it.
+                    @endif
+                </span>
+            @else
+                <span>Workflow <strong>completed</strong> — this lead is read-only for workflow users.</span>
+            @endif
         </div>
     @endif
 
     <div class="jb-tabs">
-        @can('details_sheet.view')
+        @if (! empty($leadTabs['details_sheet']))
         <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" id="kyc-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             <span>Details Sheet</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'details_sheet'])
         </button>
-        @endcan
+        @endif
 
-        @can('bank_loan.view')
+        @if (! empty($leadTabs['bank_loan']))
         <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" id="bank-loan-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             <span>Pre Sanction</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'bank_loan'])
         </button>
-        @endcan
+        @endif
 
-        @can('application_form.view')
+        @if (! empty($leadTabs['application_form']))
                 <button type="button" onclick="switchTab('application-form-tab', 'application-form-panel')" id="application-form-tab" class="jb-tab-btn">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                     <span>Application Form</span>
+                    @include('admin.leads.partials.tab-status', ['tabKey' => 'application_form'])
                 </button>
-        @endcan
+        @endif
 
-        @can('documents.view')
+        @if (! empty($leadTabs['documents']))
         <button type="button" onclick="switchTab('documents-tab', 'documents-panel')" id="documents-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span>Documents</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'documents'])
         </button>
-        @endcan
+        @endif
 
-        @can('sbi_stock_statement.view')
+        @if (! empty($leadTabs['sbi_stock_statement']))
         <button type="button" onclick="switchTab('stock-statement-tab', 'stock-statement-panel')" id="stock-statement-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
             <span>Stock Statement</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'sbi_stock_statement'])
         </button>
-        @endcan
+        @endif
 
-        @can('or.view')
+        @if (! empty($leadTabs['or']))
         <button type="button" onclick="switchTab('opinion-report-tab', 'opinion-report-panel')" id="opinion-report-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
             <span>Opinion Report</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'or'])
         </button>
-        @endcan
+        @endif
 
-        @can('cma.view')
+        @if (! empty($leadTabs['cma']))
         <button type="button" onclick="switchTab('cma-tab', 'cma-panel')" id="cma-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span>CMA</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'cma'])
         </button>
-        @endcan
+        @endif
 
-        @can('dpr.view')
+        @if (! empty($leadTabs['dpr']))
         <button type="button" onclick="switchTab('dpr-tab', 'dpr-panel')" id="dpr-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span>DPR</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'dpr'])
         </button>
-        @endcan
+        @endif
 
-        @can('bank_details.view')
+        @if (! empty($leadTabs['bank_details']))
         <button type="button" onclick="switchTab('bank-tab', 'bank-panel')" id="bank-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
             <span>Bank Details</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'bank_details'])
         </button>
-        @endcan
+        @endif
 
-        @can('business_details.view')
+        @if (! empty($leadTabs['business_details']))
         <button type="button" onclick="switchTab('business-tab', 'business-panel')" id="business-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             <span>Business Details</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'business_details'])
         </button>
-        @endcan
+        @endif
 
-        @can('loan_details.view')
+        @if (! empty($leadTabs['loan_details']))
         <button type="button" onclick="switchTab('loan-tab', 'loan-panel')" id="loan-tab" class="jb-tab-btn">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>Loan Details</span>
+            @include('admin.leads.partials.tab-status', ['tabKey' => 'loan_details'])
         </button>
-        @endcan
+        @endif
 
     </div>
 
     <div class="p-4 p-sm-5">
 
         <!-- 1. KYC Details Panel -->
-        @can('details_sheet.view')
-        <div id="kyc-panel" class="tab-panel d-flex flex-column gap-4">
+        @if (! empty($leadTabs['details_sheet']))
+        <div id="kyc-panel" class="tab-panel d-flex flex-column gap-4" @if (($leadTabs['details_sheet'] ?? null) === 'view') data-readonly @endif>
             <div class="row g-4">
                 <div class="col-12 col-md-6">
                     <x-input-label-bs for="name" value="Customer Name" :required="true" />
@@ -422,9 +446,9 @@
                 </button>
             </div>
         </div>
-        @endcan
+        @endif
 
-        @can('bank_loan.view')
+        @if (! empty($leadTabs['bank_loan']))
         @php
             $bld = old('bank_loan_details', $lead?->bank_loan_details ?? []);
             $orgTypes = $bld['type_of_organization'] ?? [];
@@ -457,7 +481,7 @@
                 elseif (str_contains($actStr, 'service')) $natureBiz[] = 'Consultancy';
             }
         @endphp
-        <div id="bank-loan-panel" class="tab-panel jb-hidden">
+        <div id="bank-loan-panel" class="tab-panel jb-hidden" @if (($leadTabs['bank_loan'] ?? null) === 'view') data-readonly @endif>
             <div class="jb-card p-4">
                 <div class="border-bottom pb-3 mb-3">
                     <h3 class="d-flex align-items-center gap-2 fw-bold m-0" style="font-size:var(--text-base);color:var(--slate-900)">
@@ -643,11 +667,11 @@
                 </div>
             </div>
         </div>
-        @endcan
+        @endif
 
         <!-- 2. Bank Details Panel -->
-        @can('bank_details.view')
-        <div id="bank-panel" class="tab-panel jb-hidden">
+        @if (! empty($leadTabs['bank_details']))
+        <div id="bank-panel" class="tab-panel jb-hidden" @if (($leadTabs['bank_details'] ?? null) === 'view') data-readonly @endif>
             <div>
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div>
@@ -713,7 +737,7 @@
             </div>
 
             <div class="d-flex justify-content-between pt-3 mt-3 border-top">
-                @can('dpr.view')
+                @if (! empty($leadTabs['dpr']))
                     <button type="button" onclick="switchTab('dpr-tab', 'dpr-panel')" class="btn btn-secondary jb-btn-tall">
                         Previous: DPR
                     </button>
@@ -733,17 +757,17 @@
                     <button type="button" onclick="switchTab('documents-tab', 'documents-panel')" class="btn btn-secondary jb-btn-tall">
                         Previous: Documents
                     </button>
-                @endcan
+                @endif
                 <button type="button" onclick="switchTab('business-tab', 'business-panel')" class="btn btn-secondary jb-btn-tall">
                     Next: Business Details
                 </button>
             </div>
         </div>
-        @endcan
+        @endif
 
         <!-- 3. Business Details Panel -->
-        @can('business_details.view')
-        <div id="business-panel" class="tab-panel jb-hidden">
+        @if (! empty($leadTabs['business_details']))
+        <div id="business-panel" class="tab-panel jb-hidden" @if (($leadTabs['business_details'] ?? null) === 'view') data-readonly @endif>
             <div class="row g-4 mb-4">
                 <div class="col-12 col-md-6">
                     <x-input-label-bs for="business_name" value="Business Name" />
@@ -865,11 +889,11 @@
                 </button>
             </div>
         </div>
-        @endcan
+        @endif
 
         <!-- 4. Loan Details Panel -->
-        @can('loan_details.view')
-        <div id="loan-panel" class="tab-panel jb-hidden">
+        @if (! empty($leadTabs['loan_details']))
+        <div id="loan-panel" class="tab-panel jb-hidden" @if (($leadTabs['loan_details'] ?? null) === 'view') data-readonly @endif>
             <div class="mb-4">
                 <x-input-label-bs for="required_loan_amount" value="Required Loan Amount" />
                 <x-text-input-bs id="required_loan_amount" type="text" name="required_loan_amount" :value="old('required_loan_amount', $lead?->required_loan_amount)" placeholder="Enter required loan amount (in ₹)" />
@@ -971,15 +995,15 @@
                 </button>
             </div>
         </div>
-        @endcan
+        @endif
 
         <!-- 5. Documents Panel -->
-        @can('documents.view')
+        @if (! empty($leadTabs['documents']))
         @php
             $docTypesList = $documentTypes ?? \App\Models\DocumentType::where('status', 'active')->ordered()->get();
             $existingLeadDocs = $lead ? $lead->leadDocuments->groupBy('document_type_id') : collect();
         @endphp
-        <div id="documents-panel" class="tab-panel jb-hidden">
+        <div id="documents-panel" class="tab-panel jb-hidden" @if (($leadTabs['documents'] ?? null) === 'view') data-readonly @endif>
             <div class="border-bottom pb-3 mb-3">
                 <h3 class="fw-bold m-0" style="font-size:var(--text-base);color:var(--slate-900)">Lead Documents Checklist &amp; Upload</h3>
                 <p class="mt-1 mb-0" style="font-size:var(--text-xs);color:var(--slate-500)">Upload required KYC, financial, and project documents for this lead. New files are saved when you save the lead.</p>
@@ -1079,7 +1103,7 @@
                 <button type="button" onclick="switchTab('application-form-tab', 'application-form-panel')" class="btn btn-secondary jb-btn-tall">
                     Previous: Application Form
                 </button>
-                @can('sbi_stock_statement.view')
+                @if (! empty($leadTabs['sbi_stock_statement']))
                     <button type="button" onclick="switchTab('stock-statement-tab', 'stock-statement-panel')" class="btn btn-secondary jb-btn-tall">
                         Next: Stock Statement
                     </button>
@@ -1087,30 +1111,30 @@
                     <button type="button" onclick="switchTab('bank-tab', 'bank-panel')" class="btn btn-secondary jb-btn-tall">
                         Next: Bank Details
                     </button>
-                @endcan
+                @endif
             </div>
         </div>
-        @endcan
+        @endif
 
-        @can('application_form.view')
+        @if (! empty($leadTabs['application_form']))
             @include('admin.leads.partials.application-form', ['lead' => $lead])
-        @endcan
+        @endif
 
-        @can('sbi_stock_statement.view')
+        @if (! empty($leadTabs['sbi_stock_statement']))
             @include('admin.leads.partials.stock-statement', ['lead' => $lead])
-        @endcan
+        @endif
 
-        @can('or.view')
+        @if (! empty($leadTabs['or']))
             @include('admin.leads.partials.opinion-report', ['lead' => $lead])
-        @endcan
+        @endif
 
-        @can('cma.view')
+        @if (! empty($leadTabs['cma']))
             @include('admin.leads.partials.cma', ['lead' => $lead])
-        @endcan
+        @endif
 
-        @can('dpr.view')
+        @if (! empty($leadTabs['dpr']))
             @include('admin.leads.partials.dpr', ['lead' => $lead])
-        @endcan
+        @endif
     </div>
 </div>
 
@@ -1268,6 +1292,10 @@ function recalculateBankSr() {
 }
 
 function switchTab(tabId, panelId) {
+    // A tab the workflow doesn't give this user is not rendered at all; "Next: ..." buttons that
+    // point at one are hidden on load (below), this just keeps a stray call from throwing.
+    if (!document.getElementById(tabId) || !document.getElementById(panelId)) return;
+
     // Hide all panels
     document.querySelectorAll('.tab-panel').forEach(panel => {
         panel.classList.add('jb-hidden');
@@ -1281,6 +1309,26 @@ function switchTab(tabId, panelId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // "Next: <tab>" / "Back: <tab>" buttons leading to a tab this user doesn't have are pointless.
+    document.querySelectorAll('.tab-panel button[onclick^="switchTab("]').forEach(btn => {
+        const target = (btn.getAttribute('onclick').match(/switchTab\('([^']+)'/) || [])[1];
+        if (target && !document.getElementById(target)) btn.classList.add('jb-hidden');
+    });
+
+    // Read-only tabs (data-readonly — earlier stages' work, or a lead the user can only view):
+    // every control is disabled, so the browser doesn't submit them either. The server ignores
+    // such fields regardless (LeadModuleAccess::filterFieldsForUser() and the Savers' tab checks).
+    document.querySelectorAll('.tab-panel[data-readonly]').forEach(panel => {
+        panel.querySelectorAll('input, select, textarea').forEach(el => { el.disabled = true; });
+        panel.querySelectorAll('button').forEach(btn => {
+            if (!(btn.getAttribute('onclick') || '').startsWith('switchTab(')) btn.disabled = true;
+        });
+        const note = document.createElement('div');
+        note.className = 'jb-alert jb-alert-info mb-3';
+        note.textContent = 'Read-only — this tab belongs to another workflow stage.';
+        panel.prepend(note);
+    });
+
     // Details Sheet is normally the first, already-open tab. A role without the details_sheet view
     // permission never receives that tab or its panel at all (see the Blade gate above it) — not
     // just hidden, absent from the page — so whichever tab the user does have becomes the open one.

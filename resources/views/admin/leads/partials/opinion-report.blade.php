@@ -45,7 +45,7 @@
     $rowFilled = fn (string $group, int $i) => collect(old("opr.$group.$i", data_get($or, "$group.$i", [])))->filter()->isNotEmpty();
 @endphp
 
-<div id="opinion-report-panel" class="tab-panel jb-hidden">
+<div id="opinion-report-panel" class="tab-panel jb-hidden" @if ((($leadTabs ?? [])['or'] ?? null) === 'view') data-readonly @endif>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom pb-2 mb-3">
         <div>
             <h3 class="jb-section-title m-0">Opinion Report</h3>

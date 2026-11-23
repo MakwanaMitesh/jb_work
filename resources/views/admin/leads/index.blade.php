@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    @if (request('city') || request('city_id') || request('status') || request('assigned_employee_id') || request('search'))
+    @if (request('city') || request('city_id') || request('status') || request('assigned_employee_id') || request('search') || request('workflow_stage_id') || request('workflow_status'))
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 p-2 px-3 mb-3 rounded-3" style="background:var(--slate-100);border:1px solid var(--slate-200);font-size:var(--text-xs)">
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <span class="fw-bold" style="color:var(--slate-700)">Active Filter:</span>
@@ -35,6 +35,12 @@
                 @endif
                 @if ($activeEmp = request('assigned_employee_id'))
                     <span class="jb-badge jb-badge-xs jb-badge-indigo">Assigned Rep</span>
+                @endif
+                @if ($activeStageId = request('workflow_stage_id'))
+                    <span class="jb-badge jb-badge-xs jb-badge-indigo">Stage: {{ $workflowStages->firstWhere('id', (int) $activeStageId)?->name ?? '—' }}</span>
+                @endif
+                @if ($activeWorkflowStatus = request('workflow_status'))
+                    <span class="jb-badge jb-badge-xs jb-badge-emerald">Workflow: {{ \App\Models\Lead::WORKFLOW_STATUSES[$activeWorkflowStatus] ?? $activeWorkflowStatus }}</span>
                 @endif
                 @if ($searchVal = request('search'))
                     <span class="jb-badge jb-badge-xs jb-badge-slate">Search: "{{ $searchVal }}"</span>
@@ -92,7 +98,7 @@
             </div>
             <div>
                 <label class="jb-form-label">Loan Product</label>
-                <select data-filter-column="6" class="form-select form-select-sm">
+                <select data-filter-column="10" class="form-select form-select-sm">
                     <option value="">All</option>
                     @foreach ($loanProducts as $product)
                         <option value="{{ $product->name }}">{{ $product->name }}</option>
@@ -101,10 +107,40 @@
             </div>
             <div>
                 <label class="jb-form-label">Constitution</label>
-                <select data-filter-column="7" class="form-select form-select-sm">
+                <select data-filter-column="11" class="form-select form-select-sm">
                     <option value="">All</option>
                     @foreach ($constitutions as $const)
                         <option value="{{ $const->name }}">{{ $const->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @if ($workflowStages->isNotEmpty())
+                <div>
+                    <label class="jb-form-label">Current Role</label>
+                    <select data-filter-column="5" class="form-select form-select-sm">
+                        <option value="">All</option>
+                        @foreach ($workflowStages->pluck('role.name')->filter()->unique() as $roleName)
+                            <option value="{{ $roleName }}">{{ $roleName }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+            <div>
+                <label class="jb-form-label">Assigned User</label>
+                <select data-filter-column="6" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    @foreach ($assignableUsers as $assignable)
+                        <option value="{{ $assignable->name }}">{{ $assignable->name }}</option>
+                    @endforeach
+                    <option value="Unassigned">Unassigned</option>
+                </select>
+            </div>
+            <div>
+                <label class="jb-form-label">Workflow Status</label>
+                <select data-filter-column="7" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    @foreach (\App\Models\Lead::WORKFLOW_STATUSES as $wsLabel)
+                        <option value="{{ $wsLabel }}">{{ $wsLabel }}</option>
                     @endforeach
                 </select>
             </div>
@@ -116,7 +152,13 @@
             <th data-col="city">City</th>
             <th data-col="agent">Assigned Agent</th>
             <th data-col="status">Status</th>
+            <th data-col="workflow-role">Current Role</th>
+            <th data-col="assigned-user">Assigned User</th>
+            <th data-col="workflow-status">Workflow Status</th>
+            <th data-col="last-transfer">Last Transfer</th>
             <th data-col="created">Created Date</th>
+            <th class="d-none">Loan Product</th>
+            <th class="d-none">Constitution</th>
             <th class="text-end" style="width:4rem"></th>
         </x-slot:thead>
 
@@ -156,7 +198,32 @@
                         {{ ucfirst(str_replace('_', ' ', $lead->status)) }}
                     </span>
                 </td>
+                @php $rowStage = $workflow->stageFor($lead); @endphp
+                <td data-col="workflow-role">
+                    @if ($rowStage)
+                        <div class="fw-semibold">{{ $rowStage->role?->name }}</div>
+                        <div class="jb-muted" style="font-size:var(--text-xs)">{{ $rowStage->name }}</div>
+                    @else
+                        <span class="jb-muted">—</span>
+                    @endif
+                </td>
+                <td data-col="assigned-user">{{ $lead->assignedEmployee?->name ?? 'Unassigned' }}</td>
+                <td data-col="workflow-status">
+                    @if ($lead->workflow_status === \App\Models\Lead::WORKFLOW_COMPLETED)
+                        <span class="jb-badge jb-badge-emerald">Completed</span>
+                    @elseif ($rowStage)
+                        <span class="jb-badge jb-badge-indigo">In Progress</span>
+                        @if ($lead->deadline?->isPast())
+                            <span class="jb-badge jb-badge-xs jb-badge-rose">Overdue</span>
+                        @endif
+                    @else
+                        <span class="jb-muted">—</span>
+                    @endif
+                </td>
+                <td data-col="last-transfer" data-order="{{ $lead->last_transferred_at?->timestamp ?? 0 }}">{{ $lead->last_transferred_at?->format('M d, Y h:i A') ?? '—' }}</td>
                 <td data-col="created" data-order="{{ $lead->created_at?->timestamp ?? 0 }}">{{ $lead->created_at?->format('M d, Y') ?? '—' }}</td>
+                <td class="d-none">{{ $lead->loanProduct?->name }}</td>
+                <td class="d-none">{{ $lead->constitution?->name ?? $lead->constitution_of_business }}</td>
                 <td class="text-end">
                     <div class="dropdown">
                         <button class="jb-icon-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -322,7 +389,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="9" class="text-center py-5" style="color:var(--slate-400)">No leads found.</td>
+                <td colspan="13" class="text-center py-5" style="color:var(--slate-400)">No leads found.</td>
             </tr>
         @endforelse
     </x-datatable-card-bs>

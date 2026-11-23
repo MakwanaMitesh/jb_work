@@ -37,14 +37,15 @@ class LeadDocumentZipService
         }
 
         $user = auth()->user();
+        // A workflow user only gets files from the tabs their role can see (LeadWorkflow::tabAllows()).
         $fileCount = 0;
 
         // 1. CMA Workbook
-        if (! $user || $user->can('cma.download')) {
+        if (! $user || ($user->can('cma.download') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'cma'))) {
             try {
                 $cmaRelativePath = 'cma/' . $lead->id . '/CMA.xlsx';
                 $fullPath = $this->getStoragePath($cmaRelativePath);
-                if (! is_file($fullPath) && (! $user || $user->can('cma.generate'))) {
+                if (! is_file($fullPath) && (! $user || ($user->can('cma.generate') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'cma', true)))) {
                     $cmaRelativePath = $this->cmaGenerator->generate($lead);
                     $fullPath = $this->getStoragePath($cmaRelativePath);
                 }
@@ -58,11 +59,11 @@ class LeadDocumentZipService
         }
 
         // 2. DPR Document
-        if (! $user || $user->can('dpr.download')) {
+        if (! $user || ($user->can('dpr.download') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'dpr'))) {
             try {
                 $dprRelativePath = 'dpr/' . $lead->id . '/DPR.docx';
                 $fullPath = $this->getStoragePath($dprRelativePath);
-                if (! is_file($fullPath) && (! $user || $user->can('dpr.generate'))) {
+                if (! is_file($fullPath) && (! $user || ($user->can('dpr.generate') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'dpr', true)))) {
                     $dprRelativePath = $this->dprGenerator->generate($lead);
                     $fullPath = $this->getStoragePath($dprRelativePath);
                 }
@@ -76,11 +77,11 @@ class LeadDocumentZipService
         }
 
         // 3. OR (Opinion Report / Affidavit)
-        if (! $user || $user->can('or.download')) {
+        if (! $user || ($user->can('or.download') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'or'))) {
             try {
                 $orRelativePath = 'or/' . $lead->id . '/OR.docx';
                 $fullPath = $this->getStoragePath($orRelativePath);
-                if (! is_file($fullPath) && (! $user || $user->can('or.generate'))) {
+                if (! is_file($fullPath) && (! $user || ($user->can('or.generate') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'or', true)))) {
                     $orRelativePath = $this->orGenerator->generate($lead);
                     $fullPath = $this->getStoragePath($orRelativePath);
                 }
@@ -94,7 +95,7 @@ class LeadDocumentZipService
         }
 
         // 4. SBI Stock Statement
-        if (! $user || $user->can('sbi_stock_statement.download')) {
+        if (! $user || ($user->can('sbi_stock_statement.download') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'sbi_stock_statement'))) {
             try {
                 $stockRelativePath = 'sbi-stock-statement/' . $lead->id . '/SBI_Stock_Statement.xlsx';
                 $fullPath = $this->getStoragePath($stockRelativePath);
@@ -103,7 +104,7 @@ class LeadDocumentZipService
                     if (is_file($this->getStoragePath($altRelative))) {
                         $stockRelativePath = $altRelative;
                         $fullPath = $this->getStoragePath($altRelative);
-                    } elseif (! $user || $user->can('sbi_stock_statement.generate')) {
+                    } elseif (! $user || ($user->can('sbi_stock_statement.generate') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'sbi_stock_statement', true))) {
                         $stockRelativePath = $this->sbiStockStatementGenerator->generate($lead);
                         $fullPath = $this->getStoragePath($stockRelativePath);
                     }
@@ -120,14 +121,14 @@ class LeadDocumentZipService
         // 5. Pre-Sanction Inspection Sheet (PDF)
         // MUST ONLY be generated/included when BOTH conditions are true:
         // Bank = SBI (State Bank of India) AND Loan Type = Business Loan
-        if ($lead->isInspectionSheetApplicable() && (! $user || $user->can('inspection_sheet.download'))) {
+        if ($lead->isInspectionSheetApplicable() && (! $user || ($user->can('inspection_sheet.download') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'bank_loan')))) {
             try {
                 $inspectionRelative = 'inspection_sheets/' . $lead->id . '/inspection_sheet_lead_' . $lead->id . '.pdf';
                 $fullPath = $this->getStoragePath($inspectionRelative);
                 if (is_file($fullPath)) {
                     $zip->addFile($fullPath, 'Inspection_Sheet_lead_' . $lead->id . '.pdf');
                     $fileCount++;
-                } elseif (! $user || $user->can('inspection_sheet.generate')) {
+                } elseif (! $user || ($user->can('inspection_sheet.generate') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'bank_loan', true))) {
                     $bld = $lead->bank_loan_details ?? [];
                     $pdf = Pdf::loadView('admin.leads.pdf.inspection_sheet', compact('lead', 'bld'));
                     $pdf->setPaper('a4', 'portrait');
@@ -142,7 +143,7 @@ class LeadDocumentZipService
         }
 
         // 6. Uploaded Lead Documents (if user has documents.download)
-        if ((! $user || $user->can('documents.download')) && $lead->leadDocuments && $lead->leadDocuments->isNotEmpty()) {
+        if ((! $user || ($user->can('documents.download') && \App\Support\LeadModuleAccess::tabAllows($user, $lead, 'documents'))) && $lead->leadDocuments && $lead->leadDocuments->isNotEmpty()) {
             $usedNames = [];
             foreach ($lead->leadDocuments as $doc) {
                 if ($doc->file_path && Storage::disk('public')->exists($doc->file_path)) {

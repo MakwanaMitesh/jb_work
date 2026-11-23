@@ -17,6 +17,7 @@ class VisitController extends Controller
     public function store(Request $request, Lead $lead): RedirectResponse
     {
         $this->authorize('visits.create');
+        abort_unless(\App\Support\LeadModuleAccess::canAccessLead($request->user(), $lead), 403, 'You do not have permission to act on this lead.');
 
         $validated = $request->validate([
             'employee_id' => ['required', 'exists:users,id'],
@@ -59,6 +60,7 @@ class VisitController extends Controller
     public function update(Request $request, Lead $lead, Visit $visit): RedirectResponse
     {
         $this->authorize('visits.edit');
+        abort_unless(\App\Support\LeadModuleAccess::canAccessLead($request->user(), $lead), 403, 'You do not have permission to act on this lead.');
 
         $validated = $request->validate([
             'employee_id' => ['required', 'exists:users,id'],

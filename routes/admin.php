@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\ContactEnquiryController;
 use App\Http\Controllers\Admin\DocumentTypeController;
 use App\Http\Controllers\Admin\PendencyController;
+use App\Http\Controllers\Admin\WorkflowStageController;
 use Illuminate\Support\Facades\Route;
 
 // Role & Permission management, and per-user direct permissions.
@@ -27,6 +28,13 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     Route::patch('roles/{role}/toggle-status', [RoleController::class, 'toggleStatus'])
         ->name('roles.toggle-status');
+
+    // Lead Workflow configuration (Admin only — gated in WorkflowStageController like Roles).
+    Route::patch('workflow/{stage}/toggle-status', [WorkflowStageController::class, 'toggleStatus'])->name('workflow.toggle-status');
+    Route::patch('workflow/{stage}/move', [WorkflowStageController::class, 'move'])->name('workflow.move');
+    Route::resource('workflow', WorkflowStageController::class)
+        ->except(['show'])
+        ->parameters(['workflow' => 'stage']);
 
     Route::get('users', [UserPermissionController::class, 'index'])->name('users.index');
     Route::get('users/{user}/permissions', [UserPermissionController::class, 'edit'])->name('users.permissions.edit');
@@ -63,7 +71,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Lead Management
     Route::post('leads/{lead}/assign', [LeadController::class, 'assign'])->name('leads.assign');
     Route::post('leads/{lead}/status', [LeadController::class, 'updateStatus'])->name('leads.status');
-    Route::post('leads/{lead}/stage/submit', [LeadController::class, 'submitStage'])->name('leads.stage.submit');
+    Route::post('leads/{lead}/transfer', [LeadController::class, 'transfer'])->name('leads.transfer');
     Route::post('leads/inspection-remarks/preview', [LeadController::class, 'previewInspectionRemarks'])->name('leads.inspection-remarks.preview');
 
     Route::resource('leads', LeadController::class)

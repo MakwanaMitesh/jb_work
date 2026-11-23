@@ -19,8 +19,15 @@
 
         @include('admin.leads._form')
 
+        <div class="mt-4">
+            @include('admin.leads.partials.workflow-transfer', ['lead' => null, 'transferMode' => 'inline'])
+        </div>
+
         <div class="d-flex align-items-center gap-3">
             <x-primary-button-bs>Create</x-primary-button-bs>
+            <button type="submit" name="workflow_action" value="draft" class="btn btn-outline-primary jb-btn-tall">
+                Save as Draft
+            </button>
             <a href="{{ route('admin.leads.index') }}" class="btn btn-secondary jb-btn-tall">
                 Cancel
             </a>

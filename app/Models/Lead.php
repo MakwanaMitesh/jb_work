@@ -26,6 +26,14 @@ class Lead extends Model
     public const STATUS_CANCELLED = 'cancelled';
     public const STATUS_LOST = 'lost';
 
+    public const WORKFLOW_IN_PROGRESS = 'in_progress';
+    public const WORKFLOW_COMPLETED = 'completed';
+
+    public const WORKFLOW_STATUSES = [
+        self::WORKFLOW_IN_PROGRESS => 'In Progress',
+        self::WORKFLOW_COMPLETED => 'Completed',
+    ];
+
     public const STATUSES = [
         self::STATUS_NEW => 'New',
         self::STATUS_CONTACTED => 'Contacted',
@@ -83,7 +91,6 @@ class Lead extends Model
         'assigned_employee_id',
         'assigned_by',
         'assigned_at',
-        'current_stage',
         'deadline',
         'loan_product_id',
         'constitution_id',
@@ -153,6 +160,7 @@ class Lead extends Model
         'date_of_birth' => 'date',
         'assigned_at' => 'datetime',
         'deadline' => 'datetime',
+        'last_transferred_at' => 'datetime',
     ];
 
     public function getFormattedItrDetailsAttribute(): array
@@ -205,10 +213,10 @@ class Lead extends Model
             }
         });
 
+        // Every new lead enters the first stage of the Admin-configured workflow (see LeadWorkflow).
         static::creating(function ($lead) {
-            if (empty($lead->current_stage)) {
-                $lead->current_stage = \App\Support\LeadStage::first()['key'];
-                $lead->deadline = \App\Support\LeadStage::deadlineFromNow($lead->current_stage);
+            if (empty($lead->workflow_stage_id)) {
+                app(\App\Services\LeadWorkflow::class)->prepareNewLead($lead, auth()->user());
             }
         });
 
@@ -218,6 +226,8 @@ class Lead extends Model
                 'created',
                 'Lead created'
             );
+
+            app(\App\Services\LeadWorkflow::class)->recordCreation($lead, auth()->user());
         });
 
         static::updated(function ($lead) {
@@ -413,6 +423,22 @@ class Lead extends Model
     public function assignments(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(LeadAssignment::class)->latest('assigned_at')->latest('id');
+    }
+
+    /**
+     * The workflow stage this lead is currently in (null once its workflow is complete).
+     */
+    public function workflowStage(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(LeadWorkflowStage::class, 'workflow_stage_id');
+    }
+
+    /**
+     * Permanent workflow history (creation, transfers, reassignments, completion), oldest first.
+     */
+    public function transfers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LeadTransfer::class)->orderBy('transferred_at')->orderBy('id');
     }
 
     /**

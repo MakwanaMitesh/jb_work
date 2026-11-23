@@ -12,8 +12,8 @@
                     <h1 class="jb-page-title" style="line-height:1">{{ $lead->name }}</h1>
                     <span class="jb-badge jb-badge-slate">#LD-{{ str_pad($lead->id, 5, '0', STR_PAD_LEFT) }}</span>
                     @if ($currentStage)
-                        <span class="jb-badge jb-badge-indigo" title="Role: {{ $currentStage['role'] }}">
-                            Stage: {{ $currentStage['label'] }}
+                        <span class="jb-badge jb-badge-indigo" title="Role: {{ $currentStage->role?->name }}">
+                            Stage: {{ $currentStage->name }}
                         </span>
                         @if ($lead->deadline)
                             @if ($lead->deadline->isPast())
@@ -26,7 +26,7 @@
                                 </span>
                             @endif
                         @endif
-                    @else
+                    @elseif ($lead->workflow_status === \App\Models\Lead::WORKFLOW_COMPLETED)
                         <span class="jb-badge jb-badge-emerald">Workflow Complete</span>
                     @endif
                 </div>
@@ -45,16 +45,6 @@
             </div>
 
             <div class="d-flex flex-wrap align-items-center gap-2">
-                @if ($canAccessLead && $currentStage)
-                    <form action="{{ route('admin.leads.stage.submit', $lead) }}" method="POST" class="d-inline" onsubmit="return confirm('Complete this stage and forward the lead to the next one?')">
-                        @csrf
-                        <button type="submit" class="btn btn-success btn-sm d-inline-flex align-items-center gap-1" @disabled(! $canSubmitStage)
-                            title="{{ $canSubmitStage ? 'Forward to next stage' : $stagePendingCount . ' field(s) still pending in this stage' }}">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                            <span>Submit Stage & Forward</span>
-                        </button>
-                    </form>
-                @endif
 
                 @can('leads.edit')
                     <a href="{{ route('admin.leads.edit', $lead) }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
@@ -63,12 +53,12 @@
                     </a>
                 @endcan
 
-                @can('documents.download_all')
+                @if (auth()->user()->can('documents.download_all') && $tabAllows('documents'))
                     <a href="{{ route('admin.leads.uploaded-documents.download-all', $lead) }}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
                         <span>Download All Uploaded Documents</span>
                     </a>
-                @endcan
+                @endif
 
                 @canany(['cma.download', 'dpr.download', 'or.download', 'sbi_stock_statement.download', 'inspection_sheet.download', 'documents.download'])
                     <a href="{{ route('admin.leads.download-all', $lead) }}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
@@ -143,34 +133,44 @@
         </div>
     </div>
 
+    @include('admin.leads.partials.workflow-transfer', ['transferMode' => 'standalone'])
+
     <div class="jb-card mb-4" style="overflow:hidden">
         <div class="jb-tabs">
             <button type="button" onclick="switchTab('overview-tab', 'overview-panel')" id="overview-tab" class="jb-tab-btn active">
                 Workflow & Requested Loan
             </button>
+            @if ($tabAllows('details_sheet'))
             <button type="button" onclick="switchTab('kyc-tab', 'kyc-panel')" id="kyc-tab" class="jb-tab-btn">
                 KYC & Personal Details
             </button>
-            @if (!empty($lead->bank_loan_details))
+            @endif
+            @if (!empty($lead->bank_loan_details) && $tabAllows('bank_loan'))
                 <button type="button" onclick="switchTab('bank-loan-tab', 'bank-loan-panel')" id="bank-loan-tab" class="jb-tab-btn">
                     Pre Sanction
                 </button>
             @endif
+            @if ($tabAllows('business_details'))
             <button type="button" onclick="switchTab('business-tab', 'business-panel')" id="business-tab" class="jb-tab-btn">
                 Business Profile
             </button>
+            @endif
+            @if ($tabAllows('bank_details') || $tabAllows('loan_details'))
             <button type="button" onclick="switchTab('finance-tab', 'finance-panel')" id="finance-tab" class="jb-tab-btn">
                 Financials & Active Liabilities
             </button>
+            @endif
             @php
                 $uploadedDocCount = $lead->leadDocuments->count();
             @endphp
+            @if ($tabAllows('documents'))
             <button type="button" onclick="switchTab('documents-tab', 'documents-panel')" id="documents-tab" class="jb-tab-btn d-inline-flex align-items-center gap-2">
                 <span>Documents</span>
                 @if ($uploadedDocCount > 0)
                     <span class="jb-badge jb-badge-sm jb-badge-primary" style="padding:.0625rem .375rem">{{ $uploadedDocCount }}</span>
                 @endif
             </button>
+            @endif
         </div>
 
         <div class="p-4">
@@ -181,6 +181,7 @@
 
                     <div class="col-12 col-xl-8">
 
+                        @if ($tabAllows('loan_details'))
                         <div class="mb-4">
                             <h3 class="jb-section-title border-bottom pb-2 mb-3">Requested Financing Details</h3>
                             <div class="row g-4">
@@ -204,6 +205,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        @endif
 
                         <div>
                             <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
@@ -362,6 +365,8 @@
                                                     'visit_created'   => 'var(--cyan-500)',
                                                     'visit_completed' => 'var(--emerald-500)',
                                                     'visit_cancelled' => 'var(--rose-500)',
+                                                    'stage_forwarded' => 'var(--indigo-500)',
+                                                    'workflow_completed' => 'var(--emerald-500)',
                                                     default           => 'var(--slate-400)',
                                                 };
                                             @endphp
@@ -387,6 +392,7 @@
                 </div>
             </div>
 
+            @if ($tabAllows('details_sheet'))
             <!-- PANEL 2: KYC & Personal Details -->
             <div id="kyc-panel" class="tab-panel jb-hidden">
                 <div class="mb-4">
@@ -519,16 +525,17 @@
                     @endif
                 </div>
             </div>
+            @endif
 
             <!-- PANEL 2.5: Bank Loan Verification Report -->
-            @if (!empty($lead->bank_loan_details))
+            @if (!empty($lead->bank_loan_details) && $tabAllows('bank_loan'))
                 @php $bld = $lead->bank_loan_details; @endphp
                 <div id="bank-loan-panel" class="tab-panel jb-hidden">
                     <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
                         <h3 class="jb-section-title m-0">Bank Loan Verification Report (Annexure V-A)</h3>
                         @if ($lead->isInspectionSheetApplicable())
                             <div class="d-flex align-items-center gap-2">
-                                @can('inspection_sheet.generate')
+                                @if (auth()->user()->can('inspection_sheet.generate') && $tabAllows('bank_loan', true))
                                     <form method="POST" action="{{ route('admin.leads.inspection-sheet.generate', $lead) }}" class="d-inline">
                                         @csrf
                                         <button type="submit" class="jb-chip-link" style="background:var(--amber-50);color:var(--amber-700);border-color:color-mix(in oklab, var(--amber-200) 60%, transparent);cursor:pointer">
@@ -536,13 +543,13 @@
                                             Generate Inspection Sheet
                                         </button>
                                     </form>
-                                @endcan
-                                @can('inspection_sheet.download')
+                                @endif
+                                @if (auth()->user()->can('inspection_sheet.download') && $tabAllows('bank_loan'))
                                     <a href="{{ route('admin.leads.inspection-sheet.pdf', $lead) }}" target="_blank" class="jb-chip-link" style="background:var(--amber-50);color:var(--amber-700);border-color:color-mix(in oklab, var(--amber-200) 60%, transparent)">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                         Download Inspection Sheet (PDF)
                                     </a>
-                                @endcan
+                                @endif
                             </div>
                         @endif
                     </div>
@@ -644,6 +651,7 @@
                 </div>
             @endif
 
+            @if ($tabAllows('business_details'))
             <!-- PANEL 3: Business Profile -->
             <div id="business-panel" class="tab-panel jb-hidden">
                 <div class="mb-4">
@@ -728,9 +736,12 @@
                     </div>
                 </div>
             </div>
+            @endif
 
+            @if ($tabAllows('bank_details') || $tabAllows('loan_details'))
             <!-- PANEL 4: Financials & Active Liabilities -->
             <div id="finance-panel" class="tab-panel jb-hidden">
+                @if ($tabAllows('bank_details'))
                 <div class="mb-4">
                     <h3 class="jb-section-title mb-3">Active Bank Accounts</h3>
                     @php
@@ -775,7 +786,9 @@
                         <p class="mb-0" style="font-size:var(--text-xs);color:var(--slate-400)">No bank details recorded.</p>
                     @endif
                 </div>
+                @endif
 
+                @if ($tabAllows('loan_details'))
                 <div class="pt-3">
                     <h3 class="d-flex align-items-center gap-2 border-bottom pb-2 mb-3" style="font-size:var(--text-sm);font-weight:var(--font-weight-bold);color:var(--rose-600)">
                         <span class="jb-dot jb-dot-rose"></span>
@@ -829,7 +842,9 @@
                         <p class="mb-0" style="font-size:var(--text-xs);color:var(--slate-400)">No active liabilities recorded.</p>
                     @endif
                 </div>
+                @endif
             </div>
+            @endif
 
             <!-- PANEL 5: Documents Checklist & Files -->
             @php
@@ -837,6 +852,7 @@
                 $groupedLeadDocs = $lead->leadDocuments->groupBy('document_type_id');
                 $totalDocTypes = $docTypesShowList->count();
             @endphp
+            @if ($tabAllows('documents'))
             <div id="documents-panel" class="tab-panel jb-hidden">
                 <div class="mb-4 p-3 rounded-3" style="background:var(--slate-50);border:1px solid var(--slate-200)">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
@@ -852,7 +868,7 @@
                         @endcanany
                     </div>
                     <div class="d-flex flex-wrap gap-2">
-                        @can('cma.generate')
+                        @if (auth()->user()->can('cma.generate') && $tabAllows('cma', true))
                             <form method="POST" action="{{ route('admin.leads.cma.generate', $lead) }}" class="d-inline">
                                 @csrf
                                 <button type="submit" class="jb-chip-link" style="cursor:pointer">
@@ -860,15 +876,15 @@
                                     Generate CMA (.xlsx)
                                 </button>
                             </form>
-                        @endcan
-                        @can('cma.download')
+                        @endif
+                        @if (auth()->user()->can('cma.download') && $tabAllows('cma'))
                             <a href="{{ route('admin.leads.cma.download', $lead) }}" class="jb-chip-link">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 Download CMA (.xlsx)
                             </a>
-                        @endcan
+                        @endif
 
-                        @can('dpr.generate')
+                        @if (auth()->user()->can('dpr.generate') && $tabAllows('dpr', true))
                             <form method="POST" action="{{ route('admin.leads.dpr.generate', $lead) }}" class="d-inline">
                                 @csrf
                                 <button type="submit" class="jb-chip-link" style="cursor:pointer">
@@ -876,15 +892,15 @@
                                     Generate DPR (.docx)
                                 </button>
                             </form>
-                        @endcan
-                        @can('dpr.download')
+                        @endif
+                        @if (auth()->user()->can('dpr.download') && $tabAllows('dpr'))
                             <a href="{{ route('admin.leads.dpr.download', $lead) }}" class="jb-chip-link">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 Download DPR (.docx)
                             </a>
-                        @endcan
+                        @endif
 
-                        @can('or.generate')
+                        @if (auth()->user()->can('or.generate') && $tabAllows('or', true))
                             <form method="POST" action="{{ route('admin.leads.or.generate', $lead) }}" class="d-inline">
                                 @csrf
                                 <button type="submit" class="jb-chip-link" style="cursor:pointer">
@@ -892,15 +908,15 @@
                                     Generate OR (.docx)
                                 </button>
                             </form>
-                        @endcan
-                        @can('or.download')
+                        @endif
+                        @if (auth()->user()->can('or.download') && $tabAllows('or'))
                             <a href="{{ route('admin.leads.or.download', $lead) }}" class="jb-chip-link">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 Download OR (.docx)
                             </a>
-                        @endcan
+                        @endif
 
-                        @can('sbi_stock_statement.generate')
+                        @if (auth()->user()->can('sbi_stock_statement.generate') && $tabAllows('sbi_stock_statement', true))
                             <form method="POST" action="{{ route('admin.leads.sbi-stock-statement.generate', $lead) }}" class="d-inline">
                                 @csrf
                                 <button type="submit" class="jb-chip-link" style="cursor:pointer">
@@ -908,16 +924,16 @@
                                     Generate SBI Stock Statement (.xlsx)
                                 </button>
                             </form>
-                        @endcan
-                        @can('sbi_stock_statement.download')
+                        @endif
+                        @if (auth()->user()->can('sbi_stock_statement.download') && $tabAllows('sbi_stock_statement'))
                             <a href="{{ route('admin.leads.sbi-stock-statement.download', $lead) }}" class="jb-chip-link">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 Download SBI Stock Statement (.xlsx)
                             </a>
-                        @endcan
+                        @endif
 
                         @if ($lead->isInspectionSheetApplicable())
-                            @can('inspection_sheet.generate')
+                            @if (auth()->user()->can('inspection_sheet.generate') && $tabAllows('bank_loan', true))
                                 <form method="POST" action="{{ route('admin.leads.inspection-sheet.generate', $lead) }}" class="d-inline">
                                     @csrf
                                     <button type="submit" class="jb-chip-link" style="background:var(--amber-50);color:var(--amber-700);border-color:color-mix(in oklab, var(--amber-200) 60%, transparent);cursor:pointer">
@@ -925,27 +941,27 @@
                                         Generate Inspection Sheet
                                     </button>
                                 </form>
-                            @endcan
-                            @can('inspection_sheet.download')
+                            @endif
+                            @if (auth()->user()->can('inspection_sheet.download') && $tabAllows('bank_loan'))
                                 <a href="{{ route('admin.leads.inspection-sheet.pdf', $lead) }}" target="_blank" class="jb-chip-link" style="background:var(--amber-50);color:var(--amber-700);border-color:color-mix(in oklab, var(--amber-200) 60%, transparent)">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     Download Inspection Sheet (PDF)
                                 </a>
-                            @endcan
+                            @endif
                         @endif
                     </div>
                 </div>
 
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <p class="mb-0" style="font-size:var(--text-xs);color:var(--slate-400)">{{ $uploadedDocCount }} of {{ $totalDocTypes }} uploaded</p>
-                    @can('documents.download_all')
+                    @if (auth()->user()->can('documents.download_all') && $tabAllows('documents'))
                         @if ($uploadedDocCount > 0)
                             <a href="{{ route('admin.leads.uploaded-documents.download-all', $lead) }}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
                                 <span>Download All Uploaded Documents</span>
                             </a>
                         @endif
-                    @endcan
+                    @endif
                 </div>
 
                 <div class="rounded-3" style="border:1px solid var(--slate-200);overflow:hidden">
@@ -975,12 +991,12 @@
                                             </div>
 
                                             <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                                                @can('documents.download')
+                                                @if (auth()->user()->can('documents.download') && $tabAllows('documents'))
                                                     <a href="{{ route('admin.leads.documents.download', [$lead, $docItem]) }}" download title="Download" class="jb-icon-btn" style="width:1.75rem;height:1.75rem">
                                                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                                     </a>
-                                                @endcan
-                                                @can('documents.delete')
+                                                @endif
+                                                @if (auth()->user()->can('documents.delete') && $tabAllows('documents', true))
                                                     <form action="{{ route('admin.leads.documents.destroy', [$lead, $docItem]) }}" method="POST" onsubmit="return confirm('Remove this document?')" class="d-inline-block">
                                                         @csrf
                                                         @method('DELETE')
@@ -988,7 +1004,7 @@
                                                             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                         </button>
                                                     </form>
-                                                @endcan
+                                                @endif
                                             </div>
                                         </div>
                                     @endforeach
@@ -998,8 +1014,69 @@
                     @endforeach
                 </div>
             </div>
+            @endif
         </div>
     </div>
+
+    <!-- Workflow History (permanent, read-only — see App\Models\LeadTransfer) -->
+    @if ($lead->transfers->isNotEmpty())
+        <div class="jb-card mb-4" style="overflow:hidden" id="workflow-history">
+            <div class="jb-card-header">
+                <h3 class="jb-section-title m-0">Workflow History</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="jb-table">
+                    <thead>
+                        <tr>
+                            <th>Date &amp; Time</th>
+                            <th>Action</th>
+                            <th>From (Role / User)</th>
+                            <th>To (Role / User)</th>
+                            <th>By</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($lead->transfers->sortByDesc(fn ($t) => [$t->transferred_at, $t->id]) as $transfer)
+                            @php
+                                $actionBadge = match ($transfer->action) {
+                                    'created' => 'jb-badge-blue',
+                                    'transferred' => 'jb-badge-indigo',
+                                    'reassigned' => 'jb-badge-purple',
+                                    'completed' => 'jb-badge-emerald',
+                                    default => 'jb-badge-slate',
+                                };
+                            @endphp
+                            <tr>
+                                <td class="text-nowrap">{{ $transfer->transferred_at->format('d M Y, h:i A') }}</td>
+                                <td><span class="jb-badge jb-badge-sm {{ $actionBadge }}">{{ $transfer->actionLabel() }}</span></td>
+                                <td>
+                                    @if ($transfer->from_stage_name)
+                                        <div class="fw-semibold">{{ $transfer->from_role_name }} <span class="jb-muted fw-normal">· {{ $transfer->from_stage_name }}</span></div>
+                                        <div class="jb-muted" style="font-size:var(--text-xs)">{{ $transfer->fromUser?->name ?? 'Unassigned' }}</div>
+                                    @else
+                                        <span class="jb-muted">—</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($transfer->to_stage_name)
+                                        <div class="fw-semibold">{{ $transfer->to_role_name }} <span class="jb-muted fw-normal">· {{ $transfer->to_stage_name }}</span></div>
+                                        <div class="jb-muted" style="font-size:var(--text-xs)">{{ $transfer->toUser?->name ?? 'Unassigned (role pool)' }}</div>
+                                    @elseif ($transfer->action === 'completed')
+                                        <span class="jb-badge jb-badge-sm jb-badge-emerald">Workflow completed</span>
+                                    @else
+                                        <span class="jb-muted">—</span>
+                                    @endif
+                                </td>
+                                <td>{{ $transfer->transferrer?->name ?? 'System' }}</td>
+                                <td style="white-space:normal;max-width:18rem">{{ $transfer->remarks ?? '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 
     <!-- Notes / Requirements -->
     @if ($lead->notes)
@@ -1118,6 +1195,7 @@
 
     <script>
         function switchTab(tabId, panelId) {
+            if (!document.getElementById(tabId) || !document.getElementById(panelId)) return;
             document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('jb-hidden'));
             document.getElementById(panelId).classList.remove('jb-hidden');
 

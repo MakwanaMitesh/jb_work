@@ -9,6 +9,9 @@ use App\Http\Requests\Admin\UpdateLeadRequest;
 use App\Models\Lead;
 use App\Models\Agent;
 use App\Models\City;
+use App\Exceptions\WorkflowException;
+use App\Services\LeadWorkflow;
+use App\Support\LeadModuleAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -23,7 +26,7 @@ class LeadController extends Controller
     {
         $this->authorize('leads.view');
 
-        $query = Lead::with(['agent', 'city', 'bank', 'loanProduct']);
+        $query = Lead::with(['agent', 'city', 'bank', 'loanProduct', 'constitution', 'assignedEmployee', 'workflowStage.role']);
 
         $user = auth()->user();
         \App\Support\LeadModuleAccess::scopeVisibleTo($query, $user);
@@ -55,7 +58,26 @@ class LeadController extends Controller
         }
 
         if ($employeeId = request('assigned_employee_id')) {
-            $query->where('assigned_employee_id', $employeeId);
+            $employeeId === 'unassigned'
+                ? $query->whereNull('assigned_employee_id')
+                : $query->where('assigned_employee_id', $employeeId);
+        }
+
+        // Workflow filters. A lead with no stage recorded waits in the first stage (see
+        // LeadWorkflow::stageFor()), so filtering on the first stage includes those too.
+        $workflow = app(LeadWorkflow::class);
+        if ($stageId = (int) request('workflow_stage_id')) {
+            $query->where('workflow_status', Lead::WORKFLOW_IN_PROGRESS)
+                ->where(function ($q) use ($stageId, $workflow) {
+                    $q->where('workflow_stage_id', $stageId);
+                    if ($workflow->firstStage()?->id === $stageId) {
+                        $q->orWhereNull('workflow_stage_id');
+                    }
+                });
+        }
+
+        if (array_key_exists($workflowStatus = (string) request('workflow_status'), Lead::WORKFLOW_STATUSES)) {
+            $query->where('workflow_status', $workflowStatus);
         }
 
         if ($agentId = request('agent_id')) {
@@ -70,7 +92,7 @@ class LeadController extends Controller
             $query->where('constitution_id', $constitutionId);
         }
 
-        $sort = in_array(request('sort'), ['name', 'email', 'mobile_number', 'source', 'status', 'created_at']) ? request('sort') : 'created_at';
+        $sort = in_array(request('sort'), ['name', 'email', 'mobile_number', 'source', 'status', 'created_at', 'last_transferred_at']) ? request('sort') : 'created_at';
         $direction = request('direction') === 'asc' ? 'asc' : 'desc';
 
         if (app()->environment('testing')) {
@@ -90,7 +112,12 @@ class LeadController extends Controller
         $loanProducts = \App\Models\LoanProduct::orderBy('sort_order')->orderBy('name')->get();
         $constitutions = \App\Models\CustomerConstitution::orderBy('sort_order')->orderBy('name')->get();
 
-        return view('admin.leads.index', compact('leads', 'cities', 'agents', 'loanProducts', 'constitutions', 'sort', 'direction'));
+        $workflowStages = $workflow->stages();
+        $assignableUsers = $workflow->isWorkflowUser($user)
+            ? collect([$user])
+            : \App\Models\User::whereHas('roles', fn ($q) => $q->where('name', '!=', 'Agent'))->orderBy('name')->get(['id', 'name']);
+
+        return view('admin.leads.index', compact('leads', 'cities', 'agents', 'loanProducts', 'constitutions', 'sort', 'direction', 'workflow', 'workflowStages', 'assignableUsers'));
     }
 
     /**
@@ -107,8 +134,41 @@ class LeadController extends Controller
         $assessmentYears = \App\Models\AssessmentYear::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
         $masterBanks = \App\Models\Bank::where('status', 'active')->orderBy('sort_order')->orderBy('name')->get();
         $documentTypes = \App\Models\DocumentType::where('status', 'active')->ordered()->get();
+        $transferPanel = $this->createTransferPanelData(auth()->user(), app(LeadWorkflow::class));
 
-        return view('admin.leads.create', compact('cities', 'agents', 'loanProducts', 'constitutions', 'assessmentYears', 'masterBanks', 'documentTypes'));
+        return view('admin.leads.create', compact('cities', 'agents', 'loanProducts', 'constitutions', 'assessmentYears', 'masterBanks', 'documentTypes', 'transferPanel'));
+    }
+
+    /**
+     * The "Lead Transfer" section on the Create page: a new lead enters the first active stage, so
+     * the creator can hand it straight to a user of the next one. Only someone who could transfer
+     * it from the first stage once saved — its role's user, or a Super Admin — gets the controls.
+     *
+     * @return array<string, mixed>
+     */
+    private function createTransferPanelData(?\App\Models\User $user, LeadWorkflow $workflow): array
+    {
+        $stage = $workflow->firstStage();
+        $next = $stage ? $workflow->nextStage($stage) : null;
+        $holdsStage = $workflow->isWorkflowUser($user) && $workflow->holdsStageRole($user, $stage);
+
+        return [
+            'configured' => $stage !== null,
+            'completed' => false,
+            'creating' => true,
+            'stage' => $stage,
+            'next' => $next,
+            'nextUsers' => $next ? $workflow->eligibleUsers($next) : collect(),
+            // Nothing is filled in yet — every tab of the stage starts out pending.
+            'progress' => $stage ? array_map(
+                fn ($key) => ['key' => $key, 'label' => \App\Support\LeadTabs::label($key), 'status' => 'pending', 'pending' => 0],
+                \App\Support\LeadTabs::sorted($stage->editableModules())
+            ) : [],
+            'isComplete' => false,
+            'canTransfer' => $stage !== null && ($workflow->isSuperAdmin($user) || $holdsStage),
+            'creatorName' => $holdsStage ? $user->name : null,
+            'lastTransfer' => null,
+        ];
     }
 
     /**
@@ -126,6 +186,13 @@ class LeadController extends Controller
         $validated['itr_details'] = $this->processItrDetailsFiles($request);
         $validated = \App\Support\LeadModuleAccess::filterFieldsForUser($request->user(), $validated);
 
+        // "Create & Transfer to Next Role": check the chosen user before anything is saved, so a
+        // wrong pick sends the user back to the form instead of leaving a half-done lead behind.
+        $transferring = $request->input('workflow_action') === 'transfer';
+        if ($transferring && ($error = $this->createTransferError($request))) {
+            return redirect()->route('admin.leads.create')->withInput()->with('error', $error);
+        }
+
         // Lead and Application Form are one submission: both save or neither.
         $lead = \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $applicationForm, $stockStatement, $opinionReport, $cmaProfile, $dprReport, $request) {
             $lead = Lead::create($validated);
@@ -139,8 +206,71 @@ class LeadController extends Controller
             return $lead;
         });
 
+        if ($transferring) {
+            return $this->transferNewLead($request, $lead);
+        }
+
+        if ($request->input('workflow_action') === 'draft' && LeadModuleAccess::canAccessLead($request->user(), $lead)) {
+            return redirect()->route('admin.leads.edit', $lead)
+                ->with('success', "Lead \"{$lead->name}\" saved as draft.");
+        }
+
         return redirect()->route('admin.leads.index')
             ->with('success', "Lead \"{$lead->name}\" created successfully.");
+    }
+
+    /**
+     * Why "Create & Transfer" can't proceed with the submitted next user, or null when it can.
+     * LeadWorkflow::transfer() re-checks all of this (and tab completeness) once the lead exists.
+     */
+    private function createTransferError(\Illuminate\Http\Request $request): ?string
+    {
+        $request->validate([
+            'transfer_to_user_id' => ['nullable', 'integer'],
+            'transfer_remarks' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $workflow = app(LeadWorkflow::class);
+        $panel = $this->createTransferPanelData($request->user(), $workflow);
+
+        if (! $panel['canTransfer']) {
+            return 'You are not allowed to transfer a new lead from the first workflow stage.';
+        }
+        if ($panel['next'] && ! $panel['nextUsers']->contains('id', (int) $request->input('transfer_to_user_id'))) {
+            return "Select an active user from the '{$panel['next']->role?->name}' role to transfer to.";
+        }
+
+        return null;
+    }
+
+    /**
+     * Second half of "Create & Transfer": the lead is already saved in the first stage; hand it
+     * on. If the stage's tabs aren't complete, the lead simply stays with its creator as a draft
+     * and they're taken to its edit page to finish it.
+     */
+    private function transferNewLead(\Illuminate\Http\Request $request, Lead $lead): RedirectResponse
+    {
+        try {
+            $record = app(LeadWorkflow::class)->transfer(
+                $lead,
+                $request->user(),
+                $request->filled('transfer_to_user_id') ? (int) $request->input('transfer_to_user_id') : null,
+                $request->input('transfer_remarks'),
+                $lead->workflow_stage_id,
+            );
+        } catch (WorkflowException $e) {
+            $message = "Lead \"{$lead->name}\" was saved as a draft but not transferred. " . $e->getMessage();
+
+            return LeadModuleAccess::canAccessLead($request->user(), $lead)
+                ? redirect()->route('admin.leads.edit', $lead)->with('error', $message)
+                : redirect()->route('admin.leads.index')->with('error', $message);
+        }
+
+        $message = $record->action === \App\Models\LeadTransfer::ACTION_COMPLETED
+            ? "Lead \"{$lead->name}\" created and its workflow completed."
+            : "Lead \"{$lead->name}\" created and transferred to {$record->toUser?->name} ({$record->to_role_name}).";
+
+        return redirect()->route('admin.leads.index')->with('success', $message);
     }
 
     /**
@@ -155,15 +285,17 @@ class LeadController extends Controller
             abort(403, 'You do not have permission to view this lead.');
         }
 
-        // Once a Lead is in the role-pool (unassigned), the "Assign" dropdown only offers the
-        // employees who actually hold the current stage's Role — assigning it to anyone else
-        // would immediately lock everyone else out of a Lead they can't act on anyway.
-        $stageRole = \App\Support\LeadStage::roleFor($lead->current_stage);
-        $employees = \App\Models\User::where('status', 'active')
-            ->when($stageRole, fn ($q) => $q->whereHas('roles', fn ($q2) => $q2->where('name', $stageRole)),
-                fn ($q) => $q->whereHas('roles', fn ($q2) => $q2->where('name', '!=', 'Agent')))
-            ->orderBy('name')
-            ->get();
+        $workflow = app(LeadWorkflow::class);
+        $currentStage = $workflow->stageFor($lead);
+
+        // Assigning within a stage only offers that stage's role — handing the lead to anyone else
+        // would lock out everyone who can actually work on it.
+        $employees = $currentStage
+            ? $workflow->eligibleUsers($currentStage)
+            : \App\Models\User::where('status', 'active')
+                ->whereHas('roles', fn ($q2) => $q2->where('name', '!=', 'Agent'))
+                ->orderBy('name')
+                ->get();
 
         $lead->load([
             'visits.employee',
@@ -175,24 +307,43 @@ class LeadController extends Controller
             'loanProduct',
             'constitution',
             'leadDocuments.documentType',
+            'transfers.fromUser',
+            'transfers.toUser',
+            'transfers.transferrer',
         ]);
 
         $documentTypes = \App\Models\DocumentType::where('status', 'active')->ordered()->get();
-
-        $currentStage = \App\Support\LeadStage::find($lead->current_stage);
-        $canAccessLead = \App\Support\LeadModuleAccess::canAccessLead($user, $lead);
-        $stagePendingCount = 0;
-        if ($currentStage) {
-            $result = $pendencyService->forLead($lead);
-            $stagePendingCount = collect($result['modules'])
-                ->whereIn('key', \App\Support\LeadStage::pendencyModulesFor($lead->current_stage))
-                ->sum('pending_count');
-        }
-        $canSubmitStage = $canAccessLead && $currentStage && $stagePendingCount === 0;
+        // Detail-page sections and report buttons per tab — see LeadWorkflow::tabAllows().
+        $tabAllows = fn (string $module, bool $edit = false) => $workflow->tabAllows($user, $lead, $module, $edit);
+        $transferPanel = $this->transferPanelData($lead, $user, $workflow);
 
         return view('admin.leads.show', compact(
-            'lead', 'employees', 'documentTypes', 'currentStage', 'canAccessLead', 'canSubmitStage', 'stagePendingCount'
+            'lead', 'employees', 'documentTypes', 'currentStage', 'tabAllows', 'transferPanel'
         ));
+    }
+
+    /**
+     * Everything the "Lead Transfer" section needs (shared by the Show and Edit pages).
+     *
+     * @return array<string, mixed>
+     */
+    private function transferPanelData(Lead $lead, ?\App\Models\User $user, LeadWorkflow $workflow): array
+    {
+        $stage = $workflow->stageFor($lead);
+        $next = $stage ? $workflow->nextStage($stage) : null;
+        $progress = $stage ? $workflow->stageProgress($lead, $stage) : [];
+
+        return [
+            'configured' => $workflow->activeStages()->isNotEmpty(),
+            'completed' => $workflow->isCompleted($lead),
+            'stage' => $stage,
+            'next' => $next,
+            'nextUsers' => $next ? $workflow->eligibleUsers($next) : collect(),
+            'progress' => $progress,
+            'isComplete' => $stage !== null && collect($progress)->every(fn ($t) => $t['status'] === 'completed'),
+            'canTransfer' => $workflow->canTransfer($user, $lead),
+            'lastTransfer' => $lead->transfers()->latest('transferred_at')->latest('id')->first(),
+        ];
     }
 
     /**
@@ -202,9 +353,13 @@ class LeadController extends Controller
     {
         $this->authorize('leads.edit');
 
-        if (! \App\Support\LeadModuleAccess::canAccessLead(auth()->user(), $lead)) {
+        if (! LeadModuleAccess::canAccessLead(auth()->user(), $lead)) {
             abort(403, 'You do not have permission to edit this lead.');
         }
+
+        $workflow = app(LeadWorkflow::class);
+        $transferPanel = $this->transferPanelData($lead, auth()->user(), $workflow);
+        $canWorkOnLead = $workflow->canWorkOnLead(auth()->user(), $lead);
 
         $cities = City::where('status', 'active')->orderBy('name')->get();
         $agents = Agent::where('status', 'active')->orderBy('first_name')->get();
@@ -216,7 +371,7 @@ class LeadController extends Controller
 
         $lead->load('leadDocuments.documentType');
 
-        return view('admin.leads.edit', compact('lead', 'cities', 'agents', 'loanProducts', 'constitutions', 'assessmentYears', 'masterBanks', 'documentTypes'));
+        return view('admin.leads.edit', compact('lead', 'cities', 'agents', 'loanProducts', 'constitutions', 'assessmentYears', 'masterBanks', 'documentTypes', 'transferPanel', 'canWorkOnLead'));
     }
 
     /**
@@ -226,7 +381,7 @@ class LeadController extends Controller
      */
     private function saveApplicationForm(\Illuminate\Http\Request $request, Lead $lead, ?array $submitted): void
     {
-        if ($submitted === null || ! $request->user()->can(\App\Services\ApplicationFormSaver::permissionFor($lead))) {
+        if ($submitted === null || ! $this->tabEditable($request, $lead, 'application_form') || ! $request->user()->can(\App\Services\ApplicationFormSaver::permissionFor($lead))) {
             return;
         }
 
@@ -238,7 +393,7 @@ class LeadController extends Controller
      */
     private function saveStockStatement(\Illuminate\Http\Request $request, Lead $lead, ?array $submitted): void
     {
-        if ($submitted === null || ! $request->user()->can(\App\Services\StockStatementSaver::permissionFor($lead))) {
+        if ($submitted === null || ! $this->tabEditable($request, $lead, 'sbi_stock_statement') || ! $request->user()->can(\App\Services\StockStatementSaver::permissionFor($lead))) {
             return;
         }
 
@@ -250,7 +405,7 @@ class LeadController extends Controller
      */
     private function saveOpinionReport(\Illuminate\Http\Request $request, Lead $lead, ?array $submitted): void
     {
-        if ($submitted === null || ! $request->user()->can(\App\Services\OpinionReportSaver::permissionFor($lead))) {
+        if ($submitted === null || ! $this->tabEditable($request, $lead, 'or') || ! $request->user()->can(\App\Services\OpinionReportSaver::permissionFor($lead))) {
             return;
         }
 
@@ -262,7 +417,7 @@ class LeadController extends Controller
      */
     private function saveCmaProfile(\Illuminate\Http\Request $request, Lead $lead, ?array $submitted): void
     {
-        if ($submitted === null || ! $request->user()->can(\App\Services\CmaProfileSaver::permissionFor($lead))) {
+        if ($submitted === null || ! $this->tabEditable($request, $lead, 'cma') || ! $request->user()->can(\App\Services\CmaProfileSaver::permissionFor($lead))) {
             return;
         }
 
@@ -274,7 +429,7 @@ class LeadController extends Controller
      */
     private function saveDprReport(\Illuminate\Http\Request $request, Lead $lead, ?array $submitted): void
     {
-        if ($submitted === null || ! $request->user()->can(\App\Services\DprReportSaver::permissionFor($lead))) {
+        if ($submitted === null || ! $this->tabEditable($request, $lead, 'dpr') || ! $request->user()->can(\App\Services\DprReportSaver::permissionFor($lead))) {
             return;
         }
 
@@ -286,7 +441,9 @@ class LeadController extends Controller
      */
     public function update(UpdateLeadRequest $request, Lead $lead): RedirectResponse
     {
-        if (! \App\Support\LeadModuleAccess::canAccessLead($request->user(), $lead)) {
+        // Only whoever holds the lead's current stage (or a Super Admin) may change it — a previous
+        // stage's user loses this the moment the lead is transferred on.
+        if (! LeadModuleAccess::canWorkOnLead($request->user(), $lead)) {
             abort(403, 'You do not have permission to edit this lead.');
         }
 
@@ -310,8 +467,38 @@ class LeadController extends Controller
             $this->saveDprReport($request, $lead, $dprReport);
         });
 
+        // "Transfer to Next Role" submits the whole form, so everything typed is saved first (above)
+        // and only then is the transfer attempted — a refused transfer still keeps the saved work.
+        if ($request->input('workflow_action') === 'transfer') {
+            return $this->performTransfer($request, $lead->fresh(), route('admin.leads.edit', $lead));
+        }
+
+        if ($request->input('workflow_action') === 'draft') {
+            return redirect()->route('admin.leads.edit', $lead)
+                ->with('success', 'Draft saved. You can continue later — the lead stays with you.');
+        }
+
         return redirect()->route('admin.leads.index')
             ->with('success', "Lead \"{$lead->name}\" updated successfully.");
+    }
+
+    /**
+     * Whether the submitting user may write the $module tab of $lead (see LeadWorkflow::tabAccess()).
+     */
+    private function tabEditable(\Illuminate\Http\Request $request, Lead $lead, string $module): bool
+    {
+        return LeadModuleAccess::tabAllows($request->user(), $lead, $module, true);
+    }
+
+    /**
+     * Aborts unless the current user can see $lead and its $module tab — or, with $edit, edit it.
+     * Guards every route that reads or writes one tab's data outside the main form.
+     */
+    private function guardTab(Lead $lead, string $module, bool $edit = false): void
+    {
+        if (! LeadModuleAccess::tabAllows(auth()->user(), $lead, $module, $edit)) {
+            abort(403, 'You do not have access to this section of the lead.');
+        }
     }
 
     /**
@@ -320,6 +507,7 @@ class LeadController extends Controller
     public function downloadDocument(Lead $lead, \App\Models\LeadDocument $document)
     {
         $this->authorize('documents.download');
+        $this->guardTab($lead, 'documents');
 
         if ($document->lead_id !== $lead->id) {
             abort(403, 'Unauthorized access to lead document.');
@@ -346,6 +534,7 @@ class LeadController extends Controller
     public function deleteDocument(Lead $lead, \App\Models\LeadDocument $document): RedirectResponse
     {
         $this->authorize('documents.delete');
+        $this->guardTab($lead, 'documents', true);
 
         if ($document->lead_id !== $lead->id) {
             abort(403, 'Unauthorized access to lead document.');
@@ -405,6 +594,9 @@ class LeadController extends Controller
     {
         if ($request->hasFile('documents')) {
             $this->authorize('documents.upload');
+            if (! $this->tabEditable($request, $lead, 'documents')) {
+                abort(403, 'You cannot upload documents to this lead at its current stage.');
+            }
         }
 
         $documentTypes = \App\Models\DocumentType::where('status', 'active')->get();
@@ -508,7 +700,8 @@ class LeadController extends Controller
     }
 
     /**
-     * Assign lead to an employee.
+     * Assign / reassign the lead to an employee. While the lead is in a workflow stage, only an active
+     * user of that stage's role is accepted, and the change is recorded in the transfer history.
      */
     public function assign(\Illuminate\Http\Request $request, Lead $lead): RedirectResponse
     {
@@ -519,64 +712,64 @@ class LeadController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $lead->assignTo($validated['employee_id'], auth()->id() ?? \App\Models\User::first()?->id ?? 1, $validated['notes']);
+        try {
+            app(LeadWorkflow::class)->reassign($lead, $request->user(), (int) $validated['employee_id'], $validated['notes'] ?? null);
+        } catch (WorkflowException $e) {
+            return redirect()->route('admin.leads.show', $lead)->with('error', $e->getMessage());
+        }
 
         return redirect()->route('admin.leads.show', $lead)
             ->with('success', 'Lead assigned successfully.');
     }
 
     /**
-     * Completes the lead's current workflow Stage and forwards it to the next one.
-     *
-     * The caller must currently be able to act on the Lead (LeadModuleAccess::canAccessLead — the
-     * specifically assigned employee, or anyone in the current stage's Role pool when unassigned),
-     * and every module in the current stage must already be complete per PendencyService. On
-     * success the Lead's assigned_employee_id is reset to null (back to a role-pool) so the next
-     * stage's Role can pick it up, exactly like a freshly created Lead starts out.
+     * Transfers the lead to the selected user of the next workflow stage, or completes the
+     * workflow at the final stage (from the Lead detail page; the Edit page submits through
+     * update() so its unsaved changes are saved first).
      */
-    public function submitStage(Lead $lead, \App\Services\PendencyService $pendencyService): RedirectResponse
+    public function transfer(\Illuminate\Http\Request $request, Lead $lead): RedirectResponse
     {
-        $user = auth()->user();
-
-        if (! \App\Support\LeadModuleAccess::canAccessLead($user, $lead)) {
+        if (! LeadModuleAccess::canAccessLead($request->user(), $lead)) {
             abort(403, 'You do not have permission to act on this lead.');
         }
 
-        $currentStage = \App\Support\LeadStage::find($lead->current_stage);
-        if (! $currentStage) {
-            return redirect()->route('admin.leads.show', $lead)
-                ->with('error', 'This lead has no active stage to submit.');
-        }
+        return $this->performTransfer($request, $lead, route('admin.leads.show', $lead));
+    }
 
-        $result = $pendencyService->forLead($lead);
-        $pending = collect($result['modules'])
-            ->whereIn('key', \App\Support\LeadStage::pendencyModulesFor($lead->current_stage))
-            ->sum('pending_count');
-        if ($pending > 0) {
-            return redirect()->route('admin.leads.show', $lead)
-                ->with('error', 'આ સ્ટેજના ફિલ્ડ્સ હજુ પૂરા નથી — બધા ફિલ્ડ ભરીને ફરી પ્રયત્ન કરો.');
-        }
-
-        $next = \App\Support\LeadStage::next($lead->current_stage);
-
-        $lead->update([
-            'current_stage' => $next['key'] ?? null,
-            'deadline' => \App\Support\LeadStage::deadlineFromNow($next['key'] ?? null),
-            'assigned_employee_id' => null,
-            'assigned_by' => null,
-            'assigned_at' => null,
+    private function performTransfer(\Illuminate\Http\Request $request, Lead $lead, string $backTo): RedirectResponse
+    {
+        $validated = $request->validate([
+            'transfer_to_user_id' => ['nullable', 'integer'],
+            'transfer_remarks' => ['nullable', 'string', 'max:1000'],
+            'transfer_stage_id' => ['nullable', 'integer'],
         ]);
 
-        $lead->logActivity(
-            $user->id,
-            'stage_forwarded',
-            $next
-                ? "Stage '{$currentStage['label']}' complete — forwarded to '{$next['label']}' ({$next['role']})"
-                : "Stage '{$currentStage['label']}' complete — workflow finished"
-        );
+        try {
+            $record = app(LeadWorkflow::class)->transfer(
+                $lead,
+                $request->user(),
+                isset($validated['transfer_to_user_id']) ? (int) $validated['transfer_to_user_id'] : null,
+                $validated['transfer_remarks'] ?? null,
+                isset($validated['transfer_stage_id']) ? (int) $validated['transfer_stage_id'] : null,
+            );
+        } catch (WorkflowException $e) {
+            if ($e->getCode() === 403) {
+                abort(403, $e->getMessage());
+            }
 
-        return redirect()->route('admin.leads.show', $lead)
-            ->with('success', $next ? "Stage complete. Lead forwarded to {$next['label']}." : 'Stage complete. Workflow finished for this lead.');
+            return redirect()->to($backTo)->with('error', $e->getMessage());
+        }
+
+        $message = $record->action === \App\Models\LeadTransfer::ACTION_COMPLETED
+            ? "Workflow completed for lead \"{$lead->name}\"."
+            : "Lead transferred to {$record->toUser?->name} ({$record->to_stage_name}).";
+
+        // The sender usually can't open the lead any more, so land them on their list.
+        $user = $request->user();
+        $stillVisible = LeadModuleAccess::canAccessLead($user, $lead->fresh());
+
+        return redirect()->to($stillVisible ? route('admin.leads.show', $lead) : route('admin.leads.index'))
+            ->with('success', $message);
     }
 
     /**
@@ -602,6 +795,7 @@ class LeadController extends Controller
     public function generateInspectionSheet(Lead $lead)
     {
         $this->authorize('inspection_sheet.generate');
+        $this->guardTab($lead, 'bank_loan', true);
 
         $lead->loadMissing(['bank', 'loanProduct', 'city', 'constitution']);
 
@@ -630,6 +824,7 @@ class LeadController extends Controller
     public function downloadInspectionSheetPdf(Lead $lead)
     {
         $this->authorize('inspection_sheet.download');
+        $this->guardTab($lead, 'bank_loan');
 
         $lead->loadMissing(['bank', 'loanProduct', 'city', 'constitution']);
 
@@ -666,6 +861,7 @@ class LeadController extends Controller
     public function generateCma(Lead $lead, \App\Services\CmaGenerator $generator)
     {
         $this->authorize('cma.generate');
+        $this->guardTab($lead, 'cma', true);
 
         $generator->generate($lead);
 
@@ -678,6 +874,7 @@ class LeadController extends Controller
     public function downloadCma(Lead $lead, \App\Services\CmaGenerator $generator)
     {
         $this->authorize('cma.download');
+        $this->guardTab($lead, 'cma');
 
         $relativePath = 'cma/' . $lead->id . '/CMA.xlsx';
         $fullPath = storage_path('app/public/' . $relativePath);
@@ -702,6 +899,7 @@ class LeadController extends Controller
     public function generateDpr(Lead $lead, \App\Services\DprGenerator $generator)
     {
         $this->authorize('dpr.generate');
+        $this->guardTab($lead, 'dpr', true);
 
         $lead->load('bank');
         $generator->generate($lead);
@@ -715,6 +913,7 @@ class LeadController extends Controller
     public function downloadDpr(Lead $lead, \App\Services\DprGenerator $generator)
     {
         $this->authorize('dpr.download');
+        $this->guardTab($lead, 'dpr');
 
         $relativePath = 'dpr/' . $lead->id . '/DPR.docx';
         $fullPath = storage_path('app/public/' . $relativePath);
@@ -740,6 +939,7 @@ class LeadController extends Controller
     public function generateOr(Lead $lead, \App\Services\OrGenerator $generator)
     {
         $this->authorize('or.generate');
+        $this->guardTab($lead, 'or', true);
 
         $lead->load('bank');
         $generator->generate($lead);
@@ -753,6 +953,7 @@ class LeadController extends Controller
     public function downloadOr(Lead $lead, \App\Services\OrGenerator $generator)
     {
         $this->authorize('or.download');
+        $this->guardTab($lead, 'or');
 
         $relativePath = 'or/' . $lead->id . '/OR.docx';
         $fullPath = storage_path('app/public/' . $relativePath);
@@ -778,6 +979,7 @@ class LeadController extends Controller
     public function generateSbiStockStatement(Lead $lead, \App\Services\SbiStockStatementGenerator $generator)
     {
         $this->authorize('sbi_stock_statement.generate');
+        $this->guardTab($lead, 'sbi_stock_statement', true);
 
         $lead->load('city');
         $generator->generate($lead);
@@ -791,6 +993,7 @@ class LeadController extends Controller
     public function downloadSbiStockStatement(Lead $lead, \App\Services\SbiStockStatementGenerator $generator)
     {
         $this->authorize('sbi_stock_statement.download');
+        $this->guardTab($lead, 'sbi_stock_statement');
 
         $relativePath = 'sbi-stock-statement/' . $lead->id . '/SBI_Stock_Statement.xlsx';
         $fullPath = storage_path('app/public/' . $relativePath);
@@ -820,6 +1023,9 @@ class LeadController extends Controller
     public function downloadAllDocuments(Lead $lead, \App\Services\LeadDocumentZipService $zipService)
     {
         $user = auth()->user();
+        if (! LeadModuleAccess::canAccessLead($user, $lead)) {
+            abort(403, 'You do not have permission to view this lead.');
+        }
         if (! $user->hasRole('Admin') && ! $user->canAny([
             'cma.download',
             'dpr.download',
@@ -847,6 +1053,7 @@ class LeadController extends Controller
     public function downloadAllUploadedDocuments(Lead $lead, \App\Services\LeadDocumentZipService $zipService)
     {
         $this->authorize('documents.download_all');
+        $this->guardTab($lead, 'documents');
 
         try {
             $zipPath = $zipService->createUploadedDocumentsZip($lead);

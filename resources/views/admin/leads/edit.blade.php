@@ -20,10 +20,19 @@
 
         @include('admin.leads._form', ['lead' => $lead])
 
-        <div class="d-flex align-items-center gap-3">
-            <x-primary-button-bs>Save changes</x-primary-button-bs>
+        <div class="mt-4">
+            @include('admin.leads.partials.workflow-transfer', ['transferMode' => 'inline'])
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            @if ($canWorkOnLead)
+                <x-primary-button-bs>Save changes</x-primary-button-bs>
+                <button type="submit" name="workflow_action" value="draft" class="btn btn-outline-primary jb-btn-tall" formnovalidate>
+                    Save as Draft
+                </button>
+            @endif
             <a href="{{ route('admin.leads.index') }}" class="btn btn-secondary jb-btn-tall">
-                Cancel
+                {{ $canWorkOnLead ? 'Cancel' : 'Back' }}
             </a>
         </div>
     </form>

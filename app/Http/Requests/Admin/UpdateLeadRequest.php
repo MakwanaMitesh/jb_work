@@ -12,6 +12,28 @@ class UpdateLeadRequest extends FormRequest
     }
 
     /**
+     * A user who can't edit the Details Sheet on this lead never receives its fields (the tab is
+     * hidden or read-only, and read-only inputs aren't submitted), yet name / mobile / loan product /
+     * status are required here. Backfill them from the lead so validation passes; the controller
+     * strips them again (LeadModuleAccess::filterFieldsForUser()), so nothing is overwritten.
+     */
+    protected function prepareForValidation(): void
+    {
+        $lead = $this->route('lead');
+        if (! $lead instanceof \App\Models\Lead) {
+            return;
+        }
+
+        if (\App\Support\LeadModuleAccess::tabAllows($this->user(), $lead, 'details_sheet', true)) {
+            return;
+        }
+
+        $this->merge(collect(['name', 'mobile_number', 'loan_product_id', 'status'])
+            ->mapWithKeys(fn ($field) => [$field => $lead->{$field}])
+            ->all());
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, mixed>

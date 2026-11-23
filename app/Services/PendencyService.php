@@ -9,6 +9,7 @@ use App\Support\ApplicationFormData;
 use App\Support\CmaProfileData;
 use App\Support\DprData;
 use App\Support\LeadModuleAccess;
+use App\Support\LeadTabs;
 use App\Support\OpinionReportData;
 use App\Support\StockStatementData;
 
@@ -63,17 +64,22 @@ class PendencyService
         ]);
 
         if ($user) {
-            $modules = array_filter($modules, fn ($m) => LeadModuleAccess::canViewModule($user, $m['key']));
+            // Same rule as the Lead form: a tab the user can't see (by permission or, for workflow
+            // users, because their role's stages don't include it) is dropped entirely. Two pendency
+            // keys differ from their permission module key — LeadTabs translates them.
+            $tabAccess = LeadModuleAccess::tabAccess($user, $lead);
+            $modules = array_filter($modules, fn ($m) => ($tabAccess[LeadTabs::keyForPendency($m['key']) ?? $m['key']] ?? null) !== null);
             foreach ($modules as &$m) {
+                $permissionKey = LeadTabs::keyForPendency($m['key']) ?? $m['key'];
                 // Documents has no fixed subsection permission list (its "subsections" are whichever
                 // Document Master types are required, not a code-level set) — documents.view alone
                 // governs it, same as before.
-                if (! isset(\Database\Seeders\PermissionSeeder::LEAD_MODULE_SUBSECTIONS[$m['key']])) {
+                if (! isset(\Database\Seeders\PermissionSeeder::LEAD_MODULE_SUBSECTIONS[$permissionKey])) {
                     continue;
                 }
                 $m['subsections'] = array_values(array_filter(
                     $m['subsections'],
-                    fn ($sub) => LeadModuleAccess::canViewSubsection($user, $m['key'], $sub['key'])
+                    fn ($sub) => LeadModuleAccess::canViewSubsection($user, $permissionKey, $sub['key'])
                 ));
             }
             unset($m);

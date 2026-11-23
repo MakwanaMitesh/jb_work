@@ -78,6 +78,10 @@
                 {!! $navIcon('<path d="M12 3 4 6v6c0 4.8 3.4 7.9 8 9 4.6-1.1 8-4.2 8-9V6l-8-3Z" /><path d="m9.5 12 1.8 1.8L15 10" />') !!}
                 <span>Employee Roles</span>
             </a>
+            <a href="{{ route('admin.workflow.index') }}" class="jb-nav-link {{ request()->routeIs('admin.workflow.*') ? 'active' : '' }}">
+                {!! $navIcon('<circle cx="5" cy="6" r="2" /><circle cx="19" cy="6" r="2" /><circle cx="12" cy="18" r="2" /><path d="M7 6h10" /><path d="M18 8l-5 8" /><path d="M6 8l5 8" />') !!}
+                <span>Lead Workflow</span>
+            </a>
         @endcan
 
         @can('loan_products.view')

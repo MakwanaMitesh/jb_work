@@ -40,7 +40,7 @@
     ];
 @endphp
 
-<div id="stock-statement-panel" class="tab-panel jb-hidden">
+<div id="stock-statement-panel" class="tab-panel jb-hidden" @if ((($leadTabs ?? [])['sbi_stock_statement'] ?? null) === 'view') data-readonly @endif>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom pb-2 mb-3">
         <div>
             <h3 class="jb-section-title m-0">Stock Statement</h3>
